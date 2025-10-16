@@ -146,5 +146,5 @@ Proprietary - All rights reserved
 - [Architectural Decisions](DECISIONS.md)
 - [Infrastructure Guide](INFRA.md)
 - [Testing Strategy](TESTING.md)
-- [Project Plan](PLANS/NearYou_ID_MVP_Plan.md)
+- [Project Plan](../PLANS/NearYou_ID_MVP_Plan.md)
 

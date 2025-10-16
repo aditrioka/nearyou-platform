@@ -54,15 +54,14 @@ Open [/iosApp](./iosApp) in Xcode and run it from there, or use the run configur
 ## 🗺️ Repository Navigation
 
 This repository uses a **map-based documentation system** for both developers and AI assistants like *Augment Code*.  
-All major plans, architecture docs, and phase progress are indexed in [`docs/PROJECT_MAP.md`](./docs/PROJECT_MAP.md).
+All documentation and AI-related files are organized under the [`docs/`](./docs) directory.
 
 **Start here:**
-- [`docs/PROJECT_MAP.md`](./docs/PROJECT_MAP.md) → The main map document (references all docs and plans).
+- [`docs/CORE/PROJECT_MAP.md`](./docs/CORE/PROJECT_MAP.md) → The main index of all documentation and project plans.
 - [`docs/PLANS/NearYou_ID_MVP_Plan.md`](./docs/PLANS/NearYou_ID_MVP_Plan.md) → The complete execution plan.
-- [`docs/PLANS/PHASE_0_COMPLETION_SUMMARY.md`](./docs/PLANS/PHASE_0_COMPLETION_SUMMARY.md) → Results after Phase 0.
-- [`docs/PLANS/QUICK_START.md`](./docs/PLANS/QUICK_START.md) → Environment setup and onboarding guide.
+- [`docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md`](./docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md) → The reusable AI execution prompt.
 
-> 🧠 **For AI assistants:** Always use `PROJECT_MAP.md` as the main reference to locate relevant documents when performing context-based coding or planning tasks.
+> 🧠 **For AI assistants:** Always use `PROJECT_MAP.md` as the main navigation reference before performing any task or coding action.
 
 ---
 
