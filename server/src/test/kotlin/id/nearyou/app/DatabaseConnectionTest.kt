@@ -1,0 +1,123 @@
+package id.nearyou.app
+
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
+import kotlin.test.Test
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+
+class DatabaseConnectionTest {
+    
+    @Test
+    fun testDatabaseConnection() {
+        // Connect to database
+        Database.connect(
+            url = "jdbc:postgresql://localhost:5432/nearyou_db",
+            driver = "org.postgresql.Driver",
+            user = "nearyou_user",
+            password = "nearyou_password"
+        )
+        
+        transaction {
+            // Test PostGIS version
+            val result = exec("SELECT PostGIS_Version();") { rs ->
+                if (rs.next()) rs.getString(1) else null
+            }
+            
+            assertNotNull(result, "PostGIS should be installed")
+            println("PostGIS Version: $result")
+        }
+    }
+    
+    @Test
+    fun testPostGISFunctions() {
+        Database.connect(
+            url = "jdbc:postgresql://localhost:5432/nearyou_db",
+            driver = "org.postgresql.Driver",
+            user = "nearyou_user",
+            password = "nearyou_password"
+        )
+        
+        transaction {
+            // Test ST_MakePoint and ST_Distance
+            val query = """
+                SELECT 
+                    ST_Distance(
+                        ST_MakePoint(106.8456, -6.2088)::geography,
+                        ST_MakePoint(106.8500, -6.2100)::geography
+                    ) as distance_meters
+            """.trimIndent()
+            
+            val distance = exec(query) { rs ->
+                if (rs.next()) rs.getDouble(1) else null
+            }
+            
+            assertNotNull(distance, "Distance calculation should work")
+            assertTrue(distance > 0, "Distance should be greater than 0")
+            println("Distance between points: $distance meters")
+        }
+    }
+    
+    @Test
+    fun testGeoQueryWithIndex() {
+        Database.connect(
+            url = "jdbc:postgresql://localhost:5432/nearyou_db",
+            driver = "org.postgresql.Driver",
+            user = "nearyou_user",
+            password = "nearyou_password"
+        )
+        
+        transaction {
+            // Check if GIST index exists
+            val indexQuery = """
+                SELECT indexname, indexdef
+                FROM pg_indexes
+                WHERE tablename = 'posts' AND indexdef ILIKE '%gist%'
+            """.trimIndent()
+            
+            val indexes = mutableListOf<Pair<String, String>>()
+            exec(indexQuery) { rs ->
+                while (rs.next()) {
+                    indexes.add(rs.getString(1) to rs.getString(2))
+                }
+            }
+            
+            assertTrue(indexes.isNotEmpty(), "GIST index should exist on posts table")
+            println("Found GIST indexes:")
+            indexes.forEach { (name, def) ->
+                println("  - $name: $def")
+            }
+        }
+    }
+    
+    @Test
+    fun testSampleGeoQuery() {
+        Database.connect(
+            url = "jdbc:postgresql://localhost:5432/nearyou_db",
+            driver = "org.postgresql.Driver",
+            user = "nearyou_user",
+            password = "nearyou_password"
+        )
+        
+        transaction {
+            // Test geo query (should use GIST index)
+            val query = """
+                EXPLAIN ANALYZE
+                SELECT id, content, 
+                       ST_Distance(location, ST_MakePoint(106.8456, -6.2088)::geography) as distance_meters
+                FROM posts
+                WHERE ST_DWithin(location, ST_MakePoint(106.8456, -6.2088)::geography, 1000)
+                  AND is_deleted = FALSE
+                ORDER BY distance_meters
+            """.trimIndent()
+            
+            println("\nQuery Plan:")
+            exec(query) { rs ->
+                while (rs.next()) {
+                    println(rs.getString(1))
+                }
+            }
+        }
+    }
+}
+
