@@ -80,7 +80,7 @@ class UserValidationTest {
 
     @Test
     fun `phone validation rejects invalid phone`() {
-        val result = UserValidation.validatePhone("123")
+        val result = UserValidation.validatePhone("0123") // Starts with 0, invalid
         assertFalse(result.isValid)
     }
 
