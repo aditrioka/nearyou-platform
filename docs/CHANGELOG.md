@@ -141,10 +141,10 @@ Proprietary - All rights reserved
 
 ## Links
 
-- [Product Specification](docs/SPEC.md)
-- [Architecture Documentation](docs/ARCHITECTURE.md)
-- [Architectural Decisions](docs/DECISIONS.md)
-- [Infrastructure Guide](docs/INFRA.md)
-- [Testing Strategy](docs/TESTING.md)
-- [Project Plan](NearYou_ID_MVP_Plan.md)
+- [Product Specification](SPEC.md)
+- [Architecture Documentation](ARCHITECTURE.md)
+- [Architectural Decisions](DECISIONS.md)
+- [Infrastructure Guide](INFRA.md)
+- [Testing Strategy](TESTING.md)
+- [Project Plan](PLANS/NearYou_ID_MVP_Plan.md)
 

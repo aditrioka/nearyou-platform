@@ -1,54 +1,69 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Server.
+# NearYou ID – Kotlin Multiplatform Project
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+This is a Kotlin Multiplatform project targeting **Android**, **iOS**, and **Server**.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+* [/composeApp](./composeApp/src) contains the code shared across your Compose Multiplatform applications.
+  It includes:
+  - [commonMain](./composeApp/src/commonMain/kotlin) for code common to all targets.
+  - Platform-specific folders like [iosMain](./composeApp/src/iosMain/kotlin) and [jvmMain](./composeApp/src/jvmMain/kotlin) for platform-dependent logic.
 
-* [/server](./server/src/main/kotlin) is for the Ktor server application.
+* [/iosApp](./iosApp/iosApp) contains the iOS application entry point.
+  Even when sharing UI with Compose Multiplatform, you’ll still need this folder to integrate SwiftUI or platform code.
 
-* [/shared](./shared/src) is for the code that will be shared between all targets in the project.
-  The most important subfolder is [commonMain](./shared/src/commonMain/kotlin). If preferred, you
-  can add code to the platform-specific folders here too.
+* [/server](./server/src/main/kotlin) holds the **Ktor backend** code.
 
-### Build and Run Android Application
-
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
-
-### Build and Run Server
-
-To build and run the development version of the server, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :server:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :server:run
-  ```
-
-### Build and Run iOS Application
-
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+* [/shared](./shared/src) contains shared business logic modules between all targets.
+  The most important folder is [commonMain](./shared/src/commonMain/kotlin).
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+### 🧩 Build and Run Android Application
+
+To build and run the Android app:
+
+```bash
+./gradlew :composeApp:assembleDebug
+```
+
+or on Windows:
+
+```bash
+.\gradlew.bat :composeApp:assembleDebug
+```
+
+### 🌐 Build and Run Server
+
+To build and run the Ktor backend:
+
+```bash
+./gradlew :server:run
+```
+
+or on Windows:
+
+```bash
+.\gradlew.bat :server:run
+```
+
+### 🍎 Build and Run iOS Application
+
+Open [/iosApp](./iosApp) in Xcode and run it from there, or use the run configuration in your IDE.
+
+---
+
+## 🗺️ Repository Navigation
+
+This repository uses a **map-based documentation system** for both developers and AI assistants like *Augment Code*.  
+All major plans, architecture docs, and phase progress are indexed in [`docs/PROJECT_MAP.md`](./docs/PROJECT_MAP.md).
+
+**Start here:**
+- [`docs/PROJECT_MAP.md`](./docs/PROJECT_MAP.md) → The main map document (references all docs and plans).
+- [`docs/PLANS/NearYou_ID_MVP_Plan.md`](./docs/PLANS/NearYou_ID_MVP_Plan.md) → The complete execution plan.
+- [`docs/PLANS/PHASE_0_COMPLETION_SUMMARY.md`](./docs/PLANS/PHASE_0_COMPLETION_SUMMARY.md) → Results after Phase 0.
+- [`docs/PLANS/QUICK_START.md`](./docs/PLANS/QUICK_START.md) → Environment setup and onboarding guide.
+
+> 🧠 **For AI assistants:** Always use `PROJECT_MAP.md` as the main reference to locate relevant documents when performing context-based coding or planning tasks.
+
+---
+
+Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html).
