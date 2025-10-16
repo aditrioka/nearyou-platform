@@ -1,0 +1,464 @@
+# NearYou ID - System Architecture
+
+**Version:** 1.0  
+**Last Updated:** 2025-10-16  
+**Status:** Active
+
+---
+
+## Architecture Overview
+
+NearYou ID follows a **Clean/Hexagonal Architecture** pattern with **Kotlin Multiplatform (KMP)** to share business logic across Android, iOS, and backend layers. The architecture emphasizes separation of concerns, testability, and maintainability.
+
+### Architecture Principles
+
+1. **Separation of Concerns:** Clear boundaries between layers
+2. **Dependency Inversion:** Dependencies point inward toward domain
+3. **Platform Independence:** Shared business logic across platforms
+4. **Testability:** Each layer independently testable
+5. **Scalability:** Horizontal scaling for backend services
+
+---
+
+## System Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Client Layer                             │
+├──────────────────────────┬──────────────────────────────────────┤
+│   Android App            │         iOS App                       │
+│   (Compose Multiplatform)│   (Compose Multiplatform)            │
+│   - UI Components        │   - UI Components                     │
+│   - Platform Services    │   - Platform Services                 │
+│   - Navigation           │   - Navigation                        │
+└──────────────┬───────────┴──────────────┬───────────────────────┘
+               │                          │
+               └──────────┬───────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Shared Module (KMP)                           │
+├─────────────────────────────────────────────────────────────────┤
+│  Domain Layer                                                    │
+│  - Models (User, Post, Message, etc.)                           │
+│  - Validation Logic                                              │
+│  - Business Rules                                                │
+├─────────────────────────────────────────────────────────────────┤
+│  Data Layer                                                      │
+│  - Repositories (Auth, Post, Chat, User)                        │
+│  - Network Client (Ktor)                                         │
+│  - Local Database (SQLDelight)                                   │
+│  - Sync Service                                                  │
+└──────────────┬──────────────────────────────────────────────────┘
+               │
+               │ HTTP/REST API
+               │
+               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Backend (Ktor Server)                       │
+├─────────────────────────────────────────────────────────────────┤
+│  API Layer                                                       │
+│  - Routes (Auth, Post, Chat, User, etc.)                        │
+│  - Middleware (Auth, Rate Limiting, Logging)                    │
+│  - Request/Response DTOs                                         │
+├─────────────────────────────────────────────────────────────────┤
+│  Service Layer                                                   │
+│  - AuthService, PostService, ChatService                        │
+│  - NotificationService, SubscriptionService                     │
+│  - Business Logic                                                │
+├─────────────────────────────────────────────────────────────────┤
+│  Data Layer                                                      │
+│  - Repositories (Database Access)                                │
+│  - PostgreSQL + PostGIS                                          │
+│  - Redis (Caching, Rate Limiting)                               │
+└──────────────┬──────────────────────────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Infrastructure Layer                          │
+├─────────────────────────────────────────────────────────────────┤
+│  - PostgreSQL 15+ with PostGIS                                  │
+│  - Redis (Caching, Sessions)                                     │
+│  - S3/GCS (Media Storage)                                        │
+│  - FCM (Push Notifications)                                      │
+│  - Monitoring (Prometheus, Grafana)                             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Module Structure
+
+### 1. `/composeApp` - Frontend Application
+
+**Purpose:** Platform-specific UI implementation using Compose Multiplatform
+
+**Structure:**
+```
+composeApp/
+├── src/
+│   ├── commonMain/kotlin/
+│   │   ├── ui/
+│   │   │   ├── auth/          # Login, Signup, OTP screens
+│   │   │   ├── timeline/      # Nearby, Following feeds
+│   │   │   ├── post/          # Post detail, create post
+│   │   │   ├── chat/          # Conversation list, chat screen
+│   │   │   ├── profile/       # Profile, edit profile
+│   │   │   ├── search/        # Search screen
+│   │   │   ├── subscription/  # Subscription management
+│   │   │   ├── settings/      # Settings, blocked users
+│   │   │   └── components/    # Reusable UI components
+│   │   ├── navigation/        # Navigation graph
+│   │   └── theme/             # Theme, colors, typography
+│   ├── androidMain/kotlin/
+│   │   ├── platform/          # Android-specific implementations
+│   │   ├── services/          # FCM, location services
+│   │   └── MainActivity.kt
+│   └── iosMain/kotlin/
+│       ├── platform/          # iOS-specific implementations
+│       └── services/          # APNS, location services
+```
+
+**Responsibilities:**
+- UI rendering and user interactions
+- Navigation between screens
+- Platform-specific services (location, notifications)
+- Secure token storage (Keystore/Keychain)
+
+### 2. `/shared` - Shared Business Logic (KMP)
+
+**Purpose:** Cross-platform business logic, domain models, and data layer
+
+**Structure:**
+```
+shared/
+├── src/
+│   ├── commonMain/kotlin/
+│   │   ├── domain/
+│   │   │   ├── model/         # User, Post, Message, etc.
+│   │   │   └── validation/    # Validation logic
+│   │   ├── data/
+│   │   │   ├── repository/    # AuthRepository, PostRepository, etc.
+│   │   │   ├── network/       # Ktor HTTP client
+│   │   │   ├── local/         # SQLDelight DAOs
+│   │   │   └── sync/          # Sync service
+│   │   └── util/              # Utilities, extensions
+│   ├── commonTest/kotlin/     # Shared tests
+│   ├── androidMain/kotlin/    # Android-specific implementations
+│   └── iosMain/kotlin/        # iOS-specific implementations
+```
+
+**Responsibilities:**
+- Domain models and business rules
+- Data repositories (network + local)
+- Validation logic
+- Sync service for offline support
+
+### 3. `/server` - Backend API (Ktor)
+
+**Purpose:** RESTful API server with business logic and database access
+
+**Structure:**
+```
+server/
+├── src/
+│   └── main/kotlin/
+│       ├── Application.kt     # Main entry point
+│       ├── plugins/           # Ktor plugins configuration
+│       ├── routes/
+│       │   ├── AuthRoutes.kt
+│       │   ├── PostRoutes.kt
+│       │   ├── ChatRoutes.kt
+│       │   ├── UserRoutes.kt
+│       │   ├── NotificationRoutes.kt
+│       │   ├── SubscriptionRoutes.kt
+│       │   ├── SearchRoutes.kt
+│       │   └── AdminRoutes.kt
+│       ├── service/
+│       │   ├── AuthService.kt
+│       │   ├── PostService.kt
+│       │   ├── ChatService.kt
+│       │   ├── NotificationService.kt
+│       │   └── SubscriptionService.kt
+│       ├── repository/
+│       │   ├── UserRepository.kt
+│       │   ├── PostRepository.kt
+│       │   ├── ChatRepository.kt
+│       │   └── NotificationRepository.kt
+│       ├── middleware/
+│       │   ├── AuthMiddleware.kt
+│       │   ├── RateLimiter.kt
+│       │   └── ErrorHandler.kt
+│       ├── model/
+│       │   └── dto/           # Data Transfer Objects
+│       └── util/              # Utilities
+```
+
+**Responsibilities:**
+- HTTP API endpoints
+- Authentication and authorization
+- Business logic execution
+- Database operations
+- External service integration (FCM, S3/GCS)
+
+### 4. `/iosApp` - iOS Application Wrapper
+
+**Purpose:** iOS-specific app configuration and entry point
+
+**Structure:**
+```
+iosApp/
+├── iosApp/
+│   ├── ContentView.swift      # SwiftUI wrapper for Compose
+│   ├── iOSApp.swift           # App entry point
+│   └── Info.plist
+└── Configuration/
+    ├── Config.xcconfig
+    └── GoogleService-Info.plist
+```
+
+---
+
+## Data Flow
+
+### 1. User Authentication Flow
+
+```
+User → Login Screen → AuthRepository → Backend API → Database
+                          ↓
+                    Token Storage (Keystore/Keychain)
+                          ↓
+                    Authenticated State
+```
+
+### 2. Post Creation Flow
+
+```
+User → Create Post Screen → PostRepository → Backend API
+                                                  ↓
+                                            Validate Quota
+                                                  ↓
+                                            Save to Database
+                                                  ↓
+                                            Return Post
+                                                  ↓
+                              Update Local Cache ← PostRepository
+                                                  ↓
+                                            Update UI
+```
+
+### 3. Nearby Feed Flow
+
+```
+User → Timeline Screen → PostRepository → Backend API
+                                              ↓
+                                        Geo Query (PostGIS)
+                                              ↓
+                                        Filter by Distance
+                                              ↓
+                                        Return Posts
+                                              ↓
+                          Cache Locally ← PostRepository
+                                              ↓
+                                        Display in UI
+```
+
+### 4. Messaging Flow
+
+```
+User → Chat Screen → ChatRepository → Backend API
+                                          ↓
+                                    Save Message
+                                          ↓
+                                    Send FCM Notification
+                                          ↓
+                                    Return Message
+                                          ↓
+                      Update Local Cache ← ChatRepository
+                                          ↓
+                                    Update UI
+```
+
+---
+
+## Database Schema
+
+### Core Tables
+
+#### users
+```sql
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username VARCHAR(20) UNIQUE NOT NULL,
+    display_name VARCHAR(50) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(20) UNIQUE,
+    bio VARCHAR(200),
+    profile_photo_url TEXT,
+    is_verified BOOLEAN DEFAULT FALSE,
+    subscription_tier VARCHAR(20) DEFAULT 'free',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+#### posts
+```sql
+CREATE TABLE posts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL CHECK (LENGTH(content) <= 500),
+    location GEOGRAPHY(Point, 4326) NOT NULL,
+    media_urls TEXT[],
+    like_count INTEGER DEFAULT 0,
+    comment_count INTEGER DEFAULT 0,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_posts_location ON posts USING GIST(location);
+CREATE INDEX idx_posts_user_id ON posts(user_id);
+CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
+```
+
+#### messages
+```sql
+CREATE TABLE messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL,
+    sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    post_context_id UUID REFERENCES posts(id) ON DELETE SET NULL,
+    status VARCHAR(20) DEFAULT 'sent',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at DESC);
+```
+
+---
+
+## API Design
+
+### RESTful Endpoints
+
+#### Authentication
+- `POST /auth/register` - Register new user
+- `POST /auth/verify-otp` - Verify OTP
+- `POST /auth/login/google` - Google Sign-In
+- `POST /auth/refresh` - Refresh JWT token
+
+#### Posts
+- `GET /posts/nearby?lat={lat}&lon={lon}&radius={radius}` - Get nearby posts
+- `GET /posts/following` - Get following feed
+- `POST /posts` - Create post
+- `GET /posts/:id` - Get post details
+- `PUT /posts/:id` - Update post
+- `DELETE /posts/:id` - Delete post
+- `POST /posts/:id/like` - Toggle like
+- `GET /posts/:id/comments` - Get comments
+- `POST /posts/:id/comments` - Add comment
+
+#### Chat
+- `GET /conversations` - List conversations
+- `GET /conversations/:id/messages` - Get messages
+- `POST /conversations/:id/messages` - Send message
+- `POST /conversations` - Start new conversation
+
+#### Users
+- `GET /users/me` - Get current user profile
+- `PUT /users/me` - Update profile
+- `GET /users/:id` - Get user profile
+- `POST /users/:id/follow` - Toggle follow
+
+---
+
+## Technology Stack
+
+### Frontend
+- **UI Framework:** Compose Multiplatform 1.9.0
+- **Language:** Kotlin 2.2.20
+- **Navigation:** Compose Navigation
+- **Image Loading:** Coil (Android), Kamel (KMP)
+- **Local Database:** SQLDelight
+- **HTTP Client:** Ktor Client
+
+### Backend
+- **Framework:** Ktor 3.3.0
+- **Language:** Kotlin 2.2.20
+- **Database:** PostgreSQL 15+ with PostGIS
+- **Caching:** Redis
+- **Authentication:** JWT (ktor-server-auth-jwt)
+- **Serialization:** kotlinx.serialization
+
+### Infrastructure
+- **Container:** Docker
+- **Orchestration:** Kubernetes
+- **Cloud Storage:** S3/GCS
+- **Push Notifications:** FCM
+- **Monitoring:** Prometheus + Grafana
+- **CI/CD:** GitHub Actions
+
+---
+
+## Security Architecture
+
+### Authentication
+- JWT tokens with 7-day expiry
+- Refresh tokens with 30-day expiry
+- Secure token storage (Keystore/Keychain)
+- Password hashing with BCrypt
+
+### Authorization
+- Role-based access control (user, admin, moderator)
+- Ownership verification for user-generated content
+- Rate limiting per user and IP
+
+### Data Protection
+- HTTPS for all API communication
+- Encrypted data at rest (database encryption)
+- Location data anonymization
+- Chat metadata privacy (participants only)
+
+---
+
+## Scalability Considerations
+
+### Horizontal Scaling
+- Stateless backend services
+- Load balancer for traffic distribution
+- Database read replicas for read-heavy operations
+
+### Caching Strategy
+- Redis for session storage
+- Query result caching for geo queries
+- CDN for media assets
+
+### Database Optimization
+- GiST indexes for geospatial queries
+- Partitioning for large tables (posts, messages)
+- Connection pooling (HikariCP)
+
+---
+
+## Monitoring & Observability
+
+### Metrics
+- Request count, latency, error rate
+- Database query performance
+- Geo query execution time
+- User activity metrics
+
+### Logging
+- Structured logging (JSON format)
+- Log levels: DEBUG, INFO, WARN, ERROR
+- Request/response logging (excluding sensitive data)
+
+### Alerting
+- High error rate (>5%)
+- Slow queries (>100ms for geo queries)
+- Service downtime
+- Database connection issues
+
