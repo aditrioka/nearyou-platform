@@ -53,15 +53,36 @@ Open [/iosApp](./iosApp) in Xcode and run it from there, or use the run configur
 
 ## 🗺️ Repository Navigation
 
-This repository uses a **map-based documentation system** for both developers and AI assistants like *Augment Code*.  
+This repository uses a **map-based documentation system** for both developers and AI assistants like *Augment Code* or *Copilot Workspaces*.  
 All documentation and AI-related files are organized under the [`docs/`](./docs) directory.
 
 **Start here:**
-- [`docs/CORE/PROJECT_MAP.md`](./docs/CORE/PROJECT_MAP.md) → The main index of all documentation and project plans.
-- [`docs/PLANS/NearYou_ID_MVP_Plan.md`](./docs/PLANS/NearYou_ID_MVP_Plan.md) → The complete execution plan.
-- [`docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md`](./docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md) → The reusable AI execution prompt.
+- [`docs/CORE/PROJECT_MAP.md`](./docs/CORE/PROJECT_MAP.md) → Main index for all documentation and project references.
+- [`docs/PLANS/NearYou_ID_MVP_Plan.md`](./docs/PLANS/NearYou_ID_MVP_Plan.md) → Full product execution plan.
+- [`docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md`](./docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md) → Universal AI execution prompt for any VibeCode task.
 
-> 🧠 **For AI assistants:** Always use `PROJECT_MAP.md` as the main navigation reference before performing any task or coding action.
+> 🧠 **For AI Assistants:** Always read `PROJECT_MAP.md` first to locate files, then use `VIBECODE_SHORT_META_PROMPT.md` to execute or continue a task.
+
+---
+
+## ✅ Validation-First System (AI / HUMAN / HYBRID)
+
+NearYou ID integrates a **validation-first development flow** to ensure all changes (code, docs, or infrastructure) are reviewed and auditable.  
+Each task defines a **Validation Plan** within its task file and produces a validation report afterward.
+
+### 📋 Key Files
+- **`docs/TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md`** → Template for all validation reports.
+- **`docs/CORE/TESTING.md`** → Contains “How to Validate Changes” appendix (document-based & command-based validation).
+- **`docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md`** → Defines how AI performs tasks with validation-first discipline.
+
+### 🔍 Validation Modes
+| Mode | Description |
+|------|--------------|
+| `AI` | AI validates file consistency, structure, and links. |
+| `HUMAN` | Human performs external/manual checks (e.g., web registration, design verification). |
+| `HYBRID` | Both AI and human perform validation collaboratively. |
+
+Validation results are stored under `docs/TEST_REPORTS/T-###_VALIDATION.md`, each including the validation owner, evidence, and pass/fail summary.
 
 ---
 

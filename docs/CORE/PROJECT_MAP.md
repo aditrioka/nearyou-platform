@@ -10,7 +10,8 @@ It helps both developers and AI tools (like Augment Code or Copilot Workspaces) 
 - **docs/CORE/ARCHITECTURE.md** → System architecture, layers, and modular design.
 - **docs/CORE/SPEC.md** → Product specifications and user flow references.
 - **docs/CORE/INFRA.md** → CI/CD, deployment, environment setup, and secret management.
-- **docs/CORE/TESTING.md** → Testing strategy, automation, and coverage goals.
+- **docs/CORE/TESTING.md** → Testing strategy, automation, and coverage goals.  
+  Includes “How to Validate Changes” appendix describing document-based and command-based validation.
 - **docs/CORE/DECISIONS.md** → Key architectural and product decisions (ADR-style).
 - **docs/CORE/CHANGELOG.md** → Repository-wide changelog and release notes.
 
@@ -24,17 +25,21 @@ It helps both developers and AI tools (like Augment Code or Copilot Workspaces) 
 ---
 
 ## ⚙️ Task-Level Plans
-- **docs/TASK_PLANS/** → Contains granular task execution plans (T-###) for AI-assisted development. Each file defines scope, dependencies, affected modules, and required documentation updates.
+- **docs/TASK_PLANS/** → Contains granular task execution plans (T-###) for AI-assisted development.  
+  Each file defines scope, dependencies, affected modules, required documentation updates, and a **Validation Plan** specifying who performs validation (`AI`, `HUMAN`, or `HYBRID`).
 
 ---
 
 ## 🧪 Test Reports
-- **docs/TEST_REPORTS/** → Contains setup guides and validation reports related to specific tasks. Includes test procedures, results, and verification notes for implemented features.
+- **docs/TEST_REPORTS/** → Contains validation and test reports related to specific tasks.  
+  Each report follows the **Validation Template** and records evidence, validation mode, and results.
+- **docs/TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md** → Template for creating validation reports (document-only, technical, or hybrid).
 
 ---
 
 ## 🤖 AI Prompts
-- **docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md** → The single reusable prompt for AI-assisted execution. Use this before specifying a task (T-###) to ensure the AI first creates a task plan, updates necessary docs, and executes accurately.
+- **docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md** → The single reusable prompt for AI-assisted execution.  
+  It enforces the **validation-first discipline**, requiring every task to define who validates (`AI`, `HUMAN`, or `HYBRID`), perform validation before implementation, and log all results in `TEST_REPORTS/` and `PLANS/`.
 
 ---
 
