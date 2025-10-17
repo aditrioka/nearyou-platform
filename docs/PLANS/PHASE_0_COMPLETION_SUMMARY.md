@@ -17,12 +17,12 @@ Phase 0 (Foundation & Setup) has been successfully completed. All foundational d
 ### T-001: Create Project Documentation ✅
 
 **Deliverables:**
-- ✅ `docs/SPEC.md` - Comprehensive product specification (300 lines)
-- ✅ `docs/ARCHITECTURE.md` - System architecture and design (300 lines)
-- ✅ `docs/DECISIONS.md` - 13 Architectural Decision Records (300 lines)
-- ✅ `docs/INFRA.md` - Infrastructure setup and deployment guide (300 lines)
-- ✅ `docs/TESTING.md` - Testing strategy and guidelines (300 lines)
-- ✅ `CHANGELOG.md` - Version history starting at 0.1.0
+- ✅ `docs/CORE/SPEC.md` - Comprehensive product specification (300 lines)
+- ✅ `docs/CORE/ARCHITECTURE.md` - System architecture and design (300 lines)
+- ✅ `docs/CORE/DECISIONS.md` - 13 Architectural Decision Records (300 lines)
+- ✅ `docs/CORE/INFRA.md` - Infrastructure setup and deployment guide (300 lines)
+- ✅ `docs/CORE/TESTING.md` - Testing strategy and guidelines (300 lines)
+- ✅ `docs/CORE/CHANGELOG.md` - Version history starting at 0.1.0
 
 **Key Highlights:**
 - Complete product specification with all features documented

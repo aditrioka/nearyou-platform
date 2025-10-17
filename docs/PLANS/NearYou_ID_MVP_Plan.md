@@ -162,12 +162,12 @@ NearYou ID is a location-based social application that connects users within pro
 6. Create `CHANGELOG.md` with version 0.1.0 entry
 
 **Expected Artifacts:**
-- `docs/SPEC.md`
-- `docs/ARCHITECTURE.md`
-- `docs/DECISIONS.md`
-- `docs/INFRA.md`
-- `docs/TESTING.md`
-- `CHANGELOG.md`
+- `docs/CORE/SPEC.md`
+- `docs/CORE/ARCHITECTURE.md`
+- `docs/CORE/DECISIONS.md`
+- `docs/CORE/INFRA.md`
+- `docs/CORE/TESTING.md`
+- `docs/CORE/CHANGELOG.md`
 
 **Definition of Done:**
 - All six documents created with comprehensive content
@@ -1575,12 +1575,12 @@ NearYou ID is a location-based social application that connects users within pro
 ## Deliverables per Phase
 
 ### Phase 0: Foundation & Setup ✅ COMPLETE
-- [x] `docs/SPEC.md` - Product specification
-- [x] `docs/ARCHITECTURE.md` - System architecture
-- [x] `docs/DECISIONS.md` - Architectural decisions
-- [x] `docs/INFRA.md` - Infrastructure documentation
-- [x] `docs/TESTING.md` - Testing strategy
-- [x] `CHANGELOG.md` - Version history
+- [x] `docs/CORE/SPEC.md` - Product specification
+- [x] `docs/CORE/ARCHITECTURE.md` - System architecture
+- [x] `docs/CORE/DECISIONS.md` - Architectural decisions
+- [x] `docs/CORE/INFRA.md` - Infrastructure documentation
+- [x] `docs/CORE/TESTING.md` - Testing strategy
+- [x] `docs/CORE/CHANGELOG.md` - Version history
 - [x] PostgreSQL + PostGIS running in Docker
 - [x] Shared domain models in `/shared/commonMain`
 - [x] CI/CD pipeline functional

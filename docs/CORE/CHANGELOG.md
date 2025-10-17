@@ -24,12 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project structure with `/composeApp`, `/shared`, `/server`, `/iosApp` modules
 - Gradle configuration with Kotlin 2.2.20, Ktor 3.3.0, Compose Multiplatform 1.9.0
 - Comprehensive project documentation:
-  - `docs/SPEC.md` - Product specification
-  - `docs/ARCHITECTURE.md` - System architecture and design
-  - `docs/DECISIONS.md` - Architectural Decision Records (ADRs)
-  - `docs/INFRA.md` - Infrastructure setup and deployment
-  - `docs/TESTING.md` - Testing strategy and guidelines
-  - `CHANGELOG.md` - Version history (this file)
+  - `docs/CORE/SPEC.md` - Product specification
+  - `docs/CORE/ARCHITECTURE.md` - System architecture and design
+  - `docs/CORE/DECISIONS.md` - Architectural Decision Records (ADRs)
+  - `docs/CORE/INFRA.md` - Infrastructure setup and deployment
+  - `docs/CORE/TESTING.md` - Testing strategy and guidelines
+  - `docs/CORE/CHANGELOG.md` - Version history (this file)
 
 ### Technical Decisions
 - Kotlin Multiplatform for cross-platform development
