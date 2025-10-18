@@ -37,6 +37,104 @@ This document outlines the testing strategy for NearYou ID, including unit tests
 
 ---
 
+## Best Practices Reference
+
+Before implementing or testing any feature:
+1. **Verify Latest Standards**: Check official documentation for the latest API versions and best practices
+2. **Official Examples**: Reference official GitHub repositories for current implementation patterns
+3. **Documentation Priority**: Official docs → Official examples → Established community resources
+4. **Stay Updated**: Regularly check for updates to frameworks and libraries used in the project
+
+**Key Official Documentation:**
+- Kotlin: https://kotlinlang.org/docs/
+- Ktor: https://ktor.io/docs/
+- Compose Multiplatform: https://www.jetbrains.com/lp/compose-multiplatform/
+- PostgreSQL: https://www.postgresql.org/docs/
+- PostGIS: https://postgis.net/documentation/
+
+---
+
+## Git Workflow for Testing
+
+### Branch Strategy
+**Always create a task-specific branch before any changes:**
+
+```bash
+# Create and switch to task branch
+git checkout -b task/{task_id}-{description}
+
+# Examples:
+git checkout -b task/T-101-backend-auth
+git checkout -b task/T-202-post-creation
+```
+
+**Never commit directly to main or develop.**
+
+### Testing Workflow
+1. Create branch → Implement → Test locally → Create validation report
+2. If all tests pass: Push branch → Create PR → Wait for CI
+3. If tests fail: Fix issues → Re-test → Update validation report
+4. After PR approved: Merge → Delete branch
+
+---
+
+## Incremental Development & Testing
+
+### Error-Free Progression Principle
+Never accumulate errors across multiple files. Always verify each change immediately.
+
+**Workflow:**
+1. **Create/Modify File** → Verify immediately
+2. **Fix Errors** → Test fix works
+3. **Move to Next File** → Repeat
+
+**Verification Commands:**
+```bash
+# After modifying Kotlin file
+./gradlew compileKotlin
+
+# After adding dependency
+./gradlew build
+
+# After creating test
+./gradlew test --tests "SpecificTest"
+
+# After database change
+psql -U user -d db -c "SELECT 1;" # Quick connection test
+```
+
+**Red Flags (Stop & Fix):**
+- ❌ Compilation errors
+- ❌ Missing imports
+- ❌ Type mismatches
+- ❌ Syntax errors
+- ❌ Test failures
+- ❌ Broken references
+
+**Don't Continue If:**
+- Current file has any compilation errors
+- Tests related to current change are failing
+- Database migration fails to apply
+- Dependencies cannot be resolved
+
+**Example Good Flow:**
+```
+1. Create UserRepository.kt
+2. Run: ./gradlew :server:compileKotlin ✅
+3. Create UserRepositoryTest.kt
+4. Run: ./gradlew :server:test --tests "UserRepositoryTest" ✅
+5. Move to next file (AuthService.kt)
+```
+
+**Example Bad Flow (Don't Do This):**
+```
+❌ Create 5 files with errors
+❌ Try to run tests → fails
+❌ Spend 30 minutes debugging across 5 files
+```
+
+---
+
 ## Continuous Improvement
 
 1. **Monitor Coverage:** Track coverage trends over time
@@ -44,6 +142,67 @@ This document outlines the testing strategy for NearYou ID, including unit tests
 3. **Performance Benchmarks:** Track performance metrics
 4. **Test Maintenance:** Regularly update and refactor tests
 5. **Team Training:** Ensure team follows testing best practices
+
+---
+
+## 🤖 AI vs Human Testing Responsibilities
+
+### AI Responsibilities (Terminal Access Available)
+When AI has terminal access, it should handle:
+- ✅ Running test commands (`./gradlew test`, `./gradlew build`)
+- ✅ Checking file existence and content
+- ✅ Verifying code syntax and structure
+- ✅ Running linters and formatters
+- ✅ Checking database schema via SQL queries
+- ✅ Verifying environment setup (Docker, services)
+- ✅ Git operations (branch, commit, status checks)
+- ✅ Building and compiling code
+- ✅ Inspecting logs and error messages
+
+### Human Responsibilities (Manual Steps Required)
+Humans must handle:
+- ⚠️ **First-time account setup** (Google, Firebase, Twilio, SendGrid)
+- ⚠️ **OAuth flows** (Google Sign-In configuration, callbacks)
+- ⚠️ **App store submissions** (Google Play, App Store)
+- ⚠️ **First-time app launch** on physical devices
+- ⚠️ **Manual UI testing** (visual verification, UX flow)
+- ⚠️ **Online configuration** (Firebase Console, AWS Console, GCP Console)
+- ⚠️ **Payment gateway testing** (Stripe, subscription flows)
+- ⚠️ **Push notification testing** (actual device notifications)
+- ⚠️ **External service integration** verification (requires web login)
+
+### Validation Mode Decision Matrix
+
+| Task Type | Terminal Testable? | Validation Owner | Notes |
+|-----------|-------------------|------------------|-------|
+| Backend API endpoints | ✅ Yes | AI | Can use curl/http tools |
+| Database operations | ✅ Yes | AI | Can use psql/SQL queries |
+| Unit/Integration tests | ✅ Yes | AI | Can run test commands |
+| Build & compilation | ✅ Yes | AI | Can run build commands |
+| Code structure | ✅ Yes | AI | Can verify files/syntax |
+| First-time app launch | ❌ No | HUMAN | Requires device/emulator UI |
+| Google OAuth setup | ❌ No | HUMAN | Requires web console access |
+| Push notification flow | ❌ No | HUMAN | Requires physical device |
+| Payment processing | ❌ No | HUMAN | Requires payment provider access |
+| Visual UI verification | ❌ No | HUMAN | Requires human eyes |
+| Third-party service setup | ❌ No | HUMAN | Requires web login/config |
+
+### Example: Task Validation Planning
+
+**Task T-101 (Backend Auth Service):**
+- ✅ AI: Build, test, verify endpoints via curl, check database
+- ⚠️ HUMAN: Verify in Postman (optional), check logs manually
+- **Result:** validation_owner = HYBRID (mostly AI, human optional)
+
+**Task T-102 (Frontend Auth Flows):**
+- ✅ AI: Build, compile, verify code structure
+- ⚠️ HUMAN: Launch app, test Google Sign-In flow, verify UI
+- **Result:** validation_owner = HYBRID (AI for code, human for runtime)
+
+**Task T-303 (FCM Notifications):**
+- ✅ AI: Build, verify FCM integration code
+- ⚠️ HUMAN: Configure Firebase Console, test actual notifications on device
+- **Result:** validation_owner = HYBRID (AI for code, human for service setup)
 
 ---
 

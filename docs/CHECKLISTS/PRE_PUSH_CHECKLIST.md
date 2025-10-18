@@ -2,7 +2,51 @@
 
 Before pushing to GitHub, verify everything is ready:
 
+## ✅ Git Workflow
+
+### 1. Verify You're on the Correct Branch
+```bash
+git branch --show-current
+```
+**Expected:** `task/T-XXX-short-name` (NOT main or develop)
+
+**If on main/develop:**
+```bash
+# Create task branch first
+git checkout -b task/T-XXX-short-name
+```
+
+### 2. Branch Naming Convention
+Format: `task/{task_id}-{short-kebab-case-description}`
+
+**Examples:**
+- ✅ `task/T-101-backend-auth-service`
+- ✅ `task/T-102-frontend-auth-flows`
+- ✅ `task/T-201-postgis-geo-queries`
+- ❌ `feature/auth` (too vague)
+- ❌ `T-101` (missing description)
+- ❌ `main` (never commit directly to main!)
+
+---
+
 ## ✅ Code Quality Checks
+
+### 0. Incremental Verification (During Development)
+**Did you verify each file immediately after creation/modification?**
+
+If you followed error-free progression:
+- [ ] Each file was verified to compile after creation
+- [ ] Each test was run immediately after writing
+- [ ] No accumulated errors across multiple files
+
+If NOT, run incremental checks now:
+```bash
+# Check each modified file compiles
+./gradlew compileKotlin
+
+# Check specific tests pass
+./gradlew test --tests "ModifiedTest*"
+```
 
 ### 1. Run All Tests Locally
 ```bash
@@ -31,16 +75,25 @@ Current uncommitted files:
 git status --short
 ```
 
-**Should commit:**
-- [x] `docs/T-004_SETUP_AND_TEST_GUIDE.md`
-- [x] `docs/QUICK_START_CI_TEST.md`
-- [x] `PRE_PUSH_CHECKLIST.md`
-
 **Commit command:**
 ```bash
-git add docs/T-004_SETUP_AND_TEST_GUIDE.md docs/QUICK_START_CI_TEST.md PRE_PUSH_CHECKLIST.md
-git commit -m "docs: Add CI/CD testing guides and pre-push checklist"
+git add <files>
+git commit -m "feat(scope): description (T-XXX)"
 ```
+
+**Commit Message Format (Conventional Commits):**
+```
+feat(scope): description (T-XXX)
+fix(scope): description (T-XXX)
+docs(scope): description (T-XXX)
+test(scope): description (T-XXX)
+```
+
+**Examples:**
+- `feat(auth): implement backend auth service (T-101)`
+- `fix(database): correct timestamp handling in migrations (T-101)`
+- `docs(testing): add validation guide (T-101)`
+- `test(auth): add OTP verification tests (T-101)`
 
 ---
 
@@ -53,11 +106,9 @@ Verify these critical files exist:
 
 ### Documentation
 - [x] `README.md` - Project overview
-- [x] `docs/ARCHITECTURE.md` - Architecture documentation
-- [x] `docs/SPEC.md` - Technical specifications
-- [x] `docs/INFRA.md` - Infrastructure documentation
-- [x] `docs/T-003_TEST_REPORT.md` - Test report for domain models
-- [x] `docs/T-004_SETUP_AND_TEST_GUIDE.md` - CI/CD testing guide
+- [x] `docs/CORE/ARCHITECTURE.md` - Architecture documentation
+- [x] `docs/CORE/SPEC.md` - Technical specifications
+- [x] `docs/CORE/INFRA.md` - Infrastructure documentation
 
 ### Source Code
 - [x] `shared/src/commonMain/kotlin/domain/model/` - Domain models
@@ -122,17 +173,18 @@ cat .gitignore | grep -E "(build|\.gradle|\.idea|local\.properties)"
 Run these in order:
 
 ```bash
-# 1. Ensure you're on main branch
+# 1. Ensure you're on task branch (NOT main)
 git branch --show-current
-# Expected: main
+# Expected: task/T-XXX-description
 
-# 2. Pull latest changes (if working with team)
-git pull origin main
-# Expected: Already up to date (or merge successful)
+# 2. Pull latest main (if working with team)
+git fetch origin main
+git rebase origin/main  # Or merge if preferred
+# Expected: Up to date or rebase successful
 
 # 3. Run tests one more time
 ./gradlew :shared:allTests --console=plain
-# Expected: 115 tests completed, 0 failed
+# Expected: All tests pass
 
 # 4. Check git status
 git status
@@ -149,7 +201,7 @@ git log --oneline -5
 
 ## ✅ GitHub Repository Setup
 
-Before pushing, create GitHub repository:
+Before first push, create GitHub repository:
 
 1. **Go to:** https://github.com/new
 2. **Repository name:** `near-you-id` (or your choice)
@@ -165,7 +217,7 @@ Before pushing, create GitHub repository:
 ## ✅ Push Commands
 
 ```bash
-# Add remote (replace YOUR_USERNAME and REPO_NAME)
+# Add remote (first time only, replace YOUR_USERNAME and REPO_NAME)
 git remote add origin https://github.com/YOUR_USERNAME/REPO_NAME.git
 
 # Verify remote
@@ -173,15 +225,15 @@ git remote -v
 # Expected: origin https://github.com/YOUR_USERNAME/REPO_NAME.git (fetch)
 #           origin https://github.com/YOUR_USERNAME/REPO_NAME.git (push)
 
-# Push to GitHub
-git push -u origin main
+# Push task branch to GitHub
+git push -u origin task/T-XXX-description
 
 # Expected output:
 # Enumerating objects: XXX, done.
 # Counting objects: 100% (XXX/XXX), done.
 # ...
 # To https://github.com/YOUR_USERNAME/REPO_NAME.git
-#  * [new branch]      main -> main
+#  * [new branch]      task/T-XXX-description -> task/T-XXX-description
 ```
 
 ---
@@ -191,18 +243,23 @@ git push -u origin main
 After pushing:
 
 1. **Visit repository:** `https://github.com/YOUR_USERNAME/REPO_NAME`
-2. **Check files:** Verify all files are present
-3. **Check Actions tab:** CI should start automatically
-4. **Watch workflow:** Monitor the CI pipeline execution
+2. **Check branches:** Verify task branch is present
+3. **Create Pull Request:** Click "Compare & pull request"
+4. **Fill PR details:**
+   - Title: Same as commit message (e.g., "feat(auth): implement backend auth service (T-101)")
+   - Description: Link to task plan and validation report
+   - Reviewers: Assign if working with team
+5. **Check Actions tab:** CI should start automatically
+6. **Watch workflow:** Monitor the CI pipeline execution
 
 **Expected CI Results:**
 - Lint: ✅ Pass (may have warnings)
-- Test Shared: ✅ Pass (115/115 tests)
-- Test Server: ⚠️ May fail (no server tests yet)
+- Test Shared: ✅ Pass (all tests)
+- Test Server: ✅ Pass (if tests exist)
 - Build Android: ✅ Pass
 - Build iOS: ⚠️ May fail (continue-on-error)
 - Build Docker: ✅ Pass
-- Coverage: ⚠️ May fail (Kover not configured)
+- Coverage: ✅ Pass
 - Summary: ✅ Pass (if critical jobs pass)
 
 ---
@@ -210,26 +267,28 @@ After pushing:
 ## 🚀 Ready to Push?
 
 **Checklist:**
-- [ ] All tests pass locally (115/115)
+- [ ] On task branch (NOT main/develop)
+- [ ] All tests pass locally
 - [ ] Build succeeds locally
+- [ ] No compilation errors
 - [ ] Documentation files committed
 - [ ] No sensitive data in code
-- [ ] GitHub repository created
-- [ ] Remote URL ready
+- [ ] GitHub repository created (first time)
+- [ ] Remote URL configured (first time)
+- [ ] Followed error-free progression during development
 
 **If all checked, you're ready to push!**
 
 ```bash
-git push -u origin main
+git push -u origin task/T-XXX-description
 ```
 
-Then watch the magic happen in the Actions tab! 🎉
+Then create a Pull Request and watch the CI pipeline! 🎉
 
 ---
 
 ## 📞 Need Help?
 
-- **Full guide:** `docs/T-004_SETUP_AND_TEST_GUIDE.md`
-- **Quick start:** `docs/QUICK_START_CI_TEST.md`
-- **Test report:** `docs/T-003_TEST_REPORT.md`
-
+- **Full guide:** `docs/TEST_REPORTS/T-004_SETUP_AND_TEST_GUIDE.md`
+- **Quick start:** `docs/PLANS/QUICK_START.md`
+- **Git workflow:** `docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md`
