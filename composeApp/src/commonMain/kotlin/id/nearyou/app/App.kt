@@ -11,12 +11,14 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import id.nearyou.app.ui.auth.AuthViewModel
 import id.nearyou.app.ui.navigation.AuthNavigation
 import id.nearyou.app.ui.main.MainScreen
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
-        val authViewModel = remember { AuthViewModel() }
+        // Get AuthViewModel from Koin DI container
+        val authViewModel = koinViewModel<AuthViewModel>()
 
         when {
             authViewModel.isLoading -> {

@@ -1,6 +1,6 @@
 package id.nearyou.app.auth
 
-import id.nearyou.app.auth.models.*
+import domain.model.auth.*
 import id.nearyou.app.config.EnvironmentConfig
 import id.nearyou.app.repository.UserRepository
 import io.lettuce.core.RedisClient
@@ -60,33 +60,78 @@ class AuthService {
             // Check if user already exists
             val identifier = request.email ?: request.phone!!
             val type = if (request.email != null) "email" else "phone"
-            
-            if (request.email != null && UserRepository.emailExists(request.email)) {
+
+            val email = request.email
+            if (email != null && UserRepository.emailExists(email)) {
                 return Result.failure(Exception("Email already registered"))
             }
-            if (request.phone != null && UserRepository.phoneExists(request.phone)) {
+            val phone = request.phone
+            if (phone != null && UserRepository.phoneExists(phone)) {
                 return Result.failure(Exception("Phone already registered"))
             }
             if (UserRepository.usernameExists(request.username)) {
                 return Result.failure(Exception("Username already taken"))
             }
-            
+
             // Check rate limiting
             if (!checkRateLimit(identifier)) {
                 return Result.failure(Exception("Too many OTP requests. Please try again later."))
             }
-            
+
             // Generate and store OTP
             val otp = generateOtp()
             storeOtp(identifier, otp, type)
-            
+
             // Send OTP (mock for MVP)
             sendOtp(identifier, otp, type)
-            
+
             // Store pending registration in Redis
             val registrationData = "${request.username}|${request.displayName}|${request.email}|${request.phone}|${request.password}"
             redis.setex("pending_registration:$identifier", 300, registrationData) // 5 minutes
-            
+
+            Result.success(
+                OtpSentResponse(
+                    message = "OTP sent successfully",
+                    identifier = identifier,
+                    type = type,
+                    expiresInSeconds = 300
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Login existing user (sends OTP)
+     */
+    fun loginUser(request: LoginRequest): Result<OtpSentResponse> {
+        return try {
+            // Check if user exists
+            val identifier = request.email ?: request.phone!!
+            val type = if (request.email != null) "email" else "phone"
+
+            val email = request.email
+            if (email != null && !UserRepository.emailExists(email)) {
+                return Result.failure(Exception("Email not registered"))
+            }
+            val phone = request.phone
+            if (phone != null && !UserRepository.phoneExists(phone)) {
+                return Result.failure(Exception("Phone not registered"))
+            }
+
+            // Check rate limiting
+            if (!checkRateLimit(identifier)) {
+                return Result.failure(Exception("Too many OTP requests. Please try again later."))
+            }
+
+            // Generate and store OTP
+            val otp = generateOtp()
+            storeOtp(identifier, otp, type)
+
+            // Send OTP (mock for MVP)
+            sendOtp(identifier, otp, type)
+
             Result.success(
                 OtpSentResponse(
                     message = "OTP sent successfully",

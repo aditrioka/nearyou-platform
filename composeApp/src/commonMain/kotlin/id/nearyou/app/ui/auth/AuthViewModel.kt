@@ -1,18 +1,18 @@
 package id.nearyou.app.ui.auth
 
 import androidx.compose.runtime.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import data.AuthRepository
-import data.createTokenStorage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
  * ViewModel for managing authentication state
+ * Dependencies are injected via constructor (Dependency Injection)
  */
-class AuthViewModel {
-    private val authRepository = AuthRepository(createTokenStorage())
-    private val scope = CoroutineScope(Dispatchers.Main)
+class AuthViewModel(
+    private val authRepository: AuthRepository
+) : ViewModel() {
     
     var isAuthenticated by mutableStateOf(false)
         private set
@@ -28,7 +28,7 @@ class AuthViewModel {
      * Check if user is already authenticated
      */
     fun checkAuthStatus() {
-        scope.launch {
+        viewModelScope.launch {
             isLoading = true
             isAuthenticated = authRepository.isAuthenticated()
             isLoading = false
@@ -51,6 +51,21 @@ class AuthViewModel {
                 phone = if (identifierType == "phone") identifier else null
             )
             authRepository.register(request)
+                .map { Unit }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Login existing user (sends OTP)
+     */
+    suspend fun login(
+        identifier: String,
+        identifierType: String
+    ): Result<Unit> {
+        return try {
+            authRepository.login(identifier, identifierType)
                 .map { Unit }
         } catch (e: Exception) {
             Result.failure(e)

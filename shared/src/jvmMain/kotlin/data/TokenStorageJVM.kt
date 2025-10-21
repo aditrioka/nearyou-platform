@@ -33,11 +33,3 @@ class TokenStorageJVM : TokenStorage {
         return accessToken != null && refreshToken != null
     }
 }
-
-/**
- * Actual implementation for JVM
- */
-actual fun createTokenStorage(): TokenStorage {
-    return TokenStorageJVM()
-}
-

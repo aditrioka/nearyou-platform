@@ -35,9 +35,3 @@ interface TokenStorage {
      */
     suspend fun isAuthenticated(): Boolean
 }
-
-/**
- * Expect declaration for platform-specific token storage
- */
-expect fun createTokenStorage(): TokenStorage
-

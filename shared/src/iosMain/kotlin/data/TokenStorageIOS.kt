@@ -96,13 +96,6 @@ class TokenStorageIOS : TokenStorage {
 }
 
 /**
- * Actual implementation for iOS
- */
-actual fun createTokenStorage(): TokenStorage {
-    return TokenStorageIOS()
-}
-
-/**
  * Extension to convert NSData to ByteArray
  */
 @OptIn(ExperimentalForeignApi::class)

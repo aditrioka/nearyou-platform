@@ -3,6 +3,7 @@ package id.nearyou.app.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import domain.model.SubscriptionTier
 import id.nearyou.app.config.EnvironmentConfig
 import java.util.*
 
@@ -21,20 +22,20 @@ object JwtConfig {
     
     /**
      * Generate an access token for a user
-     * 
+     *
      * @param userId The user's unique identifier
-     * @param subscriptionTier The user's subscription tier (free, premium)
+     * @param subscriptionTier The user's subscription tier (FREE, PREMIUM)
      * @return JWT access token string
      */
-    fun generateAccessToken(userId: String, subscriptionTier: String): String {
+    fun generateAccessToken(userId: String, subscriptionTier: SubscriptionTier): String {
         val now = Date()
         val expiresAt = Date(now.time + EnvironmentConfig.accessTokenExpiry)
-        
+
         return JWT.create()
             .withIssuer(EnvironmentConfig.jwtIssuer)
             .withAudience(EnvironmentConfig.jwtAudience)
             .withSubject(userId)
-            .withClaim("subscription_tier", subscriptionTier)
+            .withClaim("subscription_tier", subscriptionTier.name)
             .withIssuedAt(now)
             .withExpiresAt(expiresAt)
             .sign(algorithm)

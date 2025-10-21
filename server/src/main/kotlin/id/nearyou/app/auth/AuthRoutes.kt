@@ -1,6 +1,6 @@
 package id.nearyou.app.auth
 
-import id.nearyou.app.auth.models.*
+import domain.model.auth.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -22,9 +22,9 @@ fun Route.authRoutes(authService: AuthService) {
         post("/register") {
             try {
                 val request = call.receive<RegisterRequest>()
-                
+
                 val result = authService.registerUser(request)
-                
+
                 result.fold(
                     onSuccess = { response ->
                         call.respond(HttpStatusCode.OK, response)
@@ -49,7 +49,43 @@ fun Route.authRoutes(authService: AuthService) {
                 )
             }
         }
-        
+
+        /**
+         * POST /auth/login
+         * Login existing user with email or phone
+         * Sends OTP for verification
+         */
+        post("/login") {
+            try {
+                val request = call.receive<LoginRequest>()
+
+                val result = authService.loginUser(request)
+
+                result.fold(
+                    onSuccess = { response ->
+                        call.respond(HttpStatusCode.OK, response)
+                    },
+                    onFailure = { error ->
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            ErrorResponse(
+                                error = "login_failed",
+                                message = error.message ?: "Login failed"
+                            )
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse(
+                        error = "invalid_request",
+                        message = e.message ?: "Invalid request"
+                    )
+                )
+            }
+        }
+
         /**
          * POST /auth/verify-otp
          * Verify OTP code and complete registration or login

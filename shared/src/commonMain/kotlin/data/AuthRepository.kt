@@ -46,7 +46,33 @@ class AuthRepository(
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
-            
+
+            if (response.status.isSuccess()) {
+                Result.success(response.body<OtpSentResponse>())
+            } else {
+                val error = response.body<ErrorResponse>()
+                Result.failure(Exception(error.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Login existing user (sends OTP)
+     * @return OtpSentResponse with OTP details
+     */
+    suspend fun login(identifier: String, identifierType: String): Result<OtpSentResponse> {
+        return try {
+            val request = LoginRequest(
+                email = if (identifierType == "email") identifier else null,
+                phone = if (identifierType == "phone") identifier else null
+            )
+            val response = client.post("$baseUrl/auth/login") {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+
             if (response.status.isSuccess()) {
                 Result.success(response.body<OtpSentResponse>())
             } else {

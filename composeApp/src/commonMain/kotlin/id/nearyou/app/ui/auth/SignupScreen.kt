@@ -8,13 +8,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun SignupScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToOtpVerification: (String, String, String) -> Unit, // identifier, type, username
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = koinInject()
 ) {
+    val scope = rememberCoroutineScope()
     var username by remember { mutableStateOf("") }
     var identifier by remember { mutableStateOf("") }
     var identifierType by remember { mutableStateOf("email") } // "email" or "phone"
@@ -114,14 +118,30 @@ fun SignupScreen(
                         return@Button
                     }
                 }
-                
+
                 isLoading = true
                 errorMessage = null
-                
-                // Navigate to OTP verification
-                // In a real app, this would trigger registration and OTP sending via repository
-                onNavigateToOtpVerification(identifier, identifierType, username)
-                isLoading = false
+
+                // Call register API
+                scope.launch {
+                    val result = viewModel.register(
+                        username = username,
+                        identifier = identifier,
+                        identifierType = identifierType
+                    )
+
+                    result.fold(
+                        onSuccess = {
+                            // Navigate to OTP verification on success
+                            onNavigateToOtpVerification(identifier, identifierType, username)
+                        },
+                        onFailure = { error ->
+                            errorMessage = error.message ?: "Registration failed"
+                        }
+                    )
+
+                    isLoading = false
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()

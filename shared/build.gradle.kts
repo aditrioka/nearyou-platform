@@ -34,6 +34,9 @@ kotlin {
             implementation("io.ktor:ktor-client-content-negotiation:3.3.0")
             implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0")
             implementation("io.ktor:ktor-client-logging:3.3.0")
+
+            // Koin for Dependency Injection
+            implementation(libs.koin.core)
         }
         androidMain.dependencies {
             // Ktor Client Engine for Android
@@ -41,6 +44,9 @@ kotlin {
 
             // Encrypted SharedPreferences for secure token storage
             implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+            // Koin for Android
+            implementation(libs.koin.android)
         }
         iosMain.dependencies {
             // Ktor Client Engine for iOS

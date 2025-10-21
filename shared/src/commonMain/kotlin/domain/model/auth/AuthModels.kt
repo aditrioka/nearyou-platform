@@ -16,6 +16,15 @@ data class RegisterRequest(
 )
 
 /**
+ * Request to login existing user (sends OTP)
+ */
+@Serializable
+data class LoginRequest(
+    val email: String? = null,
+    val phone: String? = null
+)
+
+/**
  * Request to verify OTP code
  */
 @Serializable

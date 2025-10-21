@@ -10,8 +10,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.AuthRepository
-import data.createTokenStorage
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun OtpVerificationScreen(
@@ -26,9 +26,9 @@ fun OtpVerificationScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
-    
+
     val scope = rememberCoroutineScope()
-    val authRepository = remember { AuthRepository(createTokenStorage()) }
+    val authRepository = koinInject<AuthRepository>()
     
     val isSignup = username != null
 

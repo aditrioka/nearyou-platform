@@ -54,12 +54,3 @@ class TokenStorageAndroid(context: Context) : TokenStorage {
         private const val KEY_REFRESH_TOKEN = "refresh_token"
     }
 }
-
-/**
- * Actual implementation for Android
- */
-actual fun createTokenStorage(): TokenStorage {
-    // This will be initialized with context from Android app
-    throw IllegalStateException("TokenStorage must be initialized with Android Context. Use TokenStorageAndroid(context) directly.")
-}
-
