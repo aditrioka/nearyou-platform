@@ -1,10 +1,10 @@
 # T-102 Validation Report: Implement Frontend Auth Flows
 
-**Task ID:** T-102  
-**Validation Date:** 2025-10-20  
-**Validation Type:** HYBRID (AI + Human)  
-**AI Validation Status:** ✅ PASSED  
-**Human Validation Status:** ⏳ PENDING
+**Task ID:** T-102
+**Validation Date:** 2025-10-21
+**Validation Type:** HYBRID (AI + Human)
+**AI Validation Status:** ✅ PASSED
+**Human Validation Status:** ✅ PASSED
 
 ---
 
@@ -234,6 +234,130 @@ BUILD SUCCESSFUL in 9s
 
 ---
 
+## Issues Found and Resolved
+
+### Issue #1: Type Mismatch in AuthViewModel
+**Severity:** Medium
+**Description:** `AuthViewModel.kt` had a type mismatch - `checkAuthStatus()` returned `Boolean` but was assigned to `String?`
+
+**Fix Applied:**
+```kotlin
+// Before
+val token: String? = authRepository.checkAuthStatus()
+
+// After
+val isAuthenticated: Boolean = authRepository.checkAuthStatus()
+```
+
+**Status:** ✅ RESOLVED
+
+### Issue #2: Network Security Configuration
+**Severity:** High
+**Description:** Android blocked cleartext HTTP communication to localhost server
+
+**Error Message:**
+```
+CLEARTEXT communication to localhost not permitted by network security policy
+```
+
+**Fix Applied:**
+```xml
+<!-- composeApp/src/androidMain/AndroidManifest.xml -->
+<application
+    android:usesCleartextTraffic="true">
+```
+
+**Status:** ✅ RESOLVED
+
+### Issue #3: SignupScreen Not Calling Backend API
+**Severity:** High
+**Description:** Clicking "Sign Up" button navigated directly to OTP screen without calling the backend API
+
+**Root Cause:** Placeholder code that directly navigated without API integration
+
+**Fix Applied:**
+- Injected `AuthViewModel` using Koin DI
+- Updated Sign Up button to call `viewModel.register()` before navigation
+- Added proper error handling and loading states
+
+**Status:** ✅ RESOLVED
+
+### Issue #4: LoginScreen Not Calling Backend API
+**Severity:** High
+**Description:** Clicking "Continue" button on login screen didn't trigger any server request
+
+**Root Cause:** Same as Issue #3 - placeholder code without API integration
+
+**Fix Applied:**
+- Added `LoginRequest` model to shared module
+- Implemented `AuthRepository.login()` method
+- Implemented `AuthViewModel.login()` method
+- Updated `LoginScreen` to inject `AuthViewModel` and call API
+- Added `/auth/login` endpoint to server
+- Implemented `AuthService.loginUser()` method
+
+**Status:** ✅ RESOLVED
+
+### Issue #5: Serialization Error - SubscriptionTier Mismatch
+**Severity:** Critical
+**Description:** Server sending `subscriptionTier: "free"` (lowercase) but client expecting `SubscriptionTier.FREE` (uppercase enum)
+
+**Error Message:**
+```
+Serialization exception: Enum 'SubscriptionTier' does not contain element with name 'free'
+```
+
+**Root Cause:** Server and client had duplicate, conflicting model definitions
+
+**Fix Applied (Major Refactoring):**
+1. Deleted duplicate server models (`server/src/main/kotlin/id/nearyou/app/auth/models/AuthModels.kt`)
+2. Updated all server code to import from `shared/domain/model/auth/*`
+3. Created database mapping layer (`DbSubscriptionTier`) to convert DB lowercase values to shared uppercase enums
+4. Updated all repository methods to return shared `User` type instead of `UserDto`
+5. Updated `JwtConfig` to accept `SubscriptionTier` enum instead of String
+
+**Status:** ✅ RESOLVED (See ADR-014 for architectural decision)
+
+### Issue #6: Smart Cast Issues in AuthService
+**Severity:** Medium
+**Description:** Kotlin compiler couldn't smart cast nullable properties from different modules
+
+**Fix Applied:**
+```kotlin
+// Before
+if (request.email != null && !UserRepository.emailExists(request.email)) { ... }
+
+// After
+val email = request.email
+if (email != null && !UserRepository.emailExists(email)) { ... }
+```
+
+**Status:** ✅ RESOLVED
+
+---
+
+## Architectural Improvements
+
+### KMP Best Practice Implementation
+As part of this task, a major architectural improvement was implemented:
+
+**ADR-014: Shared Models as Single Source of Truth**
+- All DTOs and domain models now defined once in `/shared` module
+- Both `composeApp` and `server` import these models
+- Eliminates type mismatches and serialization errors
+- Compiler catches API contract changes
+- Follows industry best practices for KMP projects
+
+**Benefits:**
+- ✅ Type safety across client and server
+- ✅ No serialization mismatches
+- ✅ Easier maintenance and refactoring
+- ✅ Single source of truth for all models
+
+See `docs/CORE/DECISIONS.md` (ADR-014) for full details.
+
+---
+
 ## Conclusion
 
 **AI Validation:** ✅ PASSED
@@ -244,14 +368,51 @@ All AI-validatable criteria have been met:
 - No type safety violations
 - Navigation logic implemented correctly
 - Dependencies properly configured
+- KMP best practices implemented
 
-**Human Validation:** ⏳ PENDING
+**Human Validation:** ✅ PASSED
 
-The implementation is ready for human testing. Please execute the test cases above and provide evidence before final approval and commit.
+Testing completed successfully:
+- ✅ Signup flow works end-to-end
+- ✅ Login flow works end-to-end
+- ✅ OTP verification works correctly
+- ✅ Token storage and persistence verified
+- ✅ Error handling tested
+- ✅ Network connectivity tested
+- ⏳ Google Sign-In deferred to future task
 
 ---
 
-**Validated by:** Augment Agent (AI)  
-**Date:** 2025-10-20  
-**Signature:** AI validation complete, awaiting human confirmation
+**Validated by:** Augment Agent (AI) + User (aditrioka)
+**Date:** 2025-10-21
+**Signature:** ✅ Full validation complete - Task T-102 COMPLETED
+
+---
+
+## Appendix
+
+### Build Commands Used
+```bash
+# Build server
+./gradlew :server:build -x test --no-daemon
+
+# Build Android APK
+./gradlew :composeApp:assembleDebug --no-daemon
+
+# Install on device
+adb install -r composeApp/build/outputs/apk/debug/composeApp-debug.apk
+
+# Start server
+./gradlew :server:run
+
+# Start Docker services
+docker-compose up -d
+```
+
+### Related Documents
+- Task Plan: `docs/TASK_PLANS/T-102_Implement_Frontend_Auth_Flows.md`
+- Architecture: `docs/CORE/ARCHITECTURE.md`
+- ADR-014: `docs/CORE/DECISIONS.md` (Shared Models as Single Source of Truth)
+- Changelog: `docs/CORE/CHANGELOG.md`
+- Backend Auth (T-101): `docs/TEST_REPORTS/T-101_VALIDATION.md`
 

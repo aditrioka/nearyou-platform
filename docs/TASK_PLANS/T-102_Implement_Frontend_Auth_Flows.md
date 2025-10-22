@@ -1,9 +1,10 @@
 # T-102: Implement Frontend Auth Flows
 
-**Task ID:** T-102  
-**Phase:** Phase 1 - Authentication & User Management  
-**Status:** In Progress  
-**Created:** 2025-10-18  
+**Task ID:** T-102
+**Phase:** Phase 1 - Authentication & User Management
+**Status:** Completed
+**Created:** 2025-10-18
+**Completed:** 2025-10-21
 **Dependencies:** T-101 (Backend Auth Service)
 
 ---
@@ -37,8 +38,9 @@ Create login/signup UI with OTP verification and token storage for the NearYou I
 
 ### Required Tasks
 - **T-101:** Backend Auth Service (COMPLETED)
-  - Provides `/auth/register`, `/auth/verify-otp`, `/auth/refresh` endpoints
+  - Provides `/auth/register`, `/auth/login`, `/auth/verify-otp`, `/auth/resend-otp`, `/auth/refresh` endpoints
   - JWT token generation and validation
+  - OTP generation and storage in Redis
 
 ### External Dependencies
 - Compose Multiplatform 1.9.0
@@ -58,8 +60,14 @@ Create login/signup UI with OTP verification and token storage for the NearYou I
 - `src/iosMain/kotlin/` - iOS-specific implementations
 
 ### `/shared` Module
-- `src/commonMain/kotlin/data/` - AuthRepository
-- `src/commonMain/kotlin/domain/model/` - Auth models (if needed)
+- `src/commonMain/kotlin/data/` - AuthRepository, TokenStorage interface
+- `src/commonMain/kotlin/domain/model/auth/` - Auth DTOs (single source of truth)
+- `src/androidMain/kotlin/data/` - Android Keystore implementation
+- `src/iosMain/kotlin/data/` - iOS Keychain implementation
+- `src/jvmMain/kotlin/data/` - JVM in-memory implementation (for testing)
+
+### `/server` Module
+- Imports all auth DTOs from `/shared` module to ensure type consistency
 
 ---
 
@@ -237,36 +245,55 @@ If issues arise:
 
 ## Definition of Done
 
-- [ ] All code files created and implemented
-- [ ] Code compiles for Android, iOS targets
-- [ ] AuthRepository communicates with backend API
-- [ ] Token storage works on both platforms
-- [ ] All auth screens functional
-- [ ] Navigation logic implemented
-- [ ] Google Sign-In integrated (both platforms)
-- [ ] Error handling implemented
-- [ ] AI validation passed (compilation)
-- [ ] Human validation passed (UI/device testing)
-- [ ] Validation report created
-- [ ] Progress Ledger updated
-- [ ] Changes committed and pushed
+- [x] All code files created and implemented
+- [x] Code compiles for Android, iOS targets
+- [x] AuthRepository communicates with backend API
+- [x] Token storage works on both platforms
+- [x] All auth screens functional
+- [x] Navigation logic implemented
+- [ ] Google Sign-In integrated (both platforms) - Deferred to future task
+- [x] Error handling implemented
+- [x] AI validation passed (compilation)
+- [x] Human validation passed (UI/device testing)
+- [x] Validation report created
+- [x] Progress Ledger updated
+- [x] Changes committed and pushed
+- [x] **BONUS:** Refactored to KMP best practices (shared models)
 
 ---
 
 ## Notes
 
-- Google Sign-In implementation is platform-specific and requires OAuth credentials
+- Google Sign-In implementation is platform-specific and requires OAuth credentials (deferred to future task)
 - Token storage must use platform-specific secure storage (Keystore/Keychain)
 - Backend endpoints from T-101 are already tested and functional
 - Follow Compose Multiplatform best practices for shared UI code
 - Use expect/actual pattern for platform-specific implementations
+- **IMPORTANT:** All DTOs are defined in `/shared` module and imported by both client and server to ensure type consistency (KMP best practice)
+- Database layer uses mapping to convert internal enums to shared model enums
+
+### Issues Encountered and Resolved
+
+1. **Network Security Error:** Android blocked cleartext HTTP to localhost
+   - **Solution:** Added `android:usesCleartextTraffic="true"` to AndroidManifest.xml for development
+
+2. **Signup/Login Screens Not Calling API:** Buttons navigated directly without backend calls
+   - **Solution:** Injected `AuthViewModel` using Koin DI and called API methods before navigation
+
+3. **Serialization Error:** Server sending `subscriptionTier: "free"` but client expecting `SubscriptionTier.FREE`
+   - **Root Cause:** Duplicate model definitions between server and client
+   - **Solution:** Major refactoring to use shared models as single source of truth (see ADR-014)
+
+4. **Smart Cast Issues:** Kotlin couldn't smart cast nullable properties from different modules
+   - **Solution:** Assigned nullable properties to local variables before null checks
 
 ---
 
 ## References
 
 - **Backend API:** `server/src/main/kotlin/id/nearyou/app/auth/AuthRoutes.kt`
-- **Auth Models:** `server/src/main/kotlin/id/nearyou/app/auth/models/AuthModels.kt`
+- **Shared Auth Models:** `shared/src/commonMain/kotlin/domain/model/auth/AuthModels.kt` (single source of truth)
 - **Architecture:** `docs/CORE/ARCHITECTURE.md`
+- **ADR-014:** Shared Models as Single Source of Truth (`docs/CORE/DECISIONS.md`)
 - **MVP Plan:** `docs/PLANS/NearYou_ID_MVP_Plan.md` (Lines 327-360)
 

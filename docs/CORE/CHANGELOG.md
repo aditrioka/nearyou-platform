@@ -9,7 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Phase 0: Foundation & Setup (In Progress)
+### Phase 1: Authentication & User Management (In Progress)
+
+#### Added
+- Frontend authentication flows (T-102)
+  - Login screen with email/phone OTP
+  - Signup screen with user registration
+  - OTP verification screen
+  - AuthViewModel for state management
+  - Secure token storage (Android Keystore, iOS Keychain)
+- Backend login endpoint (`POST /auth/login`)
+- LoginRequest model in shared module
+
+#### Changed
+- **BREAKING:** Refactored to KMP best practices - shared models architecture
+  - Removed duplicate model definitions between server and client
+  - Server now imports all DTOs from `shared/` module (single source of truth)
+  - Created database mapping layer for enum conversions
+- Updated `UserRepository` to return shared `User` model instead of `UserDto`
+- Updated `JwtConfig` to accept `SubscriptionTier` enum instead of String
+- Fixed serialization issues with `SubscriptionTier` enum
+
+#### Fixed
+- Android network security configuration for development (cleartext traffic)
+- SignupScreen now properly calls backend API before navigation
+- LoginScreen now properly calls backend API before navigation
+- Smart cast issues with nullable properties in AuthService
+- Timestamp conversion in UserRepository
+
+### Phase 0: Foundation & Setup (Completed)
 - Project documentation created
 - Database infrastructure setup
 - Shared domain models defined
