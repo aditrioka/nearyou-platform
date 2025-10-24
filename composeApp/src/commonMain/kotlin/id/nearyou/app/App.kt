@@ -19,9 +19,10 @@ fun App() {
     MaterialTheme {
         // Get AuthViewModel from Koin DI container
         val authViewModel = koinViewModel<AuthViewModel>()
+        val authState by authViewModel.uiState.collectAsState()
 
         when {
-            authViewModel.isLoading -> {
+            authState.isLoading -> {
                 // Show loading indicator while checking auth status
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -30,9 +31,9 @@ fun App() {
                     CircularProgressIndicator()
                 }
             }
-            authViewModel.isAuthenticated -> {
+            authState.isAuthenticated -> {
                 // Show main app if authenticated
-                MainScreen(authViewModel = authViewModel)
+                MainScreen()
             }
             else -> {
                 // Show auth flow if not authenticated

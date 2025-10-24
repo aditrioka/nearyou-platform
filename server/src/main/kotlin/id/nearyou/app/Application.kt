@@ -5,6 +5,7 @@ import id.nearyou.app.config.DatabaseConfig
 import id.nearyou.app.config.EnvironmentConfig
 import id.nearyou.app.di.serverModule
 import id.nearyou.app.plugins.configureAuthentication
+import id.nearyou.app.plugins.configureErrorHandling
 import id.nearyou.app.plugins.configureSerialization
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -42,6 +43,7 @@ fun Application.module() {
     }
 
     // Configure plugins
+    configureErrorHandling()  // Must be installed first to catch errors from other plugins
     configureSerialization()
     configureAuthentication()
 

@@ -1,25 +1,39 @@
 package id.nearyou.app.ui.auth
 
-import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.AuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+/**
+ * UI State for Authentication
+ */
+data class AuthUiState(
+    val isAuthenticated: Boolean = false,
+    val isLoading: Boolean = true,
+    val error: String? = null
+)
 
 /**
  * ViewModel for managing authentication state
  * Dependencies are injected via constructor (Dependency Injection)
+ *
+ * Uses StateFlow for reactive state management following Compose best practices
  */
 class AuthViewModel(
     private val authRepository: AuthRepository
 ) : ViewModel() {
-    
-    var isAuthenticated by mutableStateOf(false)
-        private set
-    
-    var isLoading by mutableStateOf(true)
-        private set
-    
+
+    // Private mutable state
+    private val _uiState = MutableStateFlow(AuthUiState())
+
+    // Public immutable state
+    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+
     init {
         checkAuthStatus()
     }
@@ -29,9 +43,9 @@ class AuthViewModel(
      */
     fun checkAuthStatus() {
         viewModelScope.launch {
-            isLoading = true
-            isAuthenticated = authRepository.isAuthenticated()
-            isLoading = false
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val authenticated = authRepository.isAuthenticated()
+            _uiState.update { it.copy(isAuthenticated = authenticated, isLoading = false) }
         }
     }
     
@@ -88,7 +102,7 @@ class AuthViewModel(
             )
             authRepository.verifyOtp(request)
                 .map {
-                    isAuthenticated = true
+                    _uiState.update { state -> state.copy(isAuthenticated = true) }
                     Unit
                 }
         } catch (e: Exception) {
@@ -102,22 +116,22 @@ class AuthViewModel(
     suspend fun loginWithGoogle(idToken: String): Result<Unit> {
         return try {
             authRepository.loginWithGoogle(idToken)
-                .map { 
-                    isAuthenticated = true
+                .map {
+                    _uiState.update { state -> state.copy(isAuthenticated = true) }
                     Unit
                 }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-    
+
     /**
      * Logout current user
      */
     suspend fun logout(): Result<Unit> {
         return try {
             authRepository.logout()
-            isAuthenticated = false
+            _uiState.update { state -> state.copy(isAuthenticated = false) }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

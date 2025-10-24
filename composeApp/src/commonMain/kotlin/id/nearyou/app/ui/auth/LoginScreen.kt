@@ -20,10 +20,19 @@ fun LoginScreen(
     viewModel: AuthViewModel = koinInject()
 ) {
     val scope = rememberCoroutineScope()
+    val authState by viewModel.uiState.collectAsState()
+
     var identifier by remember { mutableStateOf("") }
     var identifierType by remember { mutableStateOf("email") } // "email" or "phone"
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Navigate to main screen if already authenticated
+    LaunchedEffect(authState.isAuthenticated) {
+        if (authState.isAuthenticated) {
+            onLoginSuccess()
+        }
+    }
 
     Column(
         modifier = modifier

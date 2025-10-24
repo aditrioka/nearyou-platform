@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import data.AuthRepository
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -20,17 +19,25 @@ fun OtpVerificationScreen(
     username: String? = null, // null for login, non-null for signup
     onVerificationSuccess: () -> Unit,
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = koinInject()
 ) {
+    val authState by viewModel.uiState.collectAsState()
+
     var otpCode by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
-    val authRepository = koinInject<AuthRepository>()
-    
     val isSignup = username != null
+
+    // Navigate on successful authentication
+    LaunchedEffect(authState.isAuthenticated) {
+        if (authState.isAuthenticated) {
+            onVerificationSuccess()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -114,32 +121,24 @@ fun OtpVerificationScreen(
                 isLoading = true
                 errorMessage = null
                 successMessage = null
-                
-                scope.launch {
-                    try {
-                        val request = domain.model.auth.VerifyOtpRequest(
-                            identifier = identifier,
-                            code = otpCode,
-                            type = identifierType
-                        )
-                        val result = authRepository.verifyOtp(request)
 
-                        result.fold(
-                            onSuccess = { authResponse ->
-                                successMessage = "Verification successful!"
-                                // Navigate to main app after short delay
-                                kotlinx.coroutines.delay(500)
-                                onVerificationSuccess()
-                            },
-                            onFailure = { error ->
-                                errorMessage = error.message ?: "Verification failed"
-                                isLoading = false
-                            }
-                        )
-                    } catch (e: Exception) {
-                        errorMessage = e.message ?: "An error occurred"
-                        isLoading = false
-                    }
+                scope.launch {
+                    val result = viewModel.verifyOtp(
+                        identifier = identifier,
+                        identifierType = identifierType,
+                        otpCode = otpCode
+                    )
+
+                    result.fold(
+                        onSuccess = {
+                            successMessage = "Verification successful!"
+                            // State change will trigger navigation via LaunchedEffect
+                        },
+                        onFailure = { error ->
+                            errorMessage = error.message ?: "Verification failed"
+                            isLoading = false
+                        }
+                    )
                 }
             },
             modifier = Modifier
@@ -170,13 +169,11 @@ fun OtpVerificationScreen(
                         
                         if (isSignup) {
                             // Resend for signup
-                            val request = domain.model.auth.RegisterRequest(
-                                username = username,
-                                displayName = username,
-                                email = if (identifierType == "email") identifier else null,
-                                phone = if (identifierType == "phone") identifier else null
+                            val result = viewModel.register(
+                                username = username ?: "",
+                                identifier = identifier,
+                                identifierType = identifierType
                             )
-                            val result = authRepository.register(request)
                             result.fold(
                                 onSuccess = {
                                     successMessage = "Code resent successfully!"
@@ -186,9 +183,19 @@ fun OtpVerificationScreen(
                                 }
                             )
                         } else {
-                            // For login, we would need a separate resend endpoint
-                            // For now, show a message
-                            successMessage = "Code resent successfully!"
+                            // Resend for login
+                            val result = viewModel.login(
+                                identifier = identifier,
+                                identifierType = identifierType
+                            )
+                            result.fold(
+                                onSuccess = {
+                                    successMessage = "Code resent successfully!"
+                                },
+                                onFailure = { error ->
+                                    errorMessage = error.message ?: "Failed to resend code"
+                                }
+                            )
                         }
                         isLoading = false
                     } catch (e: Exception) {

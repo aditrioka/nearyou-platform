@@ -8,13 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import id.nearyou.app.ui.auth.AuthViewModel
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun MainScreen(
-    authViewModel: AuthViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    authViewModel: AuthViewModel = koinInject()
 ) {
     val scope = rememberCoroutineScope()
+    val authState by authViewModel.uiState.collectAsState()
     var isLoggingOut by remember { mutableStateOf(false) }
     
     Column(

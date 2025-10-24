@@ -19,6 +19,8 @@ fun SignupScreen(
     viewModel: AuthViewModel = koinInject()
 ) {
     val scope = rememberCoroutineScope()
+    val authState by viewModel.uiState.collectAsState()
+
     var username by remember { mutableStateOf("") }
     var identifier by remember { mutableStateOf("") }
     var identifierType by remember { mutableStateOf("email") } // "email" or "phone"

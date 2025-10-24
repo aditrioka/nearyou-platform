@@ -2,6 +2,7 @@ package id.nearyou.app.auth
 
 import domain.model.auth.*
 import id.nearyou.app.config.EnvironmentConfig
+import id.nearyou.app.exceptions.*
 import id.nearyou.app.repository.UserRepository
 import io.lettuce.core.api.sync.RedisCommands
 import org.jetbrains.exposed.sql.*
@@ -60,19 +61,19 @@ class AuthService(
 
             val email = request.email
             if (email != null && UserRepository.emailExists(email)) {
-                return Result.failure(Exception("Email already registered"))
+                return Result.failure(ConflictException("Email already registered", "EMAIL_EXISTS"))
             }
             val phone = request.phone
             if (phone != null && UserRepository.phoneExists(phone)) {
-                return Result.failure(Exception("Phone already registered"))
+                return Result.failure(ConflictException("Phone already registered", "PHONE_EXISTS"))
             }
             if (UserRepository.usernameExists(request.username)) {
-                return Result.failure(Exception("Username already taken"))
+                return Result.failure(ConflictException("Username already taken", "USERNAME_EXISTS"))
             }
 
             // Check rate limiting
             if (!checkRateLimit(identifier)) {
-                return Result.failure(Exception("Too many OTP requests. Please try again later."))
+                return Result.failure(RateLimitException("Too many OTP requests. Please try again later."))
             }
 
             // Generate and store OTP
@@ -113,16 +114,16 @@ class AuthService(
 
             val email = request.email
             if (email != null && !UserRepository.emailExists(email)) {
-                return Result.failure(Exception("Email not registered"))
+                return Result.failure(NotFoundException("Email not registered", "EMAIL_NOT_FOUND"))
             }
             val phone = request.phone
             if (phone != null && !UserRepository.phoneExists(phone)) {
-                return Result.failure(Exception("Phone not registered"))
+                return Result.failure(NotFoundException("Phone not registered", "PHONE_NOT_FOUND"))
             }
 
             // Check rate limiting
             if (!checkRateLimit(identifier)) {
-                return Result.failure(Exception("Too many OTP requests. Please try again later."))
+                return Result.failure(RateLimitException("Too many OTP requests. Please try again later."))
             }
 
             // Generate and store OTP
@@ -152,7 +153,7 @@ class AuthService(
         return try {
             // Verify OTP
             if (!verifyOtpCode(request.identifier, request.code, request.type)) {
-                return Result.failure(Exception("Invalid or expired OTP"))
+                return Result.failure(AuthenticationException("Invalid or expired OTP", "INVALID_OTP"))
             }
             
             // Check if this is a registration or login
@@ -174,7 +175,7 @@ class AuthService(
                     email = email,
                     phone = phone,
                     passwordHash = passwordHash
-                ) ?: return Result.failure(Exception("Failed to create user"))
+                ) ?: return Result.failure(InternalServerException("Failed to create user", "USER_CREATION_FAILED"))
                 
                 // Mark user as verified
                 UserRepository.updateVerificationStatus(createdUser.id, true)
@@ -189,7 +190,7 @@ class AuthService(
                     UserRepository.findByEmail(request.identifier)
                 } else {
                     UserRepository.findByPhone(request.identifier)
-                } ?: return Result.failure(Exception("User not found"))
+                } ?: return Result.failure(NotFoundException("User not found", "USER_NOT_FOUND"))
                 
                 // Mark user as verified if not already
                 if (!existingUser.isVerified) {

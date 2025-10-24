@@ -29,6 +29,9 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:3.3.0")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0")
 
+    // Error Handling
+    implementation("io.ktor:ktor-server-status-pages:3.3.0")
+
     // Database
     implementation("org.jetbrains.exposed:exposed-core:0.48.0")
     implementation("org.jetbrains.exposed:exposed-dao:0.48.0")
