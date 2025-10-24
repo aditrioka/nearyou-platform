@@ -1,9 +1,9 @@
 package id.nearyou.app
 
-import id.nearyou.app.auth.AuthService
 import id.nearyou.app.auth.authRoutes
 import id.nearyou.app.config.DatabaseConfig
 import id.nearyou.app.config.EnvironmentConfig
+import id.nearyou.app.di.serverModule
 import id.nearyou.app.plugins.configureAuthentication
 import id.nearyou.app.plugins.configureSerialization
 import io.ktor.server.application.*
@@ -11,6 +11,11 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.lettuce.core.RedisClient
+import io.lettuce.core.api.StatefulRedisConnection
+import org.koin.ktor.ext.getKoin
+import org.koin.ktor.plugin.Koin
+import org.koin.logger.slf4jLogger
 
 fun main() {
     // Validate and print configuration
@@ -30,12 +35,15 @@ fun main() {
 }
 
 fun Application.module() {
+    // Install Koin for dependency injection
+    install(Koin) {
+        slf4jLogger()
+        modules(serverModule)
+    }
+
     // Configure plugins
     configureSerialization()
     configureAuthentication()
-
-    // Initialize services
-    val authService = AuthService()
 
     // Configure routing
     routing {
@@ -52,12 +60,26 @@ fun Application.module() {
             ))
         }
 
-        // Auth routes
-        authRoutes(authService)
+        // Auth routes (services injected via Koin)
+        authRoutes()
     }
 
     // Shutdown hook
     environment.monitor.subscribe(ApplicationStopped) {
-        authService.close()
+        try {
+            // Get Koin instance
+            val koin = getKoin()
+
+            // Close Redis connection
+            koin.get<StatefulRedisConnection<String, String>>().close()
+            koin.get<RedisClient>().shutdown()
+
+            // Close database connection pool
+            DatabaseConfig.close()
+
+            println("✓ Server shutdown complete")
+        } catch (e: Exception) {
+            println("Error during shutdown: ${e.message}")
+        }
     }
 }

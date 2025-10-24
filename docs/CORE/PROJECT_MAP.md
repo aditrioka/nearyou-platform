@@ -10,6 +10,7 @@ It helps both developers and AI tools (like Augment Code or Copilot Workspaces) 
 - **docs/CORE/ARCHITECTURE.md** → System architecture, layers, and modular design.
 - **docs/CORE/BEST_PRACTICES_EVALUATION.md** → Comprehensive evaluation of codebase compliance with industry best practices (2025-10-22).
 - **docs/CORE/IMPROVEMENT_ROADMAP.md** → Phased implementation plan for addressing evaluation findings.
+- **docs/CORE/IMPLEMENTATION_LOG.md** → Log of implemented improvements and changes (2025-10-22).
 - **docs/CORE/SPEC.md** → Product specifications and user flow references.
 - **docs/CORE/INFRA.md** → CI/CD, deployment, environment setup, and secret management.
 - **docs/CORE/TESTING.md** → Testing strategy, automation, and coverage goals.

@@ -6,11 +6,14 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Configure authentication routes
+ * AuthService is injected via Koin
  */
-fun Route.authRoutes(authService: AuthService) {
+fun Route.authRoutes() {
+    val authService: AuthService by inject()
     
     route("/auth") {
         

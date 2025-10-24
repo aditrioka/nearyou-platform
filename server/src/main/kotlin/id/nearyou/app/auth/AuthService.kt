@@ -3,8 +3,6 @@ package id.nearyou.app.auth
 import domain.model.auth.*
 import id.nearyou.app.config.EnvironmentConfig
 import id.nearyou.app.repository.UserRepository
-import io.lettuce.core.RedisClient
-import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.api.sync.RedisCommands
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
@@ -15,12 +13,11 @@ import kotlin.random.Random
 
 /**
  * Authentication service handling user registration, login, and OTP verification
+ * Dependencies are injected via constructor (Dependency Injection)
  */
-class AuthService {
-    
-    private val redisClient: RedisClient = RedisClient.create(EnvironmentConfig.redisUrl)
-    private val redisConnection: StatefulRedisConnection<String, String> = redisClient.connect()
-    private val redis: RedisCommands<String, String> = redisConnection.sync()
+class AuthService(
+    private val redis: RedisCommands<String, String>
+) {
     
     /**
      * OTP Codes table definition
@@ -85,8 +82,11 @@ class AuthService {
             // Send OTP (mock for MVP)
             sendOtp(identifier, otp, type)
 
-            // Store pending registration in Redis
-            val registrationData = "${request.username}|${request.displayName}|${request.email}|${request.phone}|${request.password}"
+            // Hash password BEFORE storing in Redis (SECURITY: Never store plain passwords)
+            val passwordHash = request.password?.let { hashPassword(it) } ?: ""
+
+            // Store pending registration in Redis with hashed password
+            val registrationData = "${request.username}|${request.displayName}|${request.email}|${request.phone}|${passwordHash}"
             redis.setex("pending_registration:$identifier", 300, registrationData) // 5 minutes
 
             Result.success(
@@ -165,10 +165,9 @@ class AuthService {
                 val displayName = parts[1]
                 val email = parts.getOrNull(2)?.takeIf { it != "null" }
                 val phone = parts.getOrNull(3)?.takeIf { it != "null" }
-                val password = parts.getOrNull(4)?.takeIf { it != "null" }
-                
-                val passwordHash = password?.let { hashPassword(it) }
-                
+                val passwordHash = parts.getOrNull(4)?.takeIf { it != "null" }
+
+                // Password is already hashed from registerUser(), use it directly
                 val createdUser = UserRepository.createUser(
                     username = username,
                     displayName = displayName,
@@ -402,12 +401,5 @@ class AuthService {
         }
     }
     
-    /**
-     * Close Redis connection
-     */
-    fun close() {
-        redisConnection.close()
-        redisClient.shutdown()
-    }
 }
 
