@@ -8,9 +8,11 @@ It helps both developers and AI tools (like Augment Code or Copilot Workspaces) 
 ## 📘 Core Documentation
 - **docs/CORE/PROJECT_MAP.md** → Main index for all documentation and references.
 - **docs/CORE/ARCHITECTURE.md** → System architecture, layers, and modular design.
+- **docs/CORE/BEST_PRACTICES_EVALUATION.md** → Comprehensive evaluation of codebase compliance with industry best practices (2025-10-22).
+- **docs/CORE/IMPROVEMENT_ROADMAP.md** → Phased implementation plan for addressing evaluation findings.
 - **docs/CORE/SPEC.md** → Product specifications and user flow references.
 - **docs/CORE/INFRA.md** → CI/CD, deployment, environment setup, and secret management.
-- **docs/CORE/TESTING.md** → Testing strategy, automation, and coverage goals.  
+- **docs/CORE/TESTING.md** → Testing strategy, automation, and coverage goals.
   Includes “How to Validate Changes” appendix describing document-based and command-based validation.
 - **docs/CORE/DECISIONS.md** → Key architectural and product decisions (ADR-style).
 - **docs/CORE/CHANGELOG.md** → Repository-wide changelog and release notes.

@@ -1,14 +1,24 @@
 # NearYou ID - Testing Strategy
 
-**Version:** 1.1  
-**Last Updated:** 2025-10-17  
+**Version:** 1.2
+**Last Updated:** 2025-10-22
 **Status:** Active
+**Related:** See [BEST_PRACTICES_EVALUATION.md](BEST_PRACTICES_EVALUATION.md) for testing recommendations
 
 ---
 
 ## Testing Overview
 
 This document outlines the testing strategy for NearYou ID, including unit tests, integration tests, end-to-end tests, and performance tests. The goal is to achieve >80% code coverage and ensure high-quality, reliable software.
+
+**Current Test Coverage Status (as of 2025-10-22):**
+- ✅ Domain models: 100% coverage
+- ✅ Validation logic: 100% coverage
+- ⚠️ Repositories: Missing tests
+- ⚠️ ViewModels: Missing tests
+- ⚠️ Backend services: Missing comprehensive tests
+
+See [BEST_PRACTICES_EVALUATION.md](BEST_PRACTICES_EVALUATION.md) Section 8 for detailed testing recommendations.
 
 ---
 

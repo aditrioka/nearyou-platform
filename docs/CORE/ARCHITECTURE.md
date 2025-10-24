@@ -1,8 +1,9 @@
 # NearYou ID - System Architecture
 
-**Version:** 1.0  
-**Last Updated:** 2025-10-16  
+**Version:** 1.1
+**Last Updated:** 2025-10-22
 **Status:** Active
+**Best Practices Compliance:** See [BEST_PRACTICES_EVALUATION.md](BEST_PRACTICES_EVALUATION.md)
 
 ---
 
@@ -17,6 +18,16 @@ NearYou ID follows a **Clean/Hexagonal Architecture** pattern with **Kotlin Mult
 3. **Platform Independence:** Shared business logic across platforms
 4. **Testability:** Each layer independently testable
 5. **Scalability:** Horizontal scaling for backend services
+
+### Technology Stack Compliance
+
+This architecture follows the latest best practices for:
+- **Kotlin Multiplatform 2.2.20** - Official KMP architecture patterns
+- **Ktor 3.3.0** - Modern server-side Kotlin framework
+- **Jetpack Compose Multiplatform 1.9.0** - Declarative UI framework
+- **Koin 4.0.1** - Dependency injection for multiplatform
+
+For detailed compliance analysis, see [BEST_PRACTICES_EVALUATION.md](BEST_PRACTICES_EVALUATION.md).
 
 ---
 
