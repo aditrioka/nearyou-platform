@@ -13,12 +13,17 @@ import kotlinx.serialization.json.Json
 
 /**
  * Repository for authentication operations
+ *
+ * @param tokenStorage Storage for access and refresh tokens
+ * @param baseUrl Base URL for the API
+ * @param httpClient Optional HTTP client for testing (if null, creates default client)
  */
 class AuthRepository(
     private val tokenStorage: TokenStorage,
-    private val baseUrl: String = "http://localhost:8080"
+    private val baseUrl: String = "http://localhost:8080",
+    httpClient: HttpClient? = null
 ) {
-    private val client = HttpClient {
+    private val client = httpClient ?: HttpClient {
         install(ContentNegotiation) {
             json(Json {
                 prettyPrint = true

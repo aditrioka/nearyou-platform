@@ -49,6 +49,13 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+            implementation("app.cash.turbine:turbine:1.1.0") // For testing StateFlow
+            implementation("io.ktor:ktor-client-mock:3.3.0") // For mocking HTTP client
+            implementation("io.ktor:ktor-client-content-negotiation:3.3.0") // For JSON serialization
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0") // For JSON serialization
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0") // For datetime
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3") // For JSON
         }
     }
 }

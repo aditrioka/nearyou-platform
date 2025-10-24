@@ -50,6 +50,10 @@ dependencies {
 
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("io.mockk:mockk:1.13.13") // For mocking
+    testImplementation("com.h2database:h2:2.2.224") // In-memory database for testing
+    testImplementation("io.insert-koin:koin-test:4.0.1") // Koin testing
 }
 
 // Task untuk test database connection
