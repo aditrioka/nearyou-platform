@@ -1,5 +1,7 @@
 package id.nearyou.app.exceptions
 
+import kotlinx.serialization.Serializable
+
 /**
  * Base exception for all API errors
  */
@@ -78,14 +80,16 @@ class ServiceUnavailableException(
 /**
  * Standardized error response
  */
+@Serializable
 data class ErrorResponse(
     val error: ErrorDetail
 )
 
+@Serializable
 data class ErrorDetail(
     val code: String,
     val message: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val details: Map<String, Any>? = null
+    val details: Map<String, String>? = null
 )
 

@@ -1,19 +1,20 @@
 package id.nearyou.app.auth
 
 import domain.model.auth.*
+import id.nearyou.app.exceptions.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.inject
+import org.koin.ktor.ext.get
 
 /**
  * Configure authentication routes
  * AuthService is injected via Koin
  */
 fun Route.authRoutes() {
-    val authService: AuthService by inject()
+    val authService = application.get<AuthService>()
     
     route("/auth") {
         
@@ -23,34 +24,17 @@ fun Route.authRoutes() {
          * Sends OTP for verification
          */
         post("/register") {
-            try {
-                val request = call.receive<RegisterRequest>()
+            val request = call.receive<RegisterRequest>()
+            val result = authService.registerUser(request)
 
-                val result = authService.registerUser(request)
-
-                result.fold(
-                    onSuccess = { response ->
-                        call.respond(HttpStatusCode.OK, response)
-                    },
-                    onFailure = { error ->
-                        call.respond(
-                            HttpStatusCode.BadRequest,
-                            ErrorResponse(
-                                error = "registration_failed",
-                                message = error.message ?: "Registration failed"
-                            )
-                        )
-                    }
-                )
-            } catch (e: Exception) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse(
-                        error = "invalid_request",
-                        message = e.message ?: "Invalid request"
-                    )
-                )
-            }
+            result.fold(
+                onSuccess = { response ->
+                    call.respond(HttpStatusCode.OK, response)
+                },
+                onFailure = { error ->
+                    throw ValidationException(error.message ?: "Registration failed", "REGISTRATION_FAILED")
+                }
+            )
         }
 
         /**
@@ -59,34 +43,22 @@ fun Route.authRoutes() {
          * Sends OTP for verification
          */
         post("/login") {
-            try {
-                val request = call.receive<LoginRequest>()
+            val request = call.receive<LoginRequest>()
+            val result = authService.loginUser(request)
 
-                val result = authService.loginUser(request)
-
-                result.fold(
-                    onSuccess = { response ->
-                        call.respond(HttpStatusCode.OK, response)
-                    },
-                    onFailure = { error ->
-                        call.respond(
-                            HttpStatusCode.BadRequest,
-                            ErrorResponse(
-                                error = "login_failed",
-                                message = error.message ?: "Login failed"
-                            )
-                        )
+            result.fold(
+                onSuccess = { response ->
+                    call.respond(HttpStatusCode.OK, response)
+                },
+                onFailure = { error ->
+                    // Re-throw the original exception if it's already an ApiException
+                    // This preserves the specific error code (e.g., VERIFICATION_PENDING)
+                    when (error) {
+                        is ApiException -> throw error
+                        else -> throw AuthenticationException(error.message ?: "Login failed", "LOGIN_FAILED")
                     }
-                )
-            } catch (e: Exception) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse(
-                        error = "invalid_request",
-                        message = e.message ?: "Invalid request"
-                    )
-                )
-            }
+                }
+            )
         }
 
         /**
@@ -95,34 +67,17 @@ fun Route.authRoutes() {
          * Returns access token and refresh token
          */
         post("/verify-otp") {
-            try {
-                val request = call.receive<VerifyOtpRequest>()
-                
-                val result = authService.verifyOtp(request)
-                
-                result.fold(
-                    onSuccess = { response ->
-                        call.respond(HttpStatusCode.OK, response)
-                    },
-                    onFailure = { error ->
-                        call.respond(
-                            HttpStatusCode.Unauthorized,
-                            ErrorResponse(
-                                error = "verification_failed",
-                                message = error.message ?: "OTP verification failed"
-                            )
-                        )
-                    }
-                )
-            } catch (e: Exception) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse(
-                        error = "invalid_request",
-                        message = e.message ?: "Invalid request"
-                    )
-                )
-            }
+            val request = call.receive<VerifyOtpRequest>()
+            val result = authService.verifyOtp(request)
+
+            result.fold(
+                onSuccess = { response ->
+                    call.respond(HttpStatusCode.OK, response)
+                },
+                onFailure = { error ->
+                    throw AuthenticationException(error.message ?: "OTP verification failed", "VERIFICATION_FAILED")
+                }
+            )
         }
         
         /**
@@ -131,34 +86,17 @@ fun Route.authRoutes() {
          * Returns new access token and refresh token
          */
         post("/refresh") {
-            try {
-                val request = call.receive<RefreshTokenRequest>()
-                
-                val result = authService.refreshToken(request)
-                
-                result.fold(
-                    onSuccess = { response ->
-                        call.respond(HttpStatusCode.OK, response)
-                    },
-                    onFailure = { error ->
-                        call.respond(
-                            HttpStatusCode.Unauthorized,
-                            ErrorResponse(
-                                error = "refresh_failed",
-                                message = error.message ?: "Token refresh failed"
-                            )
-                        )
-                    }
-                )
-            } catch (e: Exception) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse(
-                        error = "invalid_request",
-                        message = e.message ?: "Invalid request"
-                    )
-                )
-            }
+            val request = call.receive<RefreshTokenRequest>()
+            val result = authService.refreshToken(request)
+
+            result.fold(
+                onSuccess = { response ->
+                    call.respond(HttpStatusCode.OK, response)
+                },
+                onFailure = { error ->
+                    throw AuthenticationException(error.message ?: "Token refresh failed", "REFRESH_FAILED")
+                }
+            )
         }
         
         /**
@@ -167,32 +105,16 @@ fun Route.authRoutes() {
          * Placeholder for future implementation
          */
         post("/login/google") {
-            try {
-                val request = call.receive<GoogleLoginRequest>()
-                
-                // TODO: Implement Google OAuth verification
-                // 1. Verify idToken with Google
-                // 2. Extract user info (email, name, etc.)
-                // 3. Create or find user in database
-                // 4. Generate JWT tokens
-                // 5. Return AuthResponse
-                
-                call.respond(
-                    HttpStatusCode.NotImplemented,
-                    ErrorResponse(
-                        error = "not_implemented",
-                        message = "Google OAuth login not yet implemented"
-                    )
-                )
-            } catch (e: Exception) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse(
-                        error = "invalid_request",
-                        message = e.message ?: "Invalid request"
-                    )
-                )
-            }
+            val request = call.receive<GoogleLoginRequest>()
+
+            // TODO: Implement Google OAuth verification
+            // 1. Verify idToken with Google
+            // 2. Extract user info (email, name, etc.)
+            // 3. Create or find user in database
+            // 4. Generate JWT tokens
+            // 5. Return AuthResponse
+
+            throw ServiceUnavailableException("Google OAuth login not yet implemented", "NOT_IMPLEMENTED")
         }
     }
 }

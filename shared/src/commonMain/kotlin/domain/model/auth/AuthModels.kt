@@ -80,12 +80,3 @@ data class TokenResponse(
     val refreshToken: String
 )
 
-/**
- * Error response from API
- */
-@Serializable
-data class ErrorResponse(
-    val error: String,
-    val message: String
-)
-

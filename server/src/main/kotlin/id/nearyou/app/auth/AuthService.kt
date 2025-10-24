@@ -112,6 +112,19 @@ class AuthService(
             val identifier = request.email ?: request.phone!!
             val type = if (request.email != null) "email" else "phone"
 
+            // First, check if there's a pending registration in Redis
+            val pendingRegistration = redis.get("pending_registration:$identifier")
+            if (pendingRegistration != null) {
+                // User has registered but not verified OTP yet
+                return Result.failure(
+                    AuthenticationException(
+                        "Please verify your email/phone first. Check your inbox for the OTP code.",
+                        "VERIFICATION_PENDING"
+                    )
+                )
+            }
+
+            // Check if user exists in database (verified users)
             val email = request.email
             if (email != null && !UserRepository.emailExists(email)) {
                 return Result.failure(NotFoundException("Email not registered", "EMAIL_NOT_FOUND"))

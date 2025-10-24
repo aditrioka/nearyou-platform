@@ -55,8 +55,7 @@ class AuthRepository(
             if (response.status.isSuccess()) {
                 Result.success(response.body<OtpSentResponse>())
             } else {
-                val error = response.body<ErrorResponse>()
-                Result.failure(Exception(error.message))
+                Result.failure(Exception("Registration failed: ${response.status.description}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -81,8 +80,7 @@ class AuthRepository(
             if (response.status.isSuccess()) {
                 Result.success(response.body<OtpSentResponse>())
             } else {
-                val error = response.body<ErrorResponse>()
-                Result.failure(Exception(error.message))
+                Result.failure(Exception("Login failed: ${response.status.description}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -107,8 +105,7 @@ class AuthRepository(
                 tokenStorage.saveRefreshToken(authResponse.refreshToken)
                 Result.success(authResponse)
             } else {
-                val error = response.body<ErrorResponse>()
-                Result.failure(Exception(error.message))
+                Result.failure(Exception("OTP verification failed: ${response.status.description}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -133,8 +130,7 @@ class AuthRepository(
                 tokenStorage.saveRefreshToken(authResponse.refreshToken)
                 Result.success(authResponse)
             } else {
-                val error = response.body<ErrorResponse>()
-                Result.failure(Exception(error.message))
+                Result.failure(Exception("Google login failed: ${response.status.description}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -162,8 +158,7 @@ class AuthRepository(
                 tokenStorage.saveRefreshToken(tokenResponse.refreshToken)
                 Result.success(tokenResponse)
             } else {
-                val error = response.body<ErrorResponse>()
-                Result.failure(Exception(error.message))
+                Result.failure(Exception("Token refresh failed: ${response.status.description}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
