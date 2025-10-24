@@ -33,7 +33,8 @@ fun App() {
             }
             authState.isAuthenticated -> {
                 // Show main app if authenticated
-                MainScreen()
+                // Pass authViewModel to ensure same instance is used
+                MainScreen(authViewModel = authViewModel)
             }
             else -> {
                 // Show auth flow if not authenticated
