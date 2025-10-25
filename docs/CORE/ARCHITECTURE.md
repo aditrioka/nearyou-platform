@@ -338,61 +338,12 @@ User → Chat Screen → ChatRepository → Backend API
 
 ## Database Schema
 
-### Core Tables
 
-#### users
-```sql
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username VARCHAR(20) UNIQUE NOT NULL,
-    display_name VARCHAR(50) NOT NULL,
-    email VARCHAR(255) UNIQUE,
-    phone VARCHAR(20) UNIQUE,
-    bio VARCHAR(200),
-    profile_photo_url TEXT,
-    is_verified BOOLEAN DEFAULT FALSE,
-    subscription_tier VARCHAR(20) DEFAULT 'free',
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-```
+## Database Schema
 
-#### posts
-```sql
-CREATE TABLE posts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    content TEXT NOT NULL CHECK (LENGTH(content) <= 500),
-    location GEOGRAPHY(Point, 4326) NOT NULL,
-    media_urls TEXT[],
-    like_count INTEGER DEFAULT 0,
-    comment_count INTEGER DEFAULT 0,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
+See **[INFRA.md](./INFRA.md#database-schema)** for complete database schema and PostGIS configuration.
 
-CREATE INDEX idx_posts_location ON posts USING GIST(location);
-CREATE INDEX idx_posts_user_id ON posts(user_id);
-CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
-```
-
-#### messages
-```sql
-CREATE TABLE messages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    conversation_id UUID NOT NULL,
-    sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    content TEXT NOT NULL,
-    post_context_id UUID REFERENCES posts(id) ON DELETE SET NULL,
-    status VARCHAR(20) DEFAULT 'sent',
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at DESC);
-```
-
+---
 ---
 
 ## API Design

@@ -1,23 +1,23 @@
-# NearYou ID - Quick Start Guide
+# Quick Start Guide
 
-This guide will help you get the NearYou ID development environment up and running.
+**Get NearYou ID running in 5 minutes**
 
 ---
 
 ## Prerequisites
 
-Ensure you have the following installed:
-
-- **Docker Desktop** 20.10+ ([Download](https://www.docker.com/products/docker-desktop))
-- **JDK** 17+ ([Download](https://adoptium.net/))
-- **Android Studio** Latest stable ([Download](https://developer.android.com/studio))
-- **Xcode** 15+ (macOS only, for iOS development)
+| Tool | Version | Download |
+|------|---------|----------|
+| **Docker Desktop** | 20.10+ | [docker.com](https://www.docker.com/products/docker-desktop) |
+| **JDK** | 17+ | [adoptium.net](https://adoptium.net/) |
+| **Android Studio** | Latest | [developer.android.com](https://developer.android.com/studio) |
+| **Xcode** | 15+ (macOS) | App Store |
 
 ---
 
-## Quick Start (5 minutes)
+## Setup Steps
 
-### 1. Clone the Repository
+### 1. Clone Repository
 
 ```bash
 git clone <repository-url>
@@ -26,361 +26,182 @@ cd nearyou-id
 
 ### 2. Start Infrastructure
 
-Start PostgreSQL and Redis using Docker Compose:
-
 ```bash
+# Start PostgreSQL + Redis
 docker-compose up -d
-```
 
-Verify services are running:
-
-```bash
+# Verify services
 docker ps
 ```
 
-You should see:
+Expected output:
 - `nearyou-postgres` on port 5432
 - `nearyou-redis` on port 6379
 
-### 3. Verify Database
-
-Check PostgreSQL and PostGIS:
-
-```bash
-docker exec -it nearyou-postgres psql -U nearyou_user -d nearyou_db -c "SELECT PostGIS_Version();"
-```
-
-Expected output:
-```
-           postgis_version
--------------------------------------
- 3.3 USE_GEOS=1 USE_PROJ=1 USE_STATS=1
-```
-
-### 4. Run Tests
-
-Run all tests to verify setup:
-
-```bash
-./gradlew test
-```
-
-All tests should pass ✅
-
-### 5. Build the Project
-
-Build all modules:
-
-```bash
-./gradlew build
-```
-
----
-
-## Running the Application
-
-### Backend Server
-
-Start the Ktor server:
+### 3. Run Backend Server
 
 ```bash
 ./gradlew :server:run
 ```
 
-Server will start on `http://localhost:8080`
+Server starts on `http://localhost:8080`
 
-### Android App
+**Verify:**
+```bash
+curl http://localhost:8080/health
+# Expected: {"status":"ok"}
+```
 
-1. Open the project in Android Studio
-2. Wait for Gradle sync to complete
-3. Select `composeApp` configuration
-4. Click Run ▶️
-
-Or via command line:
+### 4. Run Android App
 
 ```bash
+# Install on connected device/emulator
 ./gradlew :composeApp:installDebug
+
+# Or open in Android Studio
+# File → Open → Select project root
+# Run → Run 'composeApp'
 ```
 
-### iOS App
-
-1. Open `iosApp/iosApp.xcodeproj` in Xcode
-2. Select a simulator (iPhone 15)
-3. Click Run ▶️
-
-Or via command line:
+### 5. Run iOS App (macOS only)
 
 ```bash
-cd iosApp
-xcodebuild -scheme iosApp -configuration Debug -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15' build
-```
+# Open Xcode project
+open iosApp/iosApp.xcodeproj
 
----
-
-## Development Workflow
-
-### Running Tests
-
-```bash
-# All tests
-./gradlew test
-
-# Shared module only
-./gradlew :shared:test
-
-# Server module only
-./gradlew :server:test
-
-# Android tests
-./gradlew :composeApp:testDebugUnitTest
-
-# With coverage
-./gradlew koverHtmlReport
-open build/reports/kover/html/index.html
-```
-
-### Code Style
-
-Check code style:
-
-```bash
-./gradlew ktlintCheck
-```
-
-Auto-format code:
-
-```bash
-./gradlew ktlintFormat
-```
-
-### Database Management
-
-**Connect to database:**
-
-```bash
-docker exec -it nearyou-postgres psql -U nearyou_user -d nearyou_db
-```
-
-**Run SQL queries:**
-
-```sql
--- List all tables
-\dt
-
--- Describe a table
-\d users
-
--- Query users
-SELECT * FROM users;
-
--- Test geo query
-SELECT 
-    id, 
-    content, 
-    ST_Distance(location, ST_MakePoint(106.8456, -6.2088)::geography) AS distance_meters
-FROM posts
-WHERE ST_DWithin(
-    location, 
-    ST_MakePoint(106.8456, -6.2088)::geography, 
-    1000
-)
-ORDER BY created_at DESC;
-```
-
-**Exit psql:**
-
-```
-\q
-```
-
-### Docker Commands
-
-```bash
-# Start services
-docker-compose up -d
-
-# Stop services
-docker-compose down
-
-# View logs
-docker-compose logs -f
-
-# Restart services
-docker-compose restart
-
-# Remove all data (⚠️ destructive)
-docker-compose down -v
-```
-
----
-
-## Project Structure
-
-```
-NearYou ID/
-├── composeApp/          # Android & iOS UI (Compose Multiplatform)
-├── shared/              # Shared business logic (KMP)
-│   ├── commonMain/      # Platform-independent code
-│   ├── commonTest/      # Shared tests
-│   ├── androidMain/     # Android-specific code
-│   ├── iosMain/         # iOS-specific code
-│   └── jvmMain/         # JVM-specific code
-├── server/              # Backend API (Ktor)
-├── iosApp/              # iOS app wrapper
-├── database/            # Database scripts
-│   ├── init.sql         # PostGIS setup
-│   └── migrations/      # Schema migrations
-├── docs/                # Documentation
-└── .github/workflows/   # CI/CD pipelines
-```
-
----
-
-## Common Issues
-
-### Issue: Docker containers won't start
-
-**Solution:**
-```bash
-docker-compose down -v
-docker-compose up -d
-```
-
-### Issue: PostgreSQL connection refused
-
-**Solution:**
-```bash
-# Check if container is running
-docker ps | grep postgres
-
-# Check logs
-docker logs nearyou-postgres
-
-# Restart container
-docker-compose restart postgres
-```
-
-### Issue: Gradle build fails
-
-**Solution:**
-```bash
-# Clean build
-./gradlew clean build
-
-# Clear Gradle cache
-rm -rf ~/.gradle/caches/
-./gradlew build
-```
-
-### Issue: Android app can't connect to server
-
-**Solution:**
-
-Use `10.0.2.2` instead of `localhost` in Android emulator:
-
-```kotlin
-// In your API configuration
-const val API_BASE_URL = "http://10.0.2.2:8080"
-```
-
-### Issue: iOS build fails
-
-**Solution:**
-```bash
-# Clean Xcode build
-cd iosApp
-xcodebuild clean
-rm -rf ~/Library/Developer/Xcode/DerivedData/*
-
-# Rebuild
-xcodebuild -scheme iosApp -configuration Debug build
+# Select simulator and press Run (⌘R)
 ```
 
 ---
 
 ## Environment Variables
 
-Create `.env` file in `/server` directory:
+Create `.env` file in project root:
 
-```env
+```bash
 # Database
 DATABASE_URL=jdbc:postgresql://localhost:5432/nearyou_db
 DATABASE_USER=nearyou_user
-DATABASE_PASSWORD=nearyou_password
+DATABASE_PASSWORD=nearyou_pass
 
 # Redis
 REDIS_URL=redis://localhost:6379
 
-# JWT (change in production!)
+# JWT
 JWT_SECRET=your-secret-key-change-in-production
 JWT_ISSUER=nearyou-id
 JWT_AUDIENCE=nearyou-api
 
-# Server
-SERVER_PORT=8080
-SERVER_HOST=0.0.0.0
+# Google OAuth (optional for development)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+**For production setup, see [INFRA.md](../CORE/INFRA.md)**
+
+---
+
+## Verify Setup
+
+### Check Database
+
+```bash
+docker exec -it nearyou-postgres psql -U nearyou_user -d nearyou_db -c "SELECT PostGIS_Version();"
+```
+
+### Run Tests
+
+```bash
+# All tests
+./gradlew test
+
+# Specific module
+./gradlew :server:test
+./gradlew :shared:test
+```
+
+### Check Build
+
+```bash
+./gradlew build
 ```
 
 ---
 
-## Useful Commands
+## Common Issues
+
+### Port Already in Use
 
 ```bash
-# Check Java version
-java -version
+# Check what's using port 5432
+lsof -i :5432
 
-# Check Docker version
-docker --version
-
-# Check Gradle version
-./gradlew --version
-
-# List Gradle tasks
-./gradlew tasks
-
-# Build specific module
-./gradlew :shared:build
-./gradlew :server:build
-./gradlew :composeApp:build
-
-# Run with debug logging
-./gradlew :server:run --debug
-
-# Generate dependency report
-./gradlew dependencies
+# Stop conflicting service or change port in docker-compose.yml
 ```
+
+### Docker Not Running
+
+```bash
+# Start Docker Desktop
+open -a Docker
+
+# Wait for Docker to start, then retry
+docker-compose up -d
+```
+
+### Gradle Build Fails
+
+```bash
+# Clean and rebuild
+./gradlew clean build
+
+# If still fails, check JDK version
+java -version  # Should be 17+
+```
+
+---
+
+## Development Workflow
+
+1. **Create task branch**
+   ```bash
+   git checkout -b task/T-XXX-description
+   ```
+
+2. **Make changes**
+   - Edit code
+   - Add tests
+   - Update documentation
+
+3. **Verify locally**
+   ```bash
+   ./gradlew build test
+   ```
+
+4. **Commit and push**
+   ```bash
+   git add .
+   git commit -m "T-XXX: Description"
+   git push origin task/T-XXX-description
+   ```
+
+5. **Create Pull Request**
+   - See [VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md) for validation procedures
 
 ---
 
 ## Next Steps
 
-1. ✅ Complete Phase 0 setup (you are here!)
-2. 📖 Read the documentation in `/docs`
-3. 🔨 Start Phase 1: Authentication & User Management
-4. 🧪 Write tests for new features
-5. 🚀 Deploy to staging environment
+- **[ARCHITECTURE.md](../CORE/ARCHITECTURE.md)** → Understand system design
+- **[SPEC.md](../CORE/SPEC.md)** → Read product specification
+- **[TESTING.md](../CORE/TESTING.md)** → Learn testing strategy
+- **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** → Validation procedures
+- **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)** → API reference
 
 ---
 
-## Resources
+## Getting Help
 
-- **Documentation:** `/docs` directory
-- **Project Plan:** `NearYou_ID_MVP_Plan.md`
-- **Changelog:** `CHANGELOG.md`
-- **Database Docs:** `database/README.md`
-- **Phase 0 Summary:** `PHASE_0_COMPLETION_SUMMARY.md`
-
----
-
-## Support
-
-For issues or questions:
-1. Check the documentation in `/docs`
-2. Review the project plan: `NearYou_ID_MVP_Plan.md`
-3. Check common issues above
-4. Review ADRs in `docs/DECISIONS.md`
-
----
-
-**Happy Coding! 🚀**
-
+- Check [PROJECT_MAP.md](../CORE/PROJECT_MAP.md) for documentation index
+- Review [INFRA.md](../CORE/INFRA.md) for detailed infrastructure setup
+- See [DECISIONS.md](../CORE/DECISIONS.md) for architectural decisions

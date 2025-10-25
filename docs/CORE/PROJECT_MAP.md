@@ -1,60 +1,112 @@
 # 🗺️ PROJECT_MAP.md
 
-This document serves as the main navigation index for the NearYou ID repository.  
-It helps both developers and AI tools (like Augment Code or Copilot Workspaces) locate all relevant project files efficiently.
+**Main navigation index for the NearYou ID repository.**  
+Helps developers and AI tools locate all relevant project files efficiently.
 
 ---
 
 ## 📘 Core Documentation
-- **docs/CORE/PROJECT_MAP.md** → Main index for all documentation and references.
-- **docs/CORE/ARCHITECTURE.md** → System architecture, layers, and modular design.
-- **docs/CORE/BEST_PRACTICES_EVALUATION.md** → Comprehensive evaluation of codebase compliance with industry best practices (2025-10-22).
-- **docs/CORE/IMPROVEMENT_ROADMAP.md** → Phased implementation plan for addressing evaluation findings.
-- **docs/CORE/IMPLEMENTATION_LOG.md** → Log of implemented improvements and changes (2025-10-22).
-- **docs/CORE/SPEC.md** → Product specifications and user flow references.
-- **docs/CORE/INFRA.md** → CI/CD, deployment, environment setup, and secret management.
-- **docs/CORE/TESTING.md** → Testing strategy, automation, and coverage goals.
-  Includes “How to Validate Changes” appendix describing document-based and command-based validation.
-- **docs/CORE/DECISIONS.md** → Key architectural and product decisions (ADR-style).
-- **docs/CORE/CHANGELOG.md** → Repository-wide changelog and release notes.
+
+### Essential Reading
+- **[PROJECT_MAP.md](./PROJECT_MAP.md)** → This file - main documentation index
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** → System architecture, layers, and modular design
+- **[SPEC.md](./SPEC.md)** → Product specifications and user flows
+- **[INFRA.md](./INFRA.md)** → Infrastructure, deployment, and environment setup
+- **[TESTING.md](./TESTING.md)** → Testing strategy and guidelines
+- **[VALIDATION_GUIDE.md](./VALIDATION_GUIDE.md)** → How to validate changes (AI/HUMAN/HYBRID)
+- **[DECISIONS.md](./DECISIONS.md)** → Architectural Decision Records (ADRs)
+- **[CHANGELOG.md](./CHANGELOG.md)** → Version history and release notes
+
+### Additional Resources
+- **[BEST_PRACTICES_EVALUATION.md](./BEST_PRACTICES_EVALUATION.md)** → Codebase compliance evaluation (2025-10-22)
+- **[IMPROVEMENT_ROADMAP.md](./IMPROVEMENT_ROADMAP.md)** → Phased improvement plan
+- **[IMPLEMENTATION_LOG.md](./IMPLEMENTATION_LOG.md)** → Log of implemented changes (2025-10-22)
+- **[PERFORMANCE.md](./PERFORMANCE.md)** → Performance optimization guidelines
 
 ---
 
 ## 🗺️ Project Plans
-- **docs/PLANS/NearYou_ID_MVP_Plan.md** → Full execution plan with milestones, ledger, and changelog.
-- **docs/PLANS/PHASE_0_COMPLETION_SUMMARY.md** → Summary of Phase 0 progress and results.
-- **docs/PLANS/QUICK_START.md** → Environment setup and developer onboarding guide.
+
+- **[NearYou_ID_MVP_Plan.md](../PLANS/NearYou_ID_MVP_Plan.md)** → Full MVP execution plan with milestones
+- **[PHASE_0_COMPLETION_SUMMARY.md](../PLANS/PHASE_0_COMPLETION_SUMMARY.md)** → Phase 0 summary
+- **[QUICK_START.md](../PLANS/QUICK_START.md)** → Quick setup guide for developers
 
 ---
 
-## ⚙️ Task-Level Plans
-- **docs/TASK_PLANS/** → Contains granular task execution plans (T-###) for AI-assisted development.  
-  Each file defines scope, dependencies, affected modules, required documentation updates, and a **Validation Plan** specifying who performs validation (`AI`, `HUMAN`, or `HYBRID`).
+## ⚙️ Task Plans
+
+- **[TASK_PLANS/](../TASK_PLANS/)** → Granular task execution plans (T-###)
+  - Each file defines scope, dependencies, affected modules, and validation plan
+  - Validation owner: `AI`, `HUMAN`, or `HYBRID`
 
 ---
 
-## 🧪 Test Reports
-- **docs/TEST_REPORTS/** → Contains validation and test reports related to specific tasks.  
-  Each report follows the **Validation Template** and records evidence, validation mode, and results.
-- **docs/TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md** → Template for creating validation reports (document-only, technical, or hybrid).
+## 🧪 Test Reports & Validation
+
+- **[TEST_REPORTS/](../TEST_REPORTS/)** → Validation and test reports for specific tasks
+- **[TASK_VALIDATION_TEMPLATE.md](../TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md)** → Template for validation reports
 
 ---
 
-## 🤖 AI Prompts
-- **docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md** → The single reusable prompt for AI-assisted execution.  
-  It enforces the **validation-first discipline**, requiring every task to define who validates (`AI`, `HUMAN`, or `HYBRID`), perform validation before implementation, and log all results in `TEST_REPORTS/` and `PLANS/`.
+## 🤖 AI Workflow
+
+- **[VIBECODE_SHORT_META_PROMPT.md](../PROMPTS/VIBECODE_SHORT_META_PROMPT.md)** → AI execution workflow
+  - Enforces validation-first discipline
+  - Defines AI/HUMAN/HYBRID validation modes
 
 ---
 
 ## ✅ Checklists
-- **docs/CHECKLISTS/PRE_PUSH_CHECKLIST.md** → Pre-push routine to maintain code and documentation consistency.
-- **docs/CHECKLISTS/CONTRIBUTION_GUIDE.md** → Contribution workflow and coding standards (optional).
+
+- **[PRE_PUSH_CHECKLIST.md](../CHECKLISTS/PRE_PUSH_CHECKLIST.md)** → Pre-push verification checklist
 
 ---
 
-## 🗄 Database
-- **database/** → Contains schema definitions, migration scripts, and seed data.
+## 📄 API Documentation
 
-## 🐳 Containers
-- **docker/Dockerfile** → Base build and runtime image.
-- **docker/docker-compose.yml** → Local multi-service environment configuration.
+- **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)** → REST API reference
+
+---
+
+## 🗄️ Database & Infrastructure
+
+- **`database/`** → Schema definitions, migrations, seed data
+- **`docker/`** → Dockerfile and docker-compose.yml
+
+---
+
+## 📂 Source Code Structure
+
+```
+nearyou-id/
+├── composeApp/          # Android & iOS UI (Compose Multiplatform)
+│   ├── commonMain/      # Shared UI code
+│   ├── androidMain/     # Android-specific code
+│   └── iosMain/         # iOS-specific code
+├── shared/              # Shared business logic (KMP)
+│   ├── commonMain/      # Platform-independent code
+│   │   ├── domain/      # Domain models & validation
+│   │   └── data/        # Repositories & network
+│   ├── androidMain/     # Android-specific implementations
+│   ├── iosMain/         # iOS-specific implementations
+│   └── jvmMain/         # JVM-specific implementations
+├── server/              # Backend API (Ktor)
+│   └── src/main/kotlin/ # Server code
+├── iosApp/              # iOS app wrapper
+├── database/            # Database scripts
+└── docs/                # Documentation
+```
+
+---
+
+## 🔗 Quick Links
+
+| Document | Purpose |
+|----------|---------|
+| [README.md](../../README.md) | Project overview |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | System design |
+| [SPEC.md](./SPEC.md) | Product requirements |
+| [QUICK_START.md](../PLANS/QUICK_START.md) | Setup guide |
+| [VALIDATION_GUIDE.md](./VALIDATION_GUIDE.md) | Validation procedures |
+| [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) | API reference |
+

@@ -1,92 +1,150 @@
-# ⚡ VibeCode Short Meta Prompt (Concise Full Discipline)
+# ⚡ VibeCode AI Workflow
 
-Use `docs/CORE/PROJECT_MAP.md` as the main index to locate all required files.
+**Concise execution guide for AI-assisted development**
+
+Use **[PROJECT_MAP.md](../CORE/PROJECT_MAP.md)** as the main index to locate all required files.
 
 ---
 
 ## 🧩 Execution Flow
 
-1. **Plan** — Create or update `docs/TASK_PLANS/{task_id}_{task_name}.md` with:
-    - Scope, dependencies, affected docs, outputs.
-    - Validation Plan: `validation_owner (AI/HUMAN/HYBRID)`, `ai_capability`, `human_prereq`, `evidence_required`, and `pass_criteria`.
+### 1. Plan
+Create or update `docs/TASK_PLANS/{task_id}_{task_name}.md` with:
+- Scope, dependencies, affected modules
+- Required documentation updates
+- **Validation Plan:**
+  - `validation_owner` (AI/HUMAN/HYBRID)
+  - `ai_capability` (what AI can verify)
+  - `human_prereq` (what requires manual verification)
+  - `evidence_required` (logs, screenshots, test results)
+  - `pass_criteria` (specific success conditions)
 
-2. **Validate First** — Before coding or writing:
-    - For doc-only tasks, review generated docs via `docs/TEST_REPORTS/{task_id}_VALIDATION.md`.
-    - For code tasks, use commands in `docs/CORE/TESTING.md → How to Validate Changes`.
-    - AI validates consistency; human handles manual/external checks; HYBRID splits responsibility.
+### 2. Validate First
+**Before implementing:**
+- Review **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** for validation procedures
+- For doc-only tasks: Review consistency, cross-references, formatting
+- For code tasks: Run tests, build, verify compilation
+- AI validates: File consistency, automated tests, builds
+- Human validates: Manual testing, external services, UI/UX
+- HYBRID: Both AI and human validation required
 
-3. **Update Docs** — Sync and fix outdated or conflicting documentation before code updates.
+### 3. Update Documentation
+Sync and fix outdated or conflicting documentation **before** code changes.
 
-4. **Implement** —
-    - Create a **new branch** for each task (`feature/T-005_update_auth_system`).
-    - **AI must not commit or push**; only the maintainer (Adi) may review, commit, and merge.
-    - AI may prepare commits locally.
-    - Follow the latest **industry best practices**, **clean architecture**, and **separation of concerns**.
-    - Use `context7` to reference the latest GitHub documentation and `websearch` to confirm current practices.
-    - Ensure all code is modular, testable, framework-independent, and error-free before proceeding.
-    - After each file update, immediately check for errors before continuing.
+### 4. Implement
+- **Create task branch:** `git checkout -b task/T-XXX-description`
+- **Never commit to main or develop directly**
+- **AI must not push to remote** (only prepare commits locally)
+- Follow latest industry best practices:
+  - Clean architecture
+  - Separation of concerns
+  - Modular, testable code
+- Use `context7` for latest official documentation
+- Use `websearch` for current best practices
+- **Verify each file immediately after changes** (incremental validation)
+- Fix errors before proceeding to next file
 
-5. **Post-Validate & Log** —
-    - Run final validation; record evidence and results in `docs/TEST_REPORTS/{task_id}_VALIDATION.md`.
-    - Mark PASS/FAIL, add follow-ups, and update Progress Ledger & Changelog in `docs/PLANS/NearYou_ID_MVP_Plan.md`.
+### 5. Post-Validate & Log
+- Run final validation
+- Record evidence in `docs/TEST_REPORTS/{task_id}_VALIDATION.md`
+- Mark PASS/FAIL
+- Add follow-up actions if needed
+- Update Progress Ledger in `docs/PLANS/NearYou_ID_MVP_Plan.md`
+- Update `docs/CORE/CHANGELOG.md`
 
 ---
 
 ## 🧪 Validation Reference
-- Template → `docs/TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md`
-- Commands → `docs/CORE/TESTING.md → How to Validate Changes`
-- Reports → `docs/TEST_REPORTS/{task_id}_VALIDATION.md`
+
+| Resource | Purpose |
+|----------|---------|
+| **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** | Complete validation procedures |
+| **[TASK_VALIDATION_TEMPLATE.md](../TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md)** | Validation report template |
+| **[TESTING.md](../CORE/TESTING.md)** | Testing strategy |
 
 ---
 
-## 💡 Example Usage
-Evaluate the entire project codebase — both backend and frontend — for compliance with the latest industry best practices and architecture standards.
+## 🔍 Validation Decision Matrix
 
-Use context7 to reference the most recent official GitHub repositories and documentation of all technologies used in this project
-(e.g., Kotlin Multiplatform, Jetpack Compose, Ktor, and related dependencies),
-and use websearch to identify the latest community-validated best practices and coding conventions from credible engineering sources.
-
-Perform a comprehensive analysis including:
-1. Architectural alignment with clean architecture, separation of concerns, and modular design.
-2. Code quality in terms of readability, testability, maintainability, and scalability.
-3. Consistency of naming, structure, and package organization across backend and frontend modules.
-4. Use of modern APIs, recommended libraries, and avoidance of deprecated or unsafe practices.
-5. Security practices (authentication, data handling, network communication).
-6. Performance and memory optimization patterns.
-7. Proper application of dependency injection, concurrency (coroutines/flows), and UI state management.
-
-For each issue or improvement:
-- Cite specific best-practice sources from context7 or websearch.
-- Suggest corrected approaches or modern replacements.
-- Provide reasoning linked to documentation or examples.
-
-If any documentation inside `docs/` (e.g., `ARCHITECTURE.md`, `PROJECT_MAP.md`, or `TESTING.md`) is outdated or inconsistent with your findings,
-update or rewrite those files accordingly to align them with verified modern standards.
-
-Deliverables:
-- Summary of backend and frontend compliance status.
-- Detailed improvement recommendations.
-- References (context7/websearch sources).
-- Updated documentation under `docs/` if required.
-```
-Use docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md
-Execute task T-001: Project Structure Setup
-```
-
-AI will:
-- Read `PROJECT_MAP.md`, create/update task plan, run validation, update docs, and log results.
-- Stop before commit; only Adi commits and merges.
+| Task Type | Validation Owner | Rationale |
+|-----------|------------------|-----------|
+| Backend API | AI | Can test via curl/http tools |
+| Database ops | AI | Can verify via SQL queries |
+| Unit/Integration tests | AI | Can run test commands |
+| Build & compilation | AI | Can run build commands |
+| First-time app launch | HUMAN | Requires device/emulator UI |
+| OAuth setup | HUMAN | Requires web console access |
+| Push notifications | HUMAN | Requires physical device |
+| UI/UX verification | HUMAN | Requires human eyes |
+| Complex features | HYBRID | Both automated + manual |
 
 ---
 
-## 🔒 Notes
-- Always follow official docs, GitHub examples, and modern best practices.
-- AI must never skip validation, nor commit or push.
-- Each validation report must specify owner and evidence.
-- If `validation_owner: HUMAN`, AI must stop and await human review.
-- All implementations must use clean architecture, modular structure, and verified practices (via context7 & websearch).
-- Fix all detected errors before moving to the next file.
+## 💡 Best Practices
+
+### Code Quality
+1. **Verify latest standards** → Check official docs for current API versions
+2. **Use official examples** → Reference official GitHub repos for patterns
+3. **Documentation priority** → Official docs → Official examples → Community
+4. **Stay updated** → Regularly check for framework/library updates
+
+### Incremental Validation
+1. **Never accumulate errors** → Verify each change immediately
+2. **Workflow:** Create/Modify → Verify → Fix → Next file
+3. **Red flags (stop & fix):**
+   - ❌ Compilation errors
+   - ❌ Missing imports
+   - ❌ Type mismatches
+   - ❌ Test failures
+   - ❌ Broken references
+
+### Git Workflow
+1. **Always create task branch** → `git checkout -b task/T-XXX-description`
+2. **Never commit to main/develop**
+3. **Meaningful commit messages** → `T-XXX: Description of change`
+4. **No sensitive data** → API keys, passwords, secrets
+5. **AI prepares commits** → Human reviews and pushes
 
 ---
 
-*Defines universal discipline for VibeCode execution. Mention this file, then specify the task to run.*
+## 📚 Key Documentation
+
+- **[PROJECT_MAP.md](../CORE/PROJECT_MAP.md)** → Documentation index
+- **[ARCHITECTURE.md](../CORE/ARCHITECTURE.md)** → System design
+- **[SPEC.md](../CORE/SPEC.md)** → Product specification
+- **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** → Validation procedures
+- **[TESTING.md](../CORE/TESTING.md)** → Testing strategy
+- **[INFRA.md](../CORE/INFRA.md)** → Infrastructure setup
+- **[PRE_PUSH_CHECKLIST.md](../CHECKLISTS/PRE_PUSH_CHECKLIST.md)** → Pre-push verification
+
+---
+
+## 🎯 Example Task Execution
+
+**Task: T-101 - Implement User Authentication**
+
+1. **Plan:**
+   - Create `docs/TASK_PLANS/T-101_user_authentication.md`
+   - Define validation_owner = HYBRID (AI for code, HUMAN for OAuth setup)
+
+2. **Validate First:**
+   - Review [VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)
+   - AI: Can verify code structure, tests, build
+   - Human: Must configure Google OAuth console
+
+3. **Update Docs:**
+   - Update ARCHITECTURE.md with auth flow
+   - Update API_DOCUMENTATION.md with auth endpoints
+
+4. **Implement:**
+   ```bash
+   git checkout -b task/T-101-user-authentication
+   # Implement auth service
+   ./gradlew :server:test  # Verify after each change
+   ```
+
+5. **Post-Validate:**
+   - AI: Run tests, verify build
+   - Human: Test OAuth flow in browser
+   - Create `docs/TEST_REPORTS/T-101_VALIDATION.md`
+   - Update Progress Ledger and Changelog

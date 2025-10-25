@@ -1,89 +1,99 @@
-# NearYou ID – Kotlin Multiplatform Project
+# NearYou ID
 
-This is a Kotlin Multiplatform project targeting **Android**, **iOS**, and **Server**.
+> **Location-based social platform** built with Kotlin Multiplatform  
+> Connects users within proximity to share posts, chat, and engage with their local community.
 
-* [/composeApp](./composeApp/src) contains the code shared across your Compose Multiplatform applications.
-  It includes:
-  - [commonMain](./composeApp/src/commonMain/kotlin) for code common to all targets.
-  - Platform-specific folders like [iosMain](./composeApp/src/iosMain/kotlin) and [jvmMain](./composeApp/src/jvmMain/kotlin) for platform-dependent logic.
-
-* [/iosApp](./iosApp/iosApp) contains the iOS application entry point.
-  Even when sharing UI with Compose Multiplatform, you’ll still need this folder to integrate SwiftUI or platform code.
-
-* [/server](./server/src/main/kotlin) holds the **Ktor backend** code.
-
-* [/shared](./shared/src) contains shared business logic modules between all targets.
-  The most important folder is [commonMain](./shared/src/commonMain/kotlin).
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2.20-blue.svg)](https://kotlinlang.org)
+[![Ktor](https://img.shields.io/badge/Ktor-3.3.0-orange.svg)](https://ktor.io)
+[![Compose Multiplatform](https://img.shields.io/badge/Compose-1.9.0-green.svg)](https://www.jetbrains.com/lp/compose-multiplatform/)
 
 ---
 
-### 🧩 Build and Run Android Application
-
-To build and run the Android app:
+## 🚀 Quick Start
 
 ```bash
-./gradlew :composeApp:assembleDebug
-```
+# Start infrastructure (PostgreSQL + Redis)
+docker-compose up -d
 
-or on Windows:
-
-```bash
-.\gradlew.bat :composeApp:assembleDebug
-```
-
-### 🌐 Build and Run Server
-
-To build and run the Ktor backend:
-
-```bash
+# Run backend server
 ./gradlew :server:run
+
+# Run Android app
+./gradlew :composeApp:installDebug
+
+# Run iOS app (macOS only)
+open iosApp/iosApp.xcodeproj
 ```
 
-or on Windows:
+**Full setup guide:** [`docs/PLANS/QUICK_START.md`](./docs/PLANS/QUICK_START.md)
 
-```bash
-.\gradlew.bat :server:run
+---
+
+## 📁 Project Structure
+
+```
+nearyou-id/
+├── composeApp/     # Android & iOS UI (Compose Multiplatform)
+├── shared/         # Shared business logic (KMP)
+├── server/         # Backend API (Ktor)
+├── iosApp/         # iOS app wrapper
+├── database/       # Database migrations & scripts
+└── docs/           # Documentation
 ```
 
-### 🍎 Build and Run iOS Application
-
-Open [/iosApp](./iosApp) in Xcode and run it from there, or use the run configuration in your IDE.
-
----
-
-## 🗺️ Repository Navigation
-
-This repository uses a **map-based documentation system** for both developers and AI assistants like *Augment Code* or *Copilot Workspaces*.  
-All documentation and AI-related files are organized under the [`docs/`](./docs) directory.
-
-**Start here:**
-- [`docs/CORE/PROJECT_MAP.md`](./docs/CORE/PROJECT_MAP.md) → Main index for all documentation and project references.
-- [`docs/PLANS/NearYou_ID_MVP_Plan.md`](./docs/PLANS/NearYou_ID_MVP_Plan.md) → Full product execution plan.
-- [`docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md`](./docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md) → Universal AI execution prompt for any VibeCode task.
-
-> 🧠 **For AI Assistants:** Always read `PROJECT_MAP.md` first to locate files, then use `VIBECODE_SHORT_META_PROMPT.md` to execute or continue a task.
+**Key modules:**
+- **`/composeApp`** → Shared UI for Android and iOS
+- **`/shared`** → Domain models, repositories, validation (shared across all platforms)
+- **`/server`** → Ktor backend with PostgreSQL + PostGIS
+- **`/iosApp`** → iOS application entry point
 
 ---
 
-## ✅ Validation-First System (AI / HUMAN / HYBRID)
+## 📚 Documentation
 
-NearYou ID integrates a **validation-first development flow** to ensure all changes (code, docs, or infrastructure) are reviewed and auditable.  
-Each task defines a **Validation Plan** within its task file and produces a validation report afterward.
+**Essential reading:**
+- **[PROJECT_MAP.md](./docs/CORE/PROJECT_MAP.md)** → Main documentation index
+- **[ARCHITECTURE.md](./docs/CORE/ARCHITECTURE.md)** → System design and architecture
+- **[SPEC.md](./docs/CORE/SPEC.md)** → Product specification
+- **[QUICK_START.md](./docs/PLANS/QUICK_START.md)** → Development environment setup
+- **[API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md)** → API reference
 
-### 📋 Key Files
-- **`docs/TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md`** → Template for all validation reports.
-- **`docs/CORE/TESTING.md`** → Contains “How to Validate Changes” appendix (document-based & command-based validation).
-- **`docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md`** → Defines how AI performs tasks with validation-first discipline.
-
-### 🔍 Validation Modes
-| Mode | Description |
-|------|--------------|
-| `AI` | AI validates file consistency, structure, and links. |
-| `HUMAN` | Human performs external/manual checks (e.g., web registration, design verification). |
-| `HYBRID` | Both AI and human perform validation collaboratively. |
-
-Validation results are stored under `docs/TEST_REPORTS/T-###_VALIDATION.md`, each including the validation owner, evidence, and pass/fail summary.
+**For AI assistants:**
+- **[VIBECODE_SHORT_META_PROMPT.md](./docs/PROMPTS/VIBECODE_SHORT_META_PROMPT.md)** → AI workflow guide
+- **[VALIDATION_GUIDE.md](./docs/CORE/VALIDATION_GUIDE.md)** → Validation procedures
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html).
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Compose Multiplatform, Kotlin 2.2.20 |
+| **Backend** | Ktor 3.3.0, Kotlin Coroutines |
+| **Database** | PostgreSQL 15+ with PostGIS |
+| **Caching** | Redis |
+| **Auth** | JWT, OAuth 2.0 (Google) |
+| **Storage** | S3/GCS (media files) |
+| **Notifications** | Firebase Cloud Messaging |
+
+---
+
+## 🧪 Testing & Validation
+
+This project follows a **validation-first approach**:
+
+- **AI validation** → File consistency, structure, automated tests
+- **Human validation** → Manual testing, external service setup, UI/UX verification
+- **Hybrid validation** → Collaborative validation for complex features
+
+**Learn more:** [`docs/CORE/VALIDATION_GUIDE.md`](./docs/CORE/VALIDATION_GUIDE.md)
+
+---
+
+## 📖 Learn More
+
+- [Kotlin Multiplatform Documentation](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)
+- [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)
+- [Ktor Framework](https://ktor.io/docs/)
+- [PostGIS Documentation](https://postgis.net/documentation/)
+
