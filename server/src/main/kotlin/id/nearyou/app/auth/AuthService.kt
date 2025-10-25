@@ -1,10 +1,9 @@
 package id.nearyou.app.auth
 
-import id.nearyou.app.auth.models.*
+import domain.model.auth.*
 import id.nearyou.app.config.EnvironmentConfig
+import id.nearyou.app.exceptions.*
 import id.nearyou.app.repository.UserRepository
-import io.lettuce.core.RedisClient
-import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.api.sync.RedisCommands
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
@@ -15,12 +14,11 @@ import kotlin.random.Random
 
 /**
  * Authentication service handling user registration, login, and OTP verification
+ * Dependencies are injected via constructor (Dependency Injection)
  */
-class AuthService {
-    
-    private val redisClient: RedisClient = RedisClient.create(EnvironmentConfig.redisUrl)
-    private val redisConnection: StatefulRedisConnection<String, String> = redisClient.connect()
-    private val redis: RedisCommands<String, String> = redisConnection.sync()
+class AuthService(
+    private val redis: RedisCommands<String, String>
+) {
     
     /**
      * OTP Codes table definition
@@ -60,33 +58,94 @@ class AuthService {
             // Check if user already exists
             val identifier = request.email ?: request.phone!!
             val type = if (request.email != null) "email" else "phone"
-            
-            if (request.email != null && UserRepository.emailExists(request.email)) {
-                return Result.failure(Exception("Email already registered"))
+
+            val email = request.email
+            if (email != null && UserRepository.emailExists(email)) {
+                return Result.failure(ConflictException("Email already registered", "EMAIL_EXISTS"))
             }
-            if (request.phone != null && UserRepository.phoneExists(request.phone)) {
-                return Result.failure(Exception("Phone already registered"))
+            val phone = request.phone
+            if (phone != null && UserRepository.phoneExists(phone)) {
+                return Result.failure(ConflictException("Phone already registered", "PHONE_EXISTS"))
             }
             if (UserRepository.usernameExists(request.username)) {
-                return Result.failure(Exception("Username already taken"))
+                return Result.failure(ConflictException("Username already taken", "USERNAME_EXISTS"))
             }
-            
+
             // Check rate limiting
             if (!checkRateLimit(identifier)) {
-                return Result.failure(Exception("Too many OTP requests. Please try again later."))
+                return Result.failure(RateLimitException("Too many OTP requests. Please try again later."))
             }
-            
+
             // Generate and store OTP
             val otp = generateOtp()
             storeOtp(identifier, otp, type)
-            
+
             // Send OTP (mock for MVP)
             sendOtp(identifier, otp, type)
-            
-            // Store pending registration in Redis
-            val registrationData = "${request.username}|${request.displayName}|${request.email}|${request.phone}|${request.password}"
+
+            // Hash password BEFORE storing in Redis (SECURITY: Never store plain passwords)
+            val passwordHash = request.password?.let { hashPassword(it) } ?: ""
+
+            // Store pending registration in Redis with hashed password
+            val registrationData = "${request.username}|${request.displayName}|${request.email}|${request.phone}|${passwordHash}"
             redis.setex("pending_registration:$identifier", 300, registrationData) // 5 minutes
-            
+
+            Result.success(
+                OtpSentResponse(
+                    message = "OTP sent successfully",
+                    identifier = identifier,
+                    type = type,
+                    expiresInSeconds = 300
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Login existing user (sends OTP)
+     */
+    fun loginUser(request: LoginRequest): Result<OtpSentResponse> {
+        return try {
+            // Check if user exists
+            val identifier = request.email ?: request.phone!!
+            val type = if (request.email != null) "email" else "phone"
+
+            // First, check if there's a pending registration in Redis
+            val pendingRegistration = redis.get("pending_registration:$identifier")
+            if (pendingRegistration != null) {
+                // User has registered but not verified OTP yet
+                return Result.failure(
+                    AuthenticationException(
+                        "Please verify your email/phone first. Check your inbox for the OTP code.",
+                        "VERIFICATION_PENDING"
+                    )
+                )
+            }
+
+            // Check if user exists in database (verified users)
+            val email = request.email
+            if (email != null && !UserRepository.emailExists(email)) {
+                return Result.failure(NotFoundException("Email not registered", "EMAIL_NOT_FOUND"))
+            }
+            val phone = request.phone
+            if (phone != null && !UserRepository.phoneExists(phone)) {
+                return Result.failure(NotFoundException("Phone not registered", "PHONE_NOT_FOUND"))
+            }
+
+            // Check rate limiting
+            if (!checkRateLimit(identifier)) {
+                return Result.failure(RateLimitException("Too many OTP requests. Please try again later."))
+            }
+
+            // Generate and store OTP
+            val otp = generateOtp()
+            storeOtp(identifier, otp, type)
+
+            // Send OTP (mock for MVP)
+            sendOtp(identifier, otp, type)
+
             Result.success(
                 OtpSentResponse(
                     message = "OTP sent successfully",
@@ -107,7 +166,7 @@ class AuthService {
         return try {
             // Verify OTP
             if (!verifyOtpCode(request.identifier, request.code, request.type)) {
-                return Result.failure(Exception("Invalid or expired OTP"))
+                return Result.failure(AuthenticationException("Invalid or expired OTP", "INVALID_OTP"))
             }
             
             // Check if this is a registration or login
@@ -120,17 +179,16 @@ class AuthService {
                 val displayName = parts[1]
                 val email = parts.getOrNull(2)?.takeIf { it != "null" }
                 val phone = parts.getOrNull(3)?.takeIf { it != "null" }
-                val password = parts.getOrNull(4)?.takeIf { it != "null" }
-                
-                val passwordHash = password?.let { hashPassword(it) }
-                
+                val passwordHash = parts.getOrNull(4)?.takeIf { it != "null" }
+
+                // Password is already hashed from registerUser(), use it directly
                 val createdUser = UserRepository.createUser(
                     username = username,
                     displayName = displayName,
                     email = email,
                     phone = phone,
                     passwordHash = passwordHash
-                ) ?: return Result.failure(Exception("Failed to create user"))
+                ) ?: return Result.failure(InternalServerException("Failed to create user", "USER_CREATION_FAILED"))
                 
                 // Mark user as verified
                 UserRepository.updateVerificationStatus(createdUser.id, true)
@@ -145,7 +203,7 @@ class AuthService {
                     UserRepository.findByEmail(request.identifier)
                 } else {
                     UserRepository.findByPhone(request.identifier)
-                } ?: return Result.failure(Exception("User not found"))
+                } ?: return Result.failure(NotFoundException("User not found", "USER_NOT_FOUND"))
                 
                 // Mark user as verified if not already
                 if (!existingUser.isVerified) {
@@ -357,12 +415,5 @@ class AuthService {
         }
     }
     
-    /**
-     * Close Redis connection
-     */
-    fun close() {
-        redisConnection.close()
-        redisClient.shutdown()
-    }
 }
 

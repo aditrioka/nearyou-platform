@@ -489,6 +489,95 @@ Use last-write-wins (LWW) strategy for most sync conflicts, with user prompts fo
 
 ---
 
+## ADR-014: Shared Models as Single Source of Truth in KMP
+
+**Date:** 2025-10-21
+**Status:** Accepted
+**Decision Makers:** Development Team
+
+### Context
+In a Kotlin Multiplatform (KMP) project with both client and server components, there's a risk of model duplication where DTOs and domain models are defined separately in the server and client codebases. This leads to:
+- Type mismatches and serialization errors
+- Maintenance overhead (updating models in multiple places)
+- Potential for API contract drift
+- Compiler unable to catch breaking changes
+
+### Decision
+All data models, DTOs, and domain objects shared between client and server will be defined once in the `/shared` module and imported by both `composeApp` and `server` modules.
+
+### Rationale
+1. **Type Safety:** Compiler catches API contract changes across client and server
+2. **Single Source of Truth:** Models defined once, used everywhere
+3. **No Serialization Errors:** Same types guarantee serialization compatibility
+4. **KMP Best Practice:** Industry standard for KMP projects
+5. **Easier Maintenance:** Change once, applies everywhere
+6. **Refactoring Safety:** IDE refactoring works across all modules
+
+### Implementation
+1. Define all request/response DTOs in `shared/src/commonMain/kotlin/domain/model/`
+2. Server imports these models: `import domain.model.auth.*`
+3. Client imports these models: `import domain.model.auth.*`
+4. Database layer may use internal enums/types that are converted to shared models via mapping layer
+
+### Example
+```kotlin
+// shared/src/commonMain/kotlin/domain/model/auth/AuthModels.kt
+@Serializable
+data class LoginRequest(
+    val email: String? = null,
+    val phone: String? = null
+)
+
+// server/src/main/kotlin/id/nearyou/app/auth/AuthRoutes.kt
+import domain.model.auth.* // ✅ Import from shared
+
+post("/login") {
+    val request = call.receive<LoginRequest>()
+    // ...
+}
+
+// composeApp/src/commonMain/kotlin/data/AuthRepository.kt
+import domain.model.auth.* // ✅ Import from shared
+
+suspend fun login(email: String): Result<AuthResponse> {
+    val request = LoginRequest(email = email)
+    // ...
+}
+```
+
+### Database Mapping Layer
+When database enums differ from shared models (e.g., lowercase vs uppercase), create a mapping layer:
+
+```kotlin
+enum class DbSubscriptionTier {
+    free, premium;
+
+    fun toSharedModel(): SubscriptionTier = when (this) {
+        free -> SubscriptionTier.FREE
+        premium -> SubscriptionTier.PREMIUM
+    }
+}
+```
+
+### Consequences
+- **Positive:**
+  - Type safety across client and server
+  - Compiler catches API contract changes
+  - No serialization mismatches
+  - Single source of truth for all models
+  - Easier refactoring and maintenance
+  - Follows KMP best practices
+- **Negative:**
+  - Server depends on shared module (acceptable in KMP architecture)
+  - Database layer needs mapping when internal types differ from shared models
+
+### Alternatives Considered
+- **Separate models in server and client:** Rejected due to duplication and type safety issues
+- **Code generation from OpenAPI spec:** Rejected as overkill for KMP project where both sides are Kotlin
+- **Manual DTO conversion:** Rejected due to maintenance overhead
+
+---
+
 ## Summary
 
 These ADRs document the key architectural decisions for NearYou ID. They provide context for future development and help new team members understand the rationale behind technical choices.
@@ -507,4 +596,5 @@ These ADRs document the key architectural decisions for NearYou ID. They provide
 11. GitHub Actions for CI/CD
 12. Freemium subscription model
 13. Last-write-wins for sync conflicts
+14. **Shared models as single source of truth** (KMP best practice)
 

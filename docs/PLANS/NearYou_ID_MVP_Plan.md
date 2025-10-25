@@ -1527,8 +1527,8 @@ NearYou ID is a location-based social application that connects users within pro
 | PL-002 | T-002 | Setup PostgreSQL with PostGIS | DONE | 2025-10-16 | 2025-10-16 | Docker Compose, init.sql, migrations created |
 | PL-003 | T-003 | Define Shared Domain Models | DONE | 2025-10-16 | 2025-10-16 | Domain models and validation logic with tests |
 | PL-004 | T-004 | Setup CI/CD Pipeline | DONE | 2025-10-16 | 2025-10-16 | GitHub Actions workflow and Dockerfile created |
-| PL-005 | T-101 | Implement Backend Auth Service | TODO | - | - | - |
-| PL-006 | T-102 | Implement Frontend Auth Flows | TODO | - | - | - |
+| PL-005 | T-101 | Implement Backend Auth Service | DONE | 2025-10-18 | 2025-10-18 | JWT auth, OTP verification, token refresh |
+| PL-006 | T-102 | Implement Frontend Auth Flows | DONE | 2025-10-18 | 2025-10-20 | Auth screens, token storage, navigation (AI validation passed, human validation pending) |
 | PL-007 | T-103 | Implement User Profile Management | TODO | - | - | - |
 | PL-008 | T-201 | Implement PostGIS Geo Queries | TODO | - | - | - |
 | PL-009 | T-202 | Implement Post Creation & CRUD | TODO | - | - | - |
@@ -1569,6 +1569,8 @@ NearYou ID is a location-based social application that connects users within pro
 |-------|------|------|-------------|---------------|
 | CL-001 | 2025-10-16 | PLAN_CREATED | Initial MVP execution plan created | All |
 | CL-002 | 2025-10-16 | PHASE_COMPLETE | Phase 0 (M0) Foundation & Setup completed | T-001, T-002, T-003, T-004 |
+| CL-003 | 2025-10-18 | TASK_COMPLETE | Backend auth service implemented with JWT and OTP | T-101 |
+| CL-004 | 2025-10-20 | TASK_COMPLETE | Frontend auth flows implemented (AI validation passed) | T-102 |
 
 ---
 

@@ -1,8 +1,9 @@
 # NearYou ID - System Architecture
 
-**Version:** 1.0  
-**Last Updated:** 2025-10-16  
+**Version:** 1.1
+**Last Updated:** 2025-10-22
 **Status:** Active
+**Best Practices Compliance:** See [BEST_PRACTICES_EVALUATION.md](BEST_PRACTICES_EVALUATION.md)
 
 ---
 
@@ -17,6 +18,16 @@ NearYou ID follows a **Clean/Hexagonal Architecture** pattern with **Kotlin Mult
 3. **Platform Independence:** Shared business logic across platforms
 4. **Testability:** Each layer independently testable
 5. **Scalability:** Horizontal scaling for backend services
+
+### Technology Stack Compliance
+
+This architecture follows the latest best practices for:
+- **Kotlin Multiplatform 2.2.20** - Official KMP architecture patterns
+- **Ktor 3.3.0** - Modern server-side Kotlin framework
+- **Jetpack Compose Multiplatform 1.9.0** - Declarative UI framework
+- **Koin 4.0.1** - Dependency injection for multiplatform
+
+For detailed compliance analysis, see [BEST_PRACTICES_EVALUATION.md](BEST_PRACTICES_EVALUATION.md).
 
 ---
 
@@ -127,7 +138,7 @@ composeApp/
 
 ### 2. `/shared` - Shared Business Logic (KMP)
 
-**Purpose:** Cross-platform business logic, domain models, and data layer
+**Purpose:** Cross-platform business logic, domain models, and data layer. **Single source of truth for all DTOs and domain models.**
 
 **Structure:**
 ```
@@ -136,27 +147,40 @@ shared/
 │   ├── commonMain/kotlin/
 │   │   ├── domain/
 │   │   │   ├── model/         # User, Post, Message, etc.
+│   │   │   │   └── auth/      # Auth DTOs (RegisterRequest, LoginRequest, etc.)
 │   │   │   └── validation/    # Validation logic
 │   │   ├── data/
-│   │   │   ├── repository/    # AuthRepository, PostRepository, etc.
-│   │   │   ├── network/       # Ktor HTTP client
-│   │   │   ├── local/         # SQLDelight DAOs
-│   │   │   └── sync/          # Sync service
+│   │   │   ├── AuthRepository.kt      # Auth API client
+│   │   │   ├── PostRepository.kt      # Post API client
+│   │   │   ├── TokenStorage.kt        # Secure token storage interface
+│   │   │   ├── network/               # Ktor HTTP client
+│   │   │   ├── local/                 # SQLDelight DAOs
+│   │   │   └── sync/                  # Sync service
 │   │   └── util/              # Utilities, extensions
 │   ├── commonTest/kotlin/     # Shared tests
 │   ├── androidMain/kotlin/    # Android-specific implementations
-│   └── iosMain/kotlin/        # iOS-specific implementations
+│   │   └── data/
+│   │       └── TokenStorageAndroid.kt # Android Keystore implementation
+│   ├── iosMain/kotlin/        # iOS-specific implementations
+│   │   └── data/
+│   │       └── TokenStorageIOS.kt     # iOS Keychain implementation
+│   └── jvmMain/kotlin/        # JVM-specific implementations
+│       └── data/
+│           └── TokenStorageJVM.kt     # In-memory for testing
 ```
 
 **Responsibilities:**
-- Domain models and business rules
+- **Domain models and DTOs** - Shared across client and server
 - Data repositories (network + local)
 - Validation logic
 - Sync service for offline support
+- Platform-specific secure storage implementations
+
+**Key Principle:** All data models and DTOs are defined once in this module and imported by both `composeApp` and `server` modules to ensure type consistency and prevent serialization errors.
 
 ### 3. `/server` - Backend API (Ktor)
 
-**Purpose:** RESTful API server with business logic and database access
+**Purpose:** RESTful API server with business logic and database access. **Imports all DTOs from `/shared` module.**
 
 **Structure:**
 ```
@@ -165,8 +189,11 @@ server/
 │   └── main/kotlin/
 │       ├── Application.kt     # Main entry point
 │       ├── plugins/           # Ktor plugins configuration
+│       ├── auth/
+│       │   ├── AuthRoutes.kt  # Auth endpoints
+│       │   ├── AuthService.kt # Auth business logic
+│       │   └── JwtConfig.kt   # JWT token generation
 │       ├── routes/
-│       │   ├── AuthRoutes.kt
 │       │   ├── PostRoutes.kt
 │       │   ├── ChatRoutes.kt
 │       │   ├── UserRoutes.kt
@@ -175,7 +202,6 @@ server/
 │       │   ├── SearchRoutes.kt
 │       │   └── AdminRoutes.kt
 │       ├── service/
-│       │   ├── AuthService.kt
 │       │   ├── PostService.kt
 │       │   ├── ChatService.kt
 │       │   ├── NotificationService.kt
@@ -189,8 +215,8 @@ server/
 │       │   ├── AuthMiddleware.kt
 │       │   ├── RateLimiter.kt
 │       │   └── ErrorHandler.kt
-│       ├── model/
-│       │   └── dto/           # Data Transfer Objects
+│       ├── config/
+│       │   └── EnvironmentConfig.kt
 │       └── util/              # Utilities
 ```
 
@@ -198,8 +224,11 @@ server/
 - HTTP API endpoints
 - Authentication and authorization
 - Business logic execution
-- Database operations
+- Database operations (using Exposed ORM)
 - External service integration (FCM, S3/GCS)
+- Database-to-domain model mapping
+
+**Key Principle:** Server imports all request/response DTOs from `shared/domain/model/auth/` to ensure API contract consistency with clients. Database entities may use internal enums that are converted to shared models.
 
 ### 4. `/iosApp` - iOS Application Wrapper
 
@@ -224,12 +253,38 @@ iosApp/
 ### 1. User Authentication Flow
 
 ```
-User → Login Screen → AuthRepository → Backend API → Database
-                          ↓
-                    Token Storage (Keystore/Keychain)
-                          ↓
-                    Authenticated State
+User → Login/Signup Screen → AuthViewModel → AuthRepository (shared/)
+                                                    ↓
+                                              Ktor Client
+                                                    ↓
+                                              POST /auth/login or /auth/register
+                                                    ↓
+                                              Backend API (server/)
+                                                    ↓
+                                              AuthService
+                                                    ↓
+                                              Generate OTP → Store in Redis
+                                                    ↓
+                                              Return OtpSentResponse
+                                                    ↓
+User → OTP Screen → AuthViewModel → POST /auth/verify-otp
+                                                    ↓
+                                              Verify OTP from Redis
+                                                    ↓
+                                              Generate JWT Tokens
+                                                    ↓
+                                              Return AuthResponse
+                                                    ↓
+                                    TokenStorage (Keystore/Keychain/Memory)
+                                                    ↓
+                                              Authenticated State
 ```
+
+**Key Points:**
+- All DTOs (LoginRequest, RegisterRequest, AuthResponse, etc.) are defined in `shared/domain/model/auth/`
+- Both client and server import these models to ensure type consistency
+- OTP is stored in Redis with expiration
+- JWT tokens are stored securely using platform-specific implementations
 
 ### 2. Post Creation Flow
 
@@ -345,8 +400,10 @@ CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at D
 ### RESTful Endpoints
 
 #### Authentication
-- `POST /auth/register` - Register new user
-- `POST /auth/verify-otp` - Verify OTP
+- `POST /auth/register` - Register new user (sends OTP)
+- `POST /auth/login` - Login existing user (sends OTP)
+- `POST /auth/verify-otp` - Verify OTP and get JWT tokens
+- `POST /auth/resend-otp` - Resend OTP code
 - `POST /auth/login/google` - Google Sign-In
 - `POST /auth/refresh` - Refresh JWT token
 

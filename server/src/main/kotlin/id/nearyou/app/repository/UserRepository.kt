@@ -1,6 +1,7 @@
 package id.nearyou.app.repository
 
-import id.nearyou.app.auth.models.UserDto
+import domain.model.User
+import domain.model.SubscriptionTier
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
@@ -8,6 +9,7 @@ import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.postgresql.util.PGobject
 import java.util.*
+import kotlinx.datetime.Instant
 
 /**
  * Custom column type for PostgreSQL ENUM
@@ -44,10 +46,22 @@ class PgEnum<T : Enum<T>>(
 }
 
 /**
- * Enum for subscription tiers
+ * Internal enum for database mapping (lowercase to match DB)
  */
-enum class SubscriptionTier {
-    free, premium
+enum class DbSubscriptionTier {
+    free, premium;
+
+    fun toSharedModel(): SubscriptionTier = when (this) {
+        free -> SubscriptionTier.FREE
+        premium -> SubscriptionTier.PREMIUM
+    }
+
+    companion object {
+        fun fromSharedModel(tier: SubscriptionTier): DbSubscriptionTier = when (tier) {
+            SubscriptionTier.FREE -> free
+            SubscriptionTier.PREMIUM -> premium
+        }
+    }
 }
 
 /**
@@ -68,10 +82,10 @@ object UserRepository {
         val bio = varchar("bio", 200).nullable()
         val profilePhotoUrl = text("profile_photo_url").nullable()
         val isVerified = bool("is_verified").default(false)
-        val subscriptionTier = registerColumn<SubscriptionTier>(
+        val subscriptionTier = registerColumn<DbSubscriptionTier>(
             "subscription_tier",
-            PgEnum("subscription_tier", "subscription_tier", SubscriptionTier::class.java)
-        ).default(SubscriptionTier.free)
+            PgEnum("subscription_tier", "subscription_tier", DbSubscriptionTier::class.java)
+        ).default(DbSubscriptionTier.free)
         val createdAt = timestamp("created_at")
         val updatedAt = timestamp("updated_at")
 
@@ -87,7 +101,7 @@ object UserRepository {
         email: String? = null,
         phone: String? = null,
         passwordHash: String? = null
-    ): UserDto? = transaction {
+    ): User? = transaction {
         val now = kotlinx.datetime.Clock.System.now()
         val userId = UUID.randomUUID()
 
@@ -99,7 +113,7 @@ object UserRepository {
             it[Users.phone] = phone
             it[Users.passwordHash] = passwordHash
             it[isVerified] = false
-            it[subscriptionTier] = SubscriptionTier.free
+            it[subscriptionTier] = DbSubscriptionTier.free
             it[createdAt] = now
             it[updatedAt] = now
         }
@@ -110,36 +124,36 @@ object UserRepository {
     /**
      * Find user by ID
      */
-    fun findById(userId: String): UserDto? = transaction {
+    fun findById(userId: String): User? = transaction {
         Users.select { Users.id eq UUID.fromString(userId) }
-            .map { rowToUserDto(it) }
+            .map { rowToUser(it) }
             .singleOrNull()
     }
-    
+
     /**
      * Find user by email
      */
-    fun findByEmail(email: String): UserDto? = transaction {
+    fun findByEmail(email: String): User? = transaction {
         Users.select { Users.email eq email }
-            .map { rowToUserDto(it) }
+            .map { rowToUser(it) }
             .singleOrNull()
     }
-    
+
     /**
      * Find user by phone
      */
-    fun findByPhone(phone: String): UserDto? = transaction {
+    fun findByPhone(phone: String): User? = transaction {
         Users.select { Users.phone eq phone }
-            .map { rowToUserDto(it) }
+            .map { rowToUser(it) }
             .singleOrNull()
     }
-    
+
     /**
      * Find user by username
      */
-    fun findByUsername(username: String): UserDto? = transaction {
+    fun findByUsername(username: String): User? = transaction {
         Users.select { Users.username eq username }
-            .map { rowToUserDto(it) }
+            .map { rowToUser(it) }
             .singleOrNull()
     }
     
@@ -187,10 +201,13 @@ object UserRepository {
     }
     
     /**
-     * Convert database row to UserDto
+     * Convert database row to User (shared model)
      */
-    private fun rowToUserDto(row: ResultRow): UserDto {
-        return UserDto(
+    private fun rowToUser(row: ResultRow): User {
+        val createdAtKotlinx = row[Users.createdAt]
+        val updatedAtKotlinx = row[Users.updatedAt]
+
+        return User(
             id = row[Users.id].toString(),
             username = row[Users.username],
             displayName = row[Users.displayName],
@@ -199,7 +216,9 @@ object UserRepository {
             bio = row[Users.bio],
             profilePhotoUrl = row[Users.profilePhotoUrl],
             isVerified = row[Users.isVerified],
-            subscriptionTier = row[Users.subscriptionTier].name
+            subscriptionTier = row[Users.subscriptionTier].toSharedModel(),
+            createdAt = createdAtKotlinx,
+            updatedAt = updatedAtKotlinx
         )
     }
 }

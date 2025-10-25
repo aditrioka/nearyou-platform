@@ -28,9 +28,38 @@ kotlin {
 
             // Coroutines
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+
+            // Ktor Client
+            implementation("io.ktor:ktor-client-core:3.3.0")
+            implementation("io.ktor:ktor-client-content-negotiation:3.3.0")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0")
+            implementation("io.ktor:ktor-client-logging:3.3.0")
+
+            // Koin for Dependency Injection
+            implementation(libs.koin.core)
+        }
+        androidMain.dependencies {
+            // Ktor Client Engine for Android
+            implementation("io.ktor:ktor-client-okhttp:3.3.0")
+
+            // Encrypted SharedPreferences for secure token storage
+            implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+            // Koin for Android
+            implementation(libs.koin.android)
+        }
+        iosMain.dependencies {
+            // Ktor Client Engine for iOS
+            implementation("io.ktor:ktor-client-darwin:3.3.0")
+        }
+        jvmMain.dependencies {
+            // Ktor Client Engine for JVM
+            implementation("io.ktor:ktor-client-cio:3.3.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+            implementation("io.ktor:ktor-client-mock:3.3.0")
         }
     }
 }
