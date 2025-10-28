@@ -9,13 +9,14 @@ Use **[PROJECT_MAP.md](../CORE/PROJECT_MAP.md)** as the main index to locate all
 ## 🧩 Execution Flow
 
 ### 1. Plan
-Create or update `docs/TASK_PLANS/{task_id}_{task_name}.md` with:
+Create or update task plan with:
 - Scope, dependencies, affected modules
 - Required documentation updates
 - **Validation Plan:**
   - `validation_owner` (AI/HUMAN/HYBRID)
   - `ai_capability` (what AI can verify)
   - `human_prereq` (what requires manual verification)
+- Archived task plans can be found in `docs/ARCHIVE/TASK_PLANS/`
   - `evidence_required` (logs, screenshots, test results)
   - `pass_criteria` (specific success conditions)
 
@@ -46,7 +47,7 @@ Sync and fix outdated or conflicting documentation **before** code changes.
 
 ### 5. Post-Validate & Log
 - Run final validation
-- Record evidence in `docs/TEST_REPORTS/{task_id}_VALIDATION.md`
+- Record evidence (archived test reports in `docs/ARCHIVE/TEST_REPORTS/`)
 - Mark PASS/FAIL
 - Add follow-up actions if needed
 - Update Progress Ledger in `docs/PLANS/NearYou_ID_MVP_Plan.md`
@@ -108,8 +109,9 @@ Sync and fix outdated or conflicting documentation **before** code changes.
 - **[TESTING.md](../CORE/TESTING.md)** → Testing strategy
 - **[INFRA.md](../CORE/INFRA.md)** → Infrastructure setup (includes database guide)
 - **[PERFORMANCE.md](../CORE/PERFORMANCE.md)** → Performance testing and optimization
-- **[PRE_PUSH_CHECKLIST.md](../CHECKLISTS/PRE_PUSH_CHECKLIST.md)** → Pre-push verification
-- **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)** → API reference
+- **[PRE_PUSH_CHECKLIST.md](../GUIDES/PRE_PUSH_CHECKLIST.md)** → Pre-push verification
+- **[API_DOCUMENTATION.md](../CORE/API_DOCUMENTATION.md)** → API reference
+- **[DESIGN_SYSTEM.md](../CORE/DESIGN_SYSTEM.md)** → UI components and patterns
 - **[NearYou_ID_MVP_Plan.md](../PLANS/NearYou_ID_MVP_Plan.md)** → MVP execution plan
 
 ---
@@ -119,7 +121,7 @@ Sync and fix outdated or conflicting documentation **before** code changes.
 **Task: T-101 - Implement User Authentication**
 
 1. **Plan:**
-   - Create `docs/TASK_PLANS/T-101_user_authentication.md`
+   - Create task plan document
    - Define validation_owner = HYBRID (AI for code, HUMAN for OAuth setup)
 
 2. **Validate First:**

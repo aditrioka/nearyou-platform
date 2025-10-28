@@ -11,6 +11,8 @@ Helps developers and AI tools locate all relevant project files efficiently.
 - **[PROJECT_MAP.md](./PROJECT_MAP.md)** → **This file - main documentation index**
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** → System architecture, layers, and modular design
 - **[SPEC.md](./SPEC.md)** → Product specifications and user flows
+- **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** → REST API reference with all endpoints
+- **[DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** → UI components, patterns, and design guidelines
 - **[INFRA.md](./INFRA.md)** → Infrastructure, deployment, database, and environment setup
 - **[TESTING.md](./TESTING.md)** → Testing strategy and guidelines
 - **[PERFORMANCE.md](./PERFORMANCE.md)** → Performance testing, metrics, and optimization
@@ -18,33 +20,24 @@ Helps developers and AI tools locate all relevant project files efficiently.
 - **[DECISIONS.md](./DECISIONS.md)** → Architectural Decision Records (ADRs)
 - **[CHANGELOG.md](./CHANGELOG.md)** → Version history, release notes, and current status
 
-### Additional Resources
-- **[BEST_PRACTICES_EVALUATION.md](./BEST_PRACTICES_EVALUATION.md)** → Codebase compliance evaluation (2025-10-22)
-- **[IMPROVEMENT_ROADMAP.md](./IMPROVEMENT_ROADMAP.md)** → Phased improvement plan
-- **[IMPLEMENTATION_LOG.md](./IMPLEMENTATION_LOG.md)** → Log of implemented changes (2025-10-22)
+### Archived Resources
+- **[BEST_PRACTICES_EVALUATION.md](../ARCHIVE/BEST_PRACTICES_EVALUATION.md)** → Codebase compliance evaluation (2025-10-22)
+- **[IMPROVEMENT_ROADMAP.md](../ARCHIVE/IMPROVEMENT_ROADMAP.md)** → Phased improvement plan
+- **[IMPLEMENTATION_LOG.md](../ARCHIVE/IMPLEMENTATION_LOG.md)** → Log of implemented changes (2025-10-22)
+- **[DEPLOYMENT_READY_SUMMARY.md](../ARCHIVE/DEPLOYMENT_READY_SUMMARY.md)** → Deployment readiness (merged into CHANGELOG)
 
 ---
 
 ## 🗺️ Project Plans
 
 - **[NearYou_ID_MVP_Plan.md](../PLANS/NearYou_ID_MVP_Plan.md)** → **Full MVP execution plan with milestones and tasks**
-- **[PHASE_0_COMPLETION_SUMMARY.md](../PLANS/PHASE_0_COMPLETION_SUMMARY.md)** → Phase 0 summary
-- **[QUICK_START.md](../PLANS/QUICK_START.md)** → Quick setup guide for developers
 
 ---
 
-## ⚙️ Task Plans
+## 📖 Developer Guides
 
-- **[TASK_PLANS/](../TASK_PLANS/)** → Granular task execution plans (T-###)
-  - Each file defines scope, dependencies, affected modules, and validation plan
-  - Validation owner: `AI`, `HUMAN`, or `HYBRID`
-
----
-
-## 🧪 Test Reports & Validation
-
-- **[TEST_REPORTS/](../TEST_REPORTS/)** → Validation and test reports for specific tasks
-- **[TASK_VALIDATION_TEMPLATE.md](../TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md)** → Template for validation reports
+- **[QUICK_START.md](../GUIDES/QUICK_START.md)** → Quick setup guide for developers
+- **[PRE_PUSH_CHECKLIST.md](../GUIDES/PRE_PUSH_CHECKLIST.md)** → Pre-push verification checklist
 
 ---
 
@@ -57,15 +50,14 @@ Helps developers and AI tools locate all relevant project files efficiently.
 
 ---
 
-## ✅ Checklists
+## ⚙️ Task Management
 
-- **[PRE_PUSH_CHECKLIST.md](../CHECKLISTS/PRE_PUSH_CHECKLIST.md)** → Pre-push verification checklist
+- **[TASKS/active/](../TASKS/active/)** → Active tasks
+- **[TASKS/completed/](../TASKS/completed/)** → Completed tasks
 
----
-
-## 📄 API Documentation
-
-- **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)** → REST API reference with all endpoints
+### Archived Task Documentation
+- **[TASK_PLANS/](../ARCHIVE/TASK_PLANS/)** → Granular task execution plans (T-###)
+- **[TEST_REPORTS/](../ARCHIVE/TEST_REPORTS/)** → Validation and test reports for specific tasks
 
 ---
 
@@ -121,9 +113,10 @@ nearyou-id/
 | [PROJECT_MAP.md](./PROJECT_MAP.md) | This file - navigation hub | **Navigation** |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | System design and MVI pattern | Technical |
 | [SPEC.md](./SPEC.md) | Product requirements | Product |
-| [QUICK_START.md](../PLANS/QUICK_START.md) | Setup guide | Getting Started |
+| [QUICK_START.md](../GUIDES/QUICK_START.md) | Setup guide | Getting Started |
 | [VALIDATION_GUIDE.md](./VALIDATION_GUIDE.md) | Validation procedures | Process |
-| [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) | API reference | Technical |
+| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | API reference | Technical |
+| [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) | UI components & patterns | Technical |
 | [INFRA.md](./INFRA.md) | Infrastructure & database | Technical |
 | [PERFORMANCE.md](./PERFORMANCE.md) | Performance testing | Technical |
 | [VIBECODE_SHORT_META_PROMPT.md](../PROMPTS/VIBECODE_SHORT_META_PROMPT.md) | AI workflow guide | Process |
@@ -147,7 +140,7 @@ nearyou-id/
 
 ### For New Developers
 1. Start with [README.md](../../README.md) - Quick project overview
-2. Read [QUICK_START.md](../PLANS/QUICK_START.md) - Set up development environment
+2. Read [QUICK_START.md](../GUIDES/QUICK_START.md) - Set up development environment
 3. Review [ARCHITECTURE.md](./ARCHITECTURE.md) - Understand system design
 4. See [NearYou_ID_MVP_Plan.md](../PLANS/NearYou_ID_MVP_Plan.md) - Full execution plan
 
@@ -158,17 +151,21 @@ nearyou-id/
 4. Check [NearYou_ID_MVP_Plan.md](../PLANS/NearYou_ID_MVP_Plan.md) - Task details
 
 ### For Task Implementation
-1. Read task plan in [TASK_PLANS/](../TASK_PLANS/)
-2. Follow [VIBECODE_SHORT_META_PROMPT.md](../PROMPTS/VIBECODE_SHORT_META_PROMPT.md) workflow
-3. Validate using [VALIDATION_GUIDE.md](./VALIDATION_GUIDE.md)
-4. Document in [TEST_REPORTS/](../TEST_REPORTS/)
-5. Update [CHANGELOG.md](./CHANGELOG.md) and MVP Plan
+1. Follow [VIBECODE_SHORT_META_PROMPT.md](../PROMPTS/VIBECODE_SHORT_META_PROMPT.md) workflow
+2. Validate using [VALIDATION_GUIDE.md](./VALIDATION_GUIDE.md)
+3. Update [CHANGELOG.md](./CHANGELOG.md) and MVP Plan
+4. Use [PRE_PUSH_CHECKLIST.md](../GUIDES/PRE_PUSH_CHECKLIST.md) before committing
 
 ### For API Development
-1. Read [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) - API reference
+1. Read [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - API reference
 2. Review [ARCHITECTURE.md](./ARCHITECTURE.md) - Backend architecture
 3. See [INFRA.md](./INFRA.md) - Database schema
 4. Check [TESTING.md](./TESTING.md) - Testing strategy
+
+### For UI Development
+1. Read [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - UI components and patterns
+2. Review [ARCHITECTURE.md](./ARCHITECTURE.md) - Frontend architecture (MVI pattern)
+3. See [SPEC.md](./SPEC.md) - Product specifications and user flows
 
 ### For Database Work
 1. See [INFRA.md](./INFRA.md#database-setup) - Complete database documentation
@@ -191,6 +188,8 @@ Root (README.md)
 │    ├─── PROJECT_MAP.md (This file)
 │    ├─── ARCHITECTURE.md
 │    ├─── SPEC.md
+│    ├─── API_DOCUMENTATION.md
+│    ├─── DESIGN_SYSTEM.md
 │    ├─── INFRA.md (includes database docs)
 │    ├─── PERFORMANCE.md (includes performance testing docs)
 │    ├─── VALIDATION_GUIDE.md
@@ -198,22 +197,29 @@ Root (README.md)
 │    ├─── DECISIONS.md
 │    └─── CHANGELOG.md (includes deployment status)
 │
-├─── Plans (docs/PLANS/)
-│    ├─── NearYou_ID_MVP_Plan.md (Complete execution plan)
+├─── Guides (docs/GUIDES/)
 │    ├─── QUICK_START.md
-│    └─── PHASE_0_COMPLETION_SUMMARY.md
+│    └─── PRE_PUSH_CHECKLIST.md
 │
 ├─── Prompts (docs/PROMPTS/)
 │    └─── VIBECODE_SHORT_META_PROMPT.md (AI workflow)
 │
-├─── Task Plans (docs/TASK_PLANS/)
-│    └─── T-{id}_{name}.md
+├─── Plans (docs/PLANS/)
+│    └─── NearYou_ID_MVP_Plan.md (Complete execution plan)
 │
-├─── Test Reports (docs/TEST_REPORTS/)
-│    └─── T-{id}_VALIDATION.md
+├─── Tasks (docs/TASKS/)
+│    ├─── active/
+│    └─── completed/
 │
-├─── API Docs (docs/)
-│    └─── API_DOCUMENTATION.md
+├─── Archive (docs/ARCHIVE/)
+│    ├─── BEST_PRACTICES_EVALUATION.md
+│    ├─── IMPROVEMENT_ROADMAP.md
+│    ├─── IMPLEMENTATION_LOG.md
+│    ├─── PHASE_0_COMPLETION_SUMMARY.md
+│    ├─── DEPLOYMENT_READY_SUMMARY.md
+│    ├─── TASK_PLANS/
+│    ├─── TEST_REPORTS/
+│    └─── legacy_test_reports/
 │
 ├─── Database (database/)
 │    ├─── README.md (Quick ref → see INFRA.md)
