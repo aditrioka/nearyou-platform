@@ -56,7 +56,7 @@ class AuthViewModelTest {
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
-        repository.close()
+        // HttpClient is now managed by DI, no need to close repository
     }
 
     private fun createRepository(engine: MockEngine): AuthRepository {
@@ -67,7 +67,6 @@ class AuthViewModelTest {
         }
         return AuthRepository(
             tokenStorage = mockTokenStorage,
-            baseUrl = "http://localhost:8080",
             httpClient = client
         )
     }
@@ -93,8 +92,6 @@ class AuthViewModelTest {
             assertFalse(state.isLoading)
             assertNull(state.error)
         }
-
-        repo.close()
     }
 
     @Test
@@ -116,8 +113,6 @@ class AuthViewModelTest {
             assertFalse(state.isLoading)
             assertNull(state.error)
         }
-
-        repo.close()
     }
     
     // ========== Check Auth Status Tests ==========
@@ -171,13 +166,12 @@ class AuthViewModelTest {
         val vm = AuthViewModel(repo)
 
         val result = vm.register(
-            username = "testuser",
+            displayName = "Test User",
             identifier = "test@example.com",
             identifierType = "email"
         )
 
         assertTrue(result.isSuccess)
-        repo.close()
     }
     
     // ========== Login Tests ==========

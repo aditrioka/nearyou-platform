@@ -58,7 +58,7 @@ fun ProfileScreen(
                 
                 uiState.error != null -> {
                     ErrorScreen(
-                        message = uiState.error ?: "Unknown error",
+                        error = uiState.error ?: "Unknown error",
                         onRetry = { viewModel.loadProfile() }
                     )
                 }
@@ -84,7 +84,7 @@ private fun ProfileContent(
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
-            .padding(Spacing.medium),
+            .padding(Spacing.md),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Profile Photo
@@ -112,29 +112,29 @@ private fun ProfileContent(
                 )
             }
         }
-        
-        Spacer(modifier = Modifier.height(Spacing.medium))
-        
+
+        Spacer(modifier = Modifier.height(Spacing.md))
+
         // Display Name
         Text(
             text = user.displayName,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
-        
-        Spacer(modifier = Modifier.height(Spacing.extraSmall))
-        
+
+        Spacer(modifier = Modifier.height(Spacing.xxs))
+
         // Username
         Text(
             text = "@${user.username}",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
-        Spacer(modifier = Modifier.height(Spacing.medium))
+
+        Spacer(modifier = Modifier.height(Spacing.md))
         
         // Bio
-        if (user.bio != null) {
+        user.bio?.let { bioText ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -142,65 +142,66 @@ private fun ProfileContent(
                 )
             ) {
                 Text(
-                    text = user.bio,
+                    text = bioText,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(Spacing.medium)
+                    modifier = Modifier.padding(Spacing.md)
                 )
             }
-            
-            Spacer(modifier = Modifier.height(Spacing.medium))
+
+            Spacer(modifier = Modifier.height(Spacing.md))
         }
-        
+
         // User Info
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.padding(Spacing.medium)
+                modifier = Modifier.padding(Spacing.md)
             ) {
                 Text(
                     text = "Account Information",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                
-                Spacer(modifier = Modifier.height(Spacing.small))
-                
-                if (user.email != null) {
-                    InfoRow(label = "Email", value = user.email)
-                    Spacer(modifier = Modifier.height(Spacing.small))
+
+                Spacer(modifier = Modifier.height(Spacing.sm))
+
+                user.email?.let { emailValue ->
+                    InfoRow(label = "Email", value = emailValue)
+                    Spacer(modifier = Modifier.height(Spacing.sm))
                 }
-                
-                if (user.phone != null) {
-                    InfoRow(label = "Phone", value = user.phone)
-                    Spacer(modifier = Modifier.height(Spacing.small))
+
+                user.phone?.let { phoneValue ->
+                    InfoRow(label = "Phone", value = phoneValue)
+                    Spacer(modifier = Modifier.height(Spacing.sm))
                 }
-                
+
                 InfoRow(
                     label = "Subscription",
                     value = user.subscriptionTier.name
                 )
-                
-                Spacer(modifier = Modifier.height(Spacing.small))
-                
+
+                Spacer(modifier = Modifier.height(Spacing.sm))
+
                 InfoRow(
                     label = "Verified",
                     value = if (user.isVerified) "Yes" else "No"
                 )
             }
         }
-        
-        Spacer(modifier = Modifier.height(Spacing.large))
-        
+
+        Spacer(modifier = Modifier.height(Spacing.lg))
+
         // Logout Button
-        PrimaryButton(
-            text = "Logout",
+        Button(
             onClick = onLogout,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.error
             )
-        )
+        ) {
+            Text("Logout")
+        }
     }
 }
 

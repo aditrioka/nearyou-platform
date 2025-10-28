@@ -70,37 +70,34 @@ fun EditProfileScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(Spacing.medium),
-                verticalArrangement = Arrangement.spacedBy(Spacing.medium)
+                    .padding(Spacing.md),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
                 // Display Name
                 TextInput(
                     value = displayName,
-                    onValueChange = { 
+                    onValueChange = {
                         displayName = it
                         displayNameError = null
                     },
                     label = "Display Name",
                     placeholder = "Enter your display name",
-                    isError = displayNameError != null,
-                    errorMessage = displayNameError,
+                    error = displayNameError,
                     enabled = !uiState.isLoading
                 )
-                
+
                 // Bio
                 TextInput(
                     value = bio,
-                    onValueChange = { 
+                    onValueChange = {
                         bio = it
                         bioError = null
                     },
                     label = "Bio",
                     placeholder = "Tell us about yourself",
-                    isError = bioError != null,
-                    errorMessage = bioError,
+                    error = bioError,
                     enabled = !uiState.isLoading,
-                    singleLine = false,
-                    maxLines = 4
+                    singleLine = false
                 )
                 
                 Text(
@@ -117,13 +114,13 @@ fun EditProfileScreen(
                     )
                 ) {
                     Column(
-                        modifier = Modifier.padding(Spacing.medium)
+                        modifier = Modifier.padding(Spacing.md)
                     ) {
                         Text(
                             text = "Profile Photo",
                             style = MaterialTheme.typography.titleMedium
                         )
-                        Spacer(modifier = Modifier.height(Spacing.small))
+                        Spacer(modifier = Modifier.height(Spacing.sm))
                         Text(
                             text = "Photo upload will be available soon",
                             style = MaterialTheme.typography.bodyMedium,
@@ -131,7 +128,7 @@ fun EditProfileScreen(
                         )
                     }
                 }
-                
+
                 // Error message
                 if (uiState.error != null) {
                     Card(
@@ -144,17 +141,17 @@ fun EditProfileScreen(
                             text = uiState.error ?: "",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(Spacing.medium)
+                            modifier = Modifier.padding(Spacing.md)
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.weight(1f))
-                
+
                 // Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.small)
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                 ) {
                     SecondaryButton(
                         text = "Cancel",
