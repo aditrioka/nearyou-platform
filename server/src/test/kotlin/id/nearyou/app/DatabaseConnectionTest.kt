@@ -7,35 +7,44 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DatabaseConnectionTest {
-    
+
+    private fun getDatabaseUrl() = System.getenv("DATABASE_URL")
+        ?: "jdbc:postgresql://localhost:5432/nearyou_db"
+
+    private fun getDatabaseUser() = System.getenv("DATABASE_USER")
+        ?: "nearyou_user"
+
+    private fun getDatabasePassword() = System.getenv("DATABASE_PASSWORD")
+        ?: "nearyou_password"
+
     @Test
     fun testDatabaseConnection() {
         // Connect to database
         Database.connect(
-            url = "jdbc:postgresql://localhost:5432/nearyou_db",
+            url = getDatabaseUrl(),
             driver = "org.postgresql.Driver",
-            user = "nearyou_user",
-            password = "nearyou_password"
+            user = getDatabaseUser(),
+            password = getDatabasePassword()
         )
-        
+
         transaction {
             // Test PostGIS version
             val result = exec("SELECT PostGIS_Version();") { rs ->
                 if (rs.next()) rs.getString(1) else null
             }
-            
+
             assertNotNull(result, "PostGIS should be installed")
             println("PostGIS Version: $result")
         }
     }
-    
+
     @Test
     fun testPostGISFunctions() {
         Database.connect(
-            url = "jdbc:postgresql://localhost:5432/nearyou_db",
+            url = getDatabaseUrl(),
             driver = "org.postgresql.Driver",
-            user = "nearyou_user",
-            password = "nearyou_password"
+            user = getDatabaseUser(),
+            password = getDatabasePassword()
         )
         
         transaction {
@@ -57,16 +66,16 @@ class DatabaseConnectionTest {
             println("Distance between points: $distance meters")
         }
     }
-    
+
     @Test
     fun testGeoQueryWithIndex() {
         Database.connect(
-            url = "jdbc:postgresql://localhost:5432/nearyou_db",
+            url = getDatabaseUrl(),
             driver = "org.postgresql.Driver",
-            user = "nearyou_user",
-            password = "nearyou_password"
+            user = getDatabaseUser(),
+            password = getDatabasePassword()
         )
-        
+
         transaction {
             // Check if GIST index exists
             val indexQuery = """
@@ -74,14 +83,14 @@ class DatabaseConnectionTest {
                 FROM pg_indexes
                 WHERE tablename = 'posts' AND indexdef ILIKE '%gist%'
             """.trimIndent()
-            
+
             val indexes = mutableListOf<Pair<String, String>>()
             exec(indexQuery) { rs ->
                 while (rs.next()) {
                     indexes.add(rs.getString(1) to rs.getString(2))
                 }
             }
-            
+
             assertTrue(indexes.isNotEmpty(), "GIST index should exist on posts table")
             println("Found GIST indexes:")
             indexes.forEach { (name, def) ->
@@ -89,14 +98,14 @@ class DatabaseConnectionTest {
             }
         }
     }
-    
+
     @Test
     fun testSampleGeoQuery() {
         Database.connect(
-            url = "jdbc:postgresql://localhost:5432/nearyou_db",
+            url = getDatabaseUrl(),
             driver = "org.postgresql.Driver",
-            user = "nearyou_user",
-            password = "nearyou_password"
+            user = getDatabaseUser(),
+            password = getDatabasePassword()
         )
         
         transaction {

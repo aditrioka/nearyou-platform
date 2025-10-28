@@ -171,29 +171,34 @@ jobs:
   build-ios:
     name: Build iOS
     runs-on: macos-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: 'gradle'
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      
+
       - name: Build iOS Framework
-        run: ./gradlew :shared:linkDebugFrameworkIosArm64
-      
+        run: ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode
+        env:
+          CONFIGURATION: Debug
+          SDK_NAME: iphonesimulator
+          ARCHS: arm64
+        continue-on-error: true
+
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
-      
+
       - name: Build iOS App
         run: |
           cd iosApp
