@@ -63,3 +63,11 @@ tasks.register<JavaExec>("testDb") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("id.nearyou.app.TestDatabaseConnectionKt")
 }
+
+// Task untuk show database data
+tasks.register<JavaExec>("showData") {
+    group = "verification"
+    description = "Show all data in the database"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("id.nearyou.app.ShowDatabaseDataKt")
+}
