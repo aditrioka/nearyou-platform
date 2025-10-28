@@ -34,6 +34,7 @@ kotlin {
             implementation("io.ktor:ktor-client-content-negotiation:3.3.0")
             implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0")
             implementation("io.ktor:ktor-client-logging:3.3.0")
+            implementation("io.ktor:ktor-client-auth:3.3.0")
 
             // Koin for Dependency Injection
             implementation(libs.koin.core)

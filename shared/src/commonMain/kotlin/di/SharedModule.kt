@@ -47,12 +47,12 @@ val sharedModule = module {
             install(Logging) {
                 logger = object : Logger {
                     override fun log(message: String) {
-                        if (AppConfig.isDebug) {
+                        if (AppConfig.isDevelopment()) {
                             println("HTTP Client: $message")
                         }
                     }
                 }
-                level = if (AppConfig.isDebug) LogLevel.ALL else LogLevel.NONE
+                level = if (AppConfig.isDevelopment()) LogLevel.ALL else LogLevel.NONE
             }
 
             install(HttpTimeout) {

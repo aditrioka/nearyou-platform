@@ -236,14 +236,14 @@ class AuthIntegrationTestWithContainers : BaseIntegrationTest() {
         
         // Now test refresh
         val refreshRequest = RefreshTokenRequest(tokens.refreshToken)
-        val refreshResult = authService.refreshAccessToken(refreshRequest)
-        
+        val refreshResult = authService.refreshToken(refreshRequest)
+
         assertTrue(refreshResult.isSuccess, "Token refresh should succeed")
-        
+
         val newTokens = refreshResult.getOrNull()
         assertNotNull(newTokens, "New tokens should not be null")
-        assertNotNull(newTokens.accessToken, "New access token should be present")
-        assertNotNull(newTokens.refreshToken, "New refresh token should be present")
+        assertNotNull(newTokens?.accessToken, "New access token should be present")
+        assertNotNull(newTokens?.refreshToken, "New refresh token should be present")
     }
     
     @Test

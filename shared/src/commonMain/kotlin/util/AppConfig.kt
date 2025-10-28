@@ -5,11 +5,17 @@ package util
  * Set up logging and other app-wide settings based on environment
  */
 object AppConfig {
-    
+
+    /**
+     * Base URL for API requests
+     * TODO: Make this configurable per environment
+     */
+    const val baseUrl = "http://localhost:8080"
+
     /**
      * Initialize app configuration
      * Call this at app startup
-     * 
+     *
      * @param isDevelopment Whether the app is running in development mode
      */
     fun initialize(isDevelopment: Boolean = false) {

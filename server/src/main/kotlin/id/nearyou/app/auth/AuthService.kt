@@ -22,36 +22,36 @@ class AuthService(
 ) {
     companion object {
         private const val TAG = "AuthService"
-    }
-    
-    /**
-     * OTP Codes table definition
-     */
-    object OtpCodes : Table("otp_codes") {
-        val id = uuid("id").autoGenerate()
-        val userIdentifier = varchar("user_identifier", 255)
-        val code = varchar("code", 6)
-        val type = varchar("type", 10)
-        val expiresAt = timestamp("expires_at")
-        val createdAt = timestamp("created_at")
-        val isUsed = bool("is_used").default(false)
 
-        override val primaryKey = PrimaryKey(id)
-    }
+        /**
+         * OTP Codes table definition
+         */
+        object OtpCodes : Table("otp_codes") {
+            val id = uuid("id").autoGenerate()
+            val userIdentifier = varchar("user_identifier", 255)
+            val code = varchar("code", 6)
+            val type = varchar("type", 10)
+            val expiresAt = timestamp("expires_at")
+            val createdAt = timestamp("created_at")
+            val isUsed = bool("is_used").default(false)
 
-    /**
-     * Refresh Tokens table definition
-     */
-    object RefreshTokens : Table("refresh_tokens") {
-        val id = uuid("id").autoGenerate()
-        val token = varchar("token", 512).uniqueIndex()
-        val userId = uuid("user_id")
-        val expiresAt = timestamp("expires_at")
-        val createdAt = timestamp("created_at")
-        val isRevoked = bool("is_revoked").default(false)
-        val revokedAt = timestamp("revoked_at").nullable()
+            override val primaryKey = PrimaryKey(id)
+        }
 
-        override val primaryKey = PrimaryKey(id)
+        /**
+         * Refresh Tokens table definition
+         */
+        object RefreshTokens : Table("refresh_tokens") {
+            val id = uuid("id").autoGenerate()
+            val token = varchar("token", 512).uniqueIndex()
+            val userId = uuid("user_id")
+            val expiresAt = timestamp("expires_at")
+            val createdAt = timestamp("created_at")
+            val isRevoked = bool("is_revoked").default(false)
+            val revokedAt = timestamp("revoked_at").nullable()
+
+            override val primaryKey = PrimaryKey(id)
+        }
     }
     
     /**
@@ -433,10 +433,10 @@ class AuthService(
                     it[revokedAt] = kotlinx.datetime.Clock.System.now()
                 }
             }
-            logger.info("Revoked all tokens for user: $userId")
+            AppLogger.info(TAG, "Revoked all tokens for user: $userId")
             Result.success(Unit)
         } catch (e: Exception) {
-            logger.error("Failed to revoke tokens for user: $userId", e)
+            AppLogger.error(TAG, "Failed to revoke tokens for user: $userId - ${e.message}")
             Result.failure(e)
         }
     }

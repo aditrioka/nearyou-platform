@@ -65,8 +65,8 @@ abstract class BaseIntegrationTest {
             // Create tables
             transaction(database) {
                 SchemaUtils.create(UserRepository.Users)
-                SchemaUtils.create(id.nearyou.app.auth.AuthService.OtpCodes)
-                SchemaUtils.create(id.nearyou.app.auth.AuthService.RefreshTokens)
+                SchemaUtils.create(id.nearyou.app.auth.AuthService.Companion.OtpCodes)
+                SchemaUtils.create(id.nearyou.app.auth.AuthService.Companion.RefreshTokens)
             }
             
             // Setup Redis
@@ -97,12 +97,12 @@ abstract class BaseIntegrationTest {
         fun clearDatabase() {
             transaction(database) {
                 SchemaUtils.drop(UserRepository.Users)
-                SchemaUtils.drop(id.nearyou.app.auth.AuthService.OtpCodes)
-                SchemaUtils.drop(id.nearyou.app.auth.AuthService.RefreshTokens)
-                
+                SchemaUtils.drop(id.nearyou.app.auth.AuthService.Companion.OtpCodes)
+                SchemaUtils.drop(id.nearyou.app.auth.AuthService.Companion.RefreshTokens)
+
                 SchemaUtils.create(UserRepository.Users)
-                SchemaUtils.create(id.nearyou.app.auth.AuthService.OtpCodes)
-                SchemaUtils.create(id.nearyou.app.auth.AuthService.RefreshTokens)
+                SchemaUtils.create(id.nearyou.app.auth.AuthService.Companion.OtpCodes)
+                SchemaUtils.create(id.nearyou.app.auth.AuthService.Companion.RefreshTokens)
             }
         }
         
