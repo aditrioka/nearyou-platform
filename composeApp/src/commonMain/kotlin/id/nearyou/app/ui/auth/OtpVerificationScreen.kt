@@ -1,14 +1,16 @@
 package id.nearyou.app.ui.auth
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import id.nearyou.app.ui.components.OtpInput
+import id.nearyou.app.ui.components.PrimaryButton
+import id.nearyou.app.ui.theme.Spacing
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -28,6 +30,8 @@ fun OtpVerificationScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
+    var timeRemaining by remember { mutableStateOf(56) } // 56 seconds countdown
+    var canResend by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val isSignup = username != null
@@ -39,185 +43,216 @@ fun OtpVerificationScreen(
         }
     }
 
+    // Countdown timer
+    LaunchedEffect(Unit) {
+        while (timeRemaining > 0) {
+            delay(1000)
+            timeRemaining--
+        }
+        canResend = true
+    }
+
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = modifier.fillMaxSize().padding(Spacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "Verify Your ${if (identifierType == "email") "Email" else "Phone"}",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+            // Logo and Title
+            AuthHeader()
 
-        Text(
-            text = "We sent a 6-digit code to",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
+            Spacer(modifier = Modifier.height(Spacing.xl))
 
-        Text(
-            text = identifier,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        // OTP Input
-        OutlinedTextField(
-            value = otpCode,
-            onValueChange = { 
-                if (it.length <= 6 && it.all { char -> char.isDigit() }) {
-                    otpCode = it
-                }
-            },
-            label = { Text("Enter OTP Code") },
-            placeholder = { Text("123456") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            enabled = !isLoading,
-            textStyle = LocalTextStyle.current.copy(
-                textAlign = TextAlign.Center,
-                letterSpacing = MaterialTheme.typography.headlineMedium.letterSpacing
-            )
-        )
-
-        // Error Message
-        errorMessage?.let { error ->
+            // Verification message
             Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(bottom = 16.dp),
-                textAlign = TextAlign.Center
+                text = "Verification code sent to",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
 
-        // Success Message
-        successMessage?.let { success ->
+            Spacer(modifier = Modifier.height(Spacing.xxs))
+
             Text(
-                text = success,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(bottom = 16.dp),
-                textAlign = TextAlign.Center
+                text = identifier,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
-        }
 
-        // Verify Button
-        Button(
-            onClick = {
-                if (otpCode.length != 6) {
-                    errorMessage = "Please enter a 6-digit code"
-                    return@Button
+            Spacer(modifier = Modifier.height(Spacing.xl))
+
+            // OTP Input Boxes
+            OtpInput(
+                value = otpCode,
+                onValueChange = { otpCode = it },
+                length = 6,
+                enabled = !isLoading
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.md))
+
+            // Timer
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier.size(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
+                        modifier = Modifier.size(8.dp),
+                        shape = MaterialTheme.shapes.extraSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    ) {}
                 }
-                
-                isLoading = true
-                errorMessage = null
-                successMessage = null
-
-                scope.launch {
-                    val result = viewModel.verifyOtp(
-                        identifier = identifier,
-                        identifierType = identifierType,
-                        otpCode = otpCode
-                    )
-
-                    result.fold(
-                        onSuccess = {
-                            successMessage = "Verification successful!"
-                            // State change will trigger navigation via LaunchedEffect
-                        },
-                        onFailure = { error ->
-                            errorMessage = error.message ?: "Verification failed"
-                            isLoading = false
-                        }
-                    )
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            enabled = !isLoading && otpCode.length == 6
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
+                Spacer(modifier = Modifier.width(Spacing.xs))
+                Text(
+                    text = "Code expires in 0:${timeRemaining.toString().padStart(2, '0')}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            } else {
-                Text("Verify")
+            }
+
+            Spacer(modifier = Modifier.height(Spacing.sm))
+
+            // Resend text
+            Text(
+                text = if (canResend) {
+                    "Didn't receive the code? "
+                } else {
+                    "Didn't receive the code? Resend in 0:${timeRemaining.toString().padStart(2, '0')}"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+
+            if (canResend) {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                isLoading = true
+                                errorMessage = null
+                                successMessage = null
+
+                                if (isSignup) {
+                                    val result = viewModel.register(
+                                        username = username ?: "",
+                                        identifier = identifier,
+                                        identifierType = identifierType
+                                    )
+                                    result.fold(
+                                        onSuccess = {
+                                            successMessage = "Code resent successfully!"
+                                            timeRemaining = 56
+                                            canResend = false
+                                        },
+                                        onFailure = { error ->
+                                            errorMessage = error.message ?: "Failed to resend code"
+                                        }
+                                    )
+                                } else {
+                                    val result = viewModel.login(
+                                        identifier = identifier,
+                                        identifierType = identifierType
+                                    )
+                                    result.fold(
+                                        onSuccess = {
+                                            successMessage = "Code resent successfully!"
+                                            timeRemaining = 56
+                                            canResend = false
+                                        },
+                                        onFailure = { error ->
+                                            errorMessage = error.message ?: "Failed to resend code"
+                                        }
+                                    )
+                                }
+                                isLoading = false
+                            } catch (e: Exception) {
+                                errorMessage = e.message ?: "Failed to resend code"
+                                isLoading = false
+                            }
+                        }
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text("Resend")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Spacing.md))
+
+            // Error Message
+            errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.sm),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            // Success Message
+            successMessage?.let { success ->
+                Text(
+                    text = success,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.sm),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            // Verify Button
+            PrimaryButton(
+                onClick = {
+                    if (otpCode.length != 6) {
+                        errorMessage = "Please enter a 6-digit code"
+                        return@PrimaryButton
+                    }
+
+                    isLoading = true
+                    errorMessage = null
+                    successMessage = null
+
+                    scope.launch {
+                        val result = viewModel.verifyOtp(
+                            identifier = identifier,
+                            identifierType = identifierType,
+                            otpCode = otpCode
+                        )
+
+                        result.fold(
+                            onSuccess = {
+                                successMessage = "Verification successful!"
+                                // State change will trigger navigation via LaunchedEffect
+                            },
+                            onFailure = { error ->
+                                errorMessage = error.message ?: "Verification failed"
+                                isLoading = false
+                            }
+                        )
+                    }
+                },
+                text = "Verify",
+                isLoading = isLoading,
+                enabled = !isLoading
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Back Button
+            TextButton(
+                onClick = onNavigateBack,
+                enabled = !isLoading
+            ) {
+                Text("Use Different Email or Phone")
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Resend Code
-        TextButton(
-            onClick = {
-                scope.launch {
-                    try {
-                        isLoading = true
-                        errorMessage = null
-                        successMessage = null
-                        
-                        if (isSignup) {
-                            // Resend for signup
-                            val result = viewModel.register(
-                                username = username ?: "",
-                                identifier = identifier,
-                                identifierType = identifierType
-                            )
-                            result.fold(
-                                onSuccess = {
-                                    successMessage = "Code resent successfully!"
-                                },
-                                onFailure = { error ->
-                                    errorMessage = error.message ?: "Failed to resend code"
-                                }
-                            )
-                        } else {
-                            // Resend for login
-                            val result = viewModel.login(
-                                identifier = identifier,
-                                identifierType = identifierType
-                            )
-                            result.fold(
-                                onSuccess = {
-                                    successMessage = "Code resent successfully!"
-                                },
-                                onFailure = { error ->
-                                    errorMessage = error.message ?: "Failed to resend code"
-                                }
-                            )
-                        }
-                        isLoading = false
-                    } catch (e: Exception) {
-                        errorMessage = e.message ?: "Failed to resend code"
-                        isLoading = false
-                    }
-                }
-            },
-            enabled = !isLoading
-        ) {
-            Text("Resend Code")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Back Button
-        TextButton(
-            onClick = onNavigateBack,
-            enabled = !isLoading
-        ) {
-            Text("Change ${if (identifierType == "email") "Email" else "Phone Number"}")
-        }
     }
-}
 

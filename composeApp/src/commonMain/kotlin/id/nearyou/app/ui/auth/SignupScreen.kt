@@ -1,13 +1,14 @@
 package id.nearyou.app.ui.auth
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
+import id.nearyou.app.ui.components.PrimaryButton
+import id.nearyou.app.ui.components.TextInput
+import id.nearyou.app.ui.theme.Spacing
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -23,194 +24,149 @@ fun SignupScreen(
 
     var username by remember { mutableStateOf("") }
     var identifier by remember { mutableStateOf("") }
-    var identifierType by remember { mutableStateOf("email") } // "email" or "phone"
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = modifier.fillMaxSize().padding(Spacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "Create Account",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+            // Logo and Title
+            AuthHeader()
 
-        Text(
-            text = "Join NearYou ID today",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
+            Spacer(modifier = Modifier.height(Spacing.xl))
 
-        // Username Input
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("Username") },
-            placeholder = { Text("johndoe") },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            enabled = !isLoading
-        )
-
-        // Identifier Type Selector
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = identifierType == "email",
-                onClick = { identifierType = "email" },
-                label = { Text("Email") },
-                modifier = Modifier.weight(1f)
-            )
-            FilterChip(
-                selected = identifierType == "phone",
-                onClick = { identifierType = "phone" },
-                label = { Text("Phone") },
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        // Identifier Input
-        OutlinedTextField(
-            value = identifier,
-            onValueChange = { identifier = it },
-            label = { Text(if (identifierType == "email") "Email" else "Phone Number") },
-            placeholder = { Text(if (identifierType == "email") "you@example.com" else "+1234567890") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = if (identifierType == "email") KeyboardType.Email else KeyboardType.Phone
-            ),
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            enabled = !isLoading
-        )
-
-        // Error Message
-        errorMessage?.let { error ->
+            // Email or Phone Label
             Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(bottom = 16.dp)
+                text = "Email or Phone",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = Spacing.xs)
             )
-        }
 
-        // Sign Up Button
-        Button(
-            onClick = {
-                when {
-                    username.isBlank() -> {
-                        errorMessage = "Please enter a username"
-                        return@Button
-                    }
-                    identifier.isBlank() -> {
-                        errorMessage = "Please enter your ${if (identifierType == "email") "email" else "phone number"}"
-                        return@Button
-                    }
-                }
+            // Identifier Input
+            TextInput(
+                value = identifier,
+                onValueChange = { identifier = it },
+                label = "",
+                placeholder = "Enter your email or phone",
+                keyboardType = KeyboardType.Email,
+                enabled = !isLoading,
+                error = null
+            )
 
-                isLoading = true
-                errorMessage = null
+            Spacer(modifier = Modifier.height(Spacing.md))
 
-                // Call register API
-                scope.launch {
-                    val result = viewModel.register(
-                        username = username,
-                        identifier = identifier,
-                        identifierType = identifierType
-                    )
+            // Username Label
+            Text(
+                text = "Username",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = Spacing.xs)
+            )
 
-                    result.fold(
-                        onSuccess = {
-                            // Navigate to OTP verification on success
-                            onNavigateToOtpVerification(identifier, identifierType, username)
-                        },
-                        onFailure = { error ->
-                            errorMessage = error.message ?: "Registration failed"
-                        }
-                    )
+            // Username Input
+            TextInput(
+                value = username,
+                onValueChange = { username = it },
+                label = "",
+                placeholder = "Choose a username",
+                enabled = !isLoading,
+                error = null
+            )
 
-                    isLoading = false
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            enabled = !isLoading
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
+            Spacer(modifier = Modifier.height(Spacing.md))
+
+            // Error Message
+            errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.sm)
                 )
-            } else {
-                Text("Sign Up")
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            // Create Account Button
+            PrimaryButton(
+                onClick = {
+                    when {
+                        identifier.isBlank() -> {
+                            errorMessage = "Please enter your email or phone"
+                            return@PrimaryButton
+                        }
+                        username.isBlank() -> {
+                            errorMessage = "Please enter a username"
+                            return@PrimaryButton
+                        }
+                    }
 
-        // Divider
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f))
+                    isLoading = true
+                    errorMessage = null
+
+                    // Determine identifier type
+                    val identifierType = if (identifier.contains("@")) "email" else "phone"
+
+                    // Call register API
+                    scope.launch {
+                        val result = viewModel.register(
+                            username = username,
+                            identifier = identifier,
+                            identifierType = identifierType
+                        )
+
+                        result.fold(
+                            onSuccess = {
+                                // Navigate to OTP verification on success
+                                onNavigateToOtpVerification(identifier, identifierType, username)
+                            },
+                            onFailure = { error ->
+                                errorMessage = error.message ?: "Registration failed"
+                            }
+                        )
+
+                        isLoading = false
+                    }
+                },
+                text = "Create Account",
+                isLoading = isLoading,
+                enabled = !isLoading
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.sm))
+
+            // Helper Text
             Text(
-                text = "OR",
-                modifier = Modifier.padding(horizontal = 16.dp),
+                text = "We'll send you a verification code",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            HorizontalDivider(modifier = Modifier.weight(1f))
-        }
 
-        // Google Sign-In Button
-        OutlinedButton(
-            onClick = {
-                // TODO: Implement Google Sign-In
-                errorMessage = "Google Sign-In coming soon"
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            enabled = !isLoading
-        ) {
-            Text("Continue with Google")
-        }
+            Spacer(modifier = Modifier.weight(1f))
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Login Link
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Already have an account? ",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            TextButton(
-                onClick = onNavigateToLogin,
-                enabled = !isLoading
+            // Login Link
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Log In")
+                Text(
+                    text = "Already have an account? ",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                TextButton(
+                    onClick = onNavigateToLogin,
+                    enabled = !isLoading
+                ) {
+                    Text("Sign In")
+                }
             }
         }
     }
-}
 
