@@ -26,7 +26,7 @@ docker-compose up -d
 open iosApp/iosApp.xcodeproj
 ```
 
-**→ For detailed setup instructions, see [QUICK_START.md](./docs/PLANS/QUICK_START.md)**
+**→ For detailed setup instructions, see [QUICK_START.md](./docs/GUIDES/QUICK_START.md)**
 
 ---
 
@@ -54,7 +54,7 @@ nearyou-id/
 
 ### 🎯 Start Here
 - **[PROJECT_MAP.md](./docs/CORE/PROJECT_MAP.md)** → **Complete documentation index** (navigation hub)
-- **[QUICK_START.md](./docs/PLANS/QUICK_START.md)** → Development environment setup
+- **[QUICK_START.md](./docs/GUIDES/QUICK_START.md)** → Development environment setup
 - **[NearYou_ID_MVP_Plan.md](./docs/PLANS/NearYou_ID_MVP_Plan.md)** → Complete MVP execution plan
 
 ### 🤖 For AI-Assisted Development
@@ -63,7 +63,8 @@ nearyou-id/
 ### 🏗️ Core Technical Docs
 - **[ARCHITECTURE.md](./docs/CORE/ARCHITECTURE.md)** → System design and architecture patterns
 - **[SPEC.md](./docs/CORE/SPEC.md)** → Product specification
-- **[API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md)** → REST API reference
+- **[API_DOCUMENTATION.md](./docs/CORE/API_DOCUMENTATION.md)** → REST API reference
+- **[DESIGN_SYSTEM.md](./docs/CORE/DESIGN_SYSTEM.md)** → UI components and patterns
 - **[INFRA.md](./docs/CORE/INFRA.md)** → Infrastructure, database, deployment
 - **[VALIDATION_GUIDE.md](./docs/CORE/VALIDATION_GUIDE.md)** → Validation procedures
 
@@ -144,7 +145,7 @@ This project follows a **validation-first approach**:
 
 For questions or issues:
 - Review [PROJECT_MAP.md](./docs/CORE/PROJECT_MAP.md) for documentation index
-- Check [QUICK_START.md](./docs/PLANS/QUICK_START.md) for setup help
+- Check [QUICK_START.md](./docs/GUIDES/QUICK_START.md) for setup help
 - See [INFRA.md](./docs/CORE/INFRA.md) for infrastructure details
 
 ---
