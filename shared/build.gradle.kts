@@ -55,6 +55,9 @@ kotlin {
         jvmMain.dependencies {
             // Ktor Client Engine for JVM
             implementation("io.ktor:ktor-client-cio:3.3.0")
+
+            // SLF4J for logging
+            implementation("org.slf4j:slf4j-api:2.0.9")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

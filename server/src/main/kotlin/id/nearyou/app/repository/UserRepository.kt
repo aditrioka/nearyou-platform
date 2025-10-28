@@ -193,13 +193,45 @@ object UserRepository {
      * Get password hash for user
      */
     fun getPasswordHash(identifier: String): String? = transaction {
-        Users.select { 
+        Users.select {
             (Users.email eq identifier) or (Users.phone eq identifier) or (Users.username eq identifier)
         }
         .map { it[Users.passwordHash] }
         .singleOrNull()
     }
-    
+
+    /**
+     * Update user profile
+     * @param userId User ID to update
+     * @param displayName New display name (optional)
+     * @param bio New bio (optional)
+     * @param profilePhotoUrl New profile photo URL (optional)
+     * @return Updated user or null if user not found
+     */
+    fun updateUser(
+        userId: String,
+        displayName: String? = null,
+        bio: String? = null,
+        profilePhotoUrl: String? = null
+    ): User? = transaction {
+        val userUuid = UUID.fromString(userId)
+
+        // Check if user exists
+        val existingUser = Users.select { Users.id eq userUuid }.singleOrNull()
+            ?: return@transaction null
+
+        // Update only provided fields
+        Users.update({ Users.id eq userUuid }) {
+            displayName?.let { name -> it[Users.displayName] = name }
+            bio?.let { b -> it[Users.bio] = b }
+            profilePhotoUrl?.let { url -> it[Users.profilePhotoUrl] = url }
+            it[updatedAt] = kotlinx.datetime.Clock.System.now()
+        }
+
+        // Return updated user
+        findById(userId)
+    }
+
     /**
      * Convert database row to User (shared model)
      */

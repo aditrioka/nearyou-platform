@@ -1,12 +1,39 @@
 <configuration>
+    <!-- Console Appender -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <root level="trace">
+
+    <!-- File Appender (optional, for production) -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/nearyou-app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/nearyou-app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger level (can be overridden by environment variable) -->
+    <root level="${LOG_LEVEL:-INFO}">
         <appender-ref ref="STDOUT"/>
+        <!-- Uncomment for file logging in production -->
+        <!-- <appender-ref ref="FILE"/> -->
     </root>
+
+    <!-- Application loggers -->
+    <logger name="NearYouApp" level="DEBUG"/>
+    <logger name="id.nearyou.app" level="DEBUG"/>
+
+    <!-- Third-party library loggers (reduce noise) -->
     <logger name="org.eclipse.jetty" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
+    <logger name="io.ktor" level="INFO"/>
+    <logger name="org.postgresql" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="io.lettuce" level="WARN"/>
 </configuration>

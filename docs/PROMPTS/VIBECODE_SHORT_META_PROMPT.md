@@ -47,6 +47,7 @@ Sync and fix outdated or conflicting documentation **before** code changes.
 
 ### 5. Post-Validate & Log
 - Run final validation
+- **Verify CI passes** (all GitHub Actions jobs must succeed)
 - Record evidence (archived test reports in `docs/ARCHIVE/TEST_REPORTS/`)
 - Mark PASS/FAIL
 - Add follow-up actions if needed

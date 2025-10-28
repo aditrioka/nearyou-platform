@@ -1,8 +1,8 @@
 # Near You ID - API Documentation
 
-**Version:** 1.0.0  
-**Base URL:** `http://localhost:8080`  
-**Last Updated:** 2025-10-24
+**Version:** 1.0.1
+**Base URL:** `http://localhost:8080`
+**Last Updated:** 2025-10-28
 
 ## Overview
 
@@ -29,7 +29,22 @@ Authorization: Bearer <access_token>
 
 ---
 
+## API Design Philosophy
+
+This API follows RESTful design principles with clear separation of concerns:
+
+- **`/auth/*`** - Authentication **actions** (login, register, verify, refresh, logout)
+- **`/users/*`** - User resource **CRUD operations** (read, update, delete)
+- **`/users/me`** - Special resource representing the authenticated user
+
+> **Important:** Use `GET /users/me` to get the current user's profile, not `/auth/me`.
+> The `/auth/*` endpoints return user data as part of authentication responses, but for dedicated profile operations, use `/users/me`.
+
+---
+
 ## Endpoints
+
+### Authentication Endpoints
 
 ### 1. Register User
 
@@ -239,11 +254,16 @@ Authenticate using Google ID token.
 
 ---
 
-### 6. Get Current User
+## User Profile Endpoints
+
+> **Note:** For getting the current user's profile, use `GET /users/me` (not `/auth/me`).
+> The `/auth/*` endpoints are for authentication actions only (login, register, verify, refresh).
+
+### 6. Get Current User Profile
 
 Get authenticated user's profile.
 
-**Endpoint:** `GET /auth/me`
+**Endpoint:** `GET /users/me`
 
 **Headers:**
 ```
@@ -270,6 +290,77 @@ Authorization: Bearer <access_token>
 **Error Responses:**
 
 - **401 Unauthorized** - Missing or invalid token
+- **404 Not Found** - User not found
+
+**Example:**
+```bash
+curl -X GET http://localhost:8080/users/me \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+---
+
+### 7. Update Current User Profile
+
+Update authenticated user's profile information.
+
+**Endpoint:** `PUT /users/me`
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "displayName": "New Display Name",
+  "bio": "Updated bio text",
+  "profilePhotoUrl": "https://example.com/new-photo.jpg"
+}
+```
+
+**Note:** All fields are optional. Only provided fields will be updated.
+
+**Success Response (200 OK):**
+```json
+{
+  "id": "uuid",
+  "username": "testuser",
+  "displayName": "New Display Name",
+  "email": "user@example.com",
+  "phone": null,
+  "bio": "Updated bio text",
+  "profilePhotoUrl": "https://example.com/new-photo.jpg",
+  "isVerified": true,
+  "subscriptionTier": "FREE",
+  "createdAt": "2025-10-24T12:00:00Z",
+  "updatedAt": "2025-10-24T13:30:00Z"
+}
+```
+
+**Error Responses:**
+
+- **400 Bad Request** - Invalid input (e.g., display name too long, bio exceeds 200 characters)
+- **401 Unauthorized** - Missing or invalid token
+- **404 Not Found** - User not found
+
+**Validation Rules:**
+- `displayName`: 1-50 characters
+- `bio`: 0-200 characters
+- `profilePhotoUrl`: Must be a valid URL (if provided)
+
+**Example:**
+```bash
+curl -X PUT http://localhost:8080/users/me \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "displayName": "John Doe",
+    "bio": "Software developer from Jakarta"
+  }'
+```
 
 ---
 
@@ -278,6 +369,10 @@ Authorization: Bearer <access_token>
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
 | `EMAIL_EXISTS` | 409 | Email already registered |
+| `INVALID_DISPLAY_NAME` | 400 | Display name validation failed |
+| `INVALID_BIO` | 400 | Bio exceeds 200 characters |
+| `INVALID_PHOTO_URL` | 400 | Profile photo URL is invalid |
+| `USER_NOT_FOUND` | 404 | User not found |
 | `PHONE_EXISTS` | 409 | Phone already registered |
 | `USERNAME_EXISTS` | 409 | Username already taken |
 | `USER_NOT_FOUND` | 404 | User not found |
@@ -349,15 +444,31 @@ curl -X POST http://localhost:8080/auth/verify-otp \
   }'
 ```
 
-**Get Current User:**
+**Get Current User Profile:**
 ```bash
-curl -X GET http://localhost:8080/auth/me \
+curl -X GET http://localhost:8080/users/me \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+**Update User Profile:**
+```bash
+curl -X PUT http://localhost:8080/users/me \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "displayName": "John Doe",
+    "bio": "Software developer from Jakarta"
+  }'
 ```
 
 ---
 
 ## Changelog
+
+### Version 1.0.1 (2025-10-28)
+- Added user profile management endpoints (`GET /users/me`, `PUT /users/me`)
+- Clarified API design philosophy (auth actions vs. user resources)
+- Removed `/auth/me` from documentation (use `/users/me` instead)
 
 ### Version 1.0.0 (2025-10-24)
 - Initial API release

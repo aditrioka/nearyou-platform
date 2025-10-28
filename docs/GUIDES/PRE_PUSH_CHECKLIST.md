@@ -48,6 +48,15 @@
 
 ---
 
+## ✅ Continuous Integration
+
+- [ ] All CI jobs pass on GitHub Actions
+  - Verify at: https://github.com/aditrioka/nearyou-platform/actions
+  - Required jobs: Lint, Test Shared, Test Server, Build Android, Build iOS, Build Docker
+- [ ] No failing workflows on current branch
+
+---
+
 ## ✅ Git
 
 - [ ] On correct branch (not `main` or `develop`)

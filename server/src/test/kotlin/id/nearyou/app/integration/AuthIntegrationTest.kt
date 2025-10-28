@@ -120,17 +120,7 @@ class AuthIntegrationTest {
         )
     }
     
-    @Test
-    fun `GET auth me should return 401 without authentication`() = testApplication {
-        val response = client.get("/auth/me")
-        
-        // Should return 401 for unauthenticated request
-        assertTrue(
-            response.status == HttpStatusCode.Unauthorized ||
-            response.status == HttpStatusCode.NotFound,
-            "Expected 401 or 404, got ${response.status}"
-        )
-    }
+
     
     /**
      * Full authentication flow test

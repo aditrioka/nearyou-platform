@@ -10,17 +10,9 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-
-/**
- * Simple error response for parsing API errors
- */
-@Serializable
-private data class ApiErrorResponse(
-    val error: String,
-    val message: String
-)
+import util.AppLogger
+import util.LoggerConfig
 
 /**
  * Repository for authentication operations
@@ -34,6 +26,9 @@ class AuthRepository(
     private val baseUrl: String = "http://localhost:8080",
     httpClient: HttpClient? = null
 ) {
+    companion object {
+        private const val TAG = "AuthRepository"
+    }
     private val client = httpClient ?: HttpClient {
         install(ContentNegotiation) {
             json(Json {
@@ -44,7 +39,8 @@ class AuthRepository(
         }
         install(Logging) {
             logger = Logger.DEFAULT
-            level = LogLevel.INFO
+            // Use BODY in development, INFO in production
+            level = if (LoggerConfig.logSensitiveData) LogLevel.BODY else LogLevel.INFO
         }
         install(HttpTimeout) {
             requestTimeoutMillis = 30000
@@ -70,18 +66,24 @@ class AuthRepository(
      */
     suspend fun register(request: RegisterRequest): Result<OtpSentResponse> {
         return try {
+            AppLogger.info(TAG, "Registering user: ${request.username}")
+
             val response = client.post("$baseUrl/auth/register") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
 
             if (response.status.isSuccess()) {
-                Result.success(response.body<OtpSentResponse>())
+                val otpResponse = response.body<OtpSentResponse>()
+                AppLogger.info(TAG, "Registration successful, OTP sent to: ${otpResponse.identifier}")
+                Result.success(otpResponse)
             } else {
                 val errorMessage = parseErrorMessage(response)
+                AppLogger.error(TAG, "Registration failed: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
+            AppLogger.error(TAG, "Registration error", e)
             Result.failure(e)
         }
     }
@@ -92,6 +94,8 @@ class AuthRepository(
      */
     suspend fun login(identifier: String, identifierType: String): Result<OtpSentResponse> {
         return try {
+            AppLogger.info(TAG, "Login attempt for: $identifierType")
+
             val request = LoginRequest(
                 email = if (identifierType == "email") identifier else null,
                 phone = if (identifierType == "phone") identifier else null
@@ -102,12 +106,16 @@ class AuthRepository(
             }
 
             if (response.status.isSuccess()) {
-                Result.success(response.body<OtpSentResponse>())
+                val otpResponse = response.body<OtpSentResponse>()
+                AppLogger.info(TAG, "Login OTP sent to: ${otpResponse.identifier}")
+                Result.success(otpResponse)
             } else {
                 val errorMessage = parseErrorMessage(response)
+                AppLogger.error(TAG, "Login failed: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
+            AppLogger.error(TAG, "Login error", e)
             Result.failure(e)
         }
     }
@@ -125,9 +133,19 @@ class AuthRepository(
 
             if (response.status.isSuccess()) {
                 val authResponse = response.body<AuthResponse>()
+
+                // Log authentication success
+                AppLogger.info(TAG, "OTP verification successful for user: ${authResponse.user.username}")
+
+                // Log tokens only in development mode
+                AppLogger.debugSensitive(TAG, "Access Token: ${authResponse.accessToken}")
+                AppLogger.debugSensitive(TAG, "Refresh Token: ${authResponse.refreshToken}")
+
                 // Save tokens
                 tokenStorage.saveAccessToken(authResponse.accessToken)
                 tokenStorage.saveRefreshToken(authResponse.refreshToken)
+
+                AppLogger.debug(TAG, "Tokens saved to storage")
                 Result.success(authResponse)
             } else {
                 val errorMessage = parseErrorMessage(response)
