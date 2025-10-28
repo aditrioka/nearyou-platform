@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.mindrot.jbcrypt.BCrypt
+import util.AppLogger
 import java.util.*
 import kotlin.random.Random
 
@@ -19,6 +20,9 @@ import kotlin.random.Random
 class AuthService(
     private val redis: RedisCommands<String, String>
 ) {
+    companion object {
+        private const val TAG = "AuthService"
+    }
     
     /**
      * OTP Codes table definition

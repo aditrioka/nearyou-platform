@@ -18,8 +18,13 @@ import io.lettuce.core.api.StatefulRedisConnection
 import org.koin.ktor.ext.getKoin
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import util.AppConfig
 
 fun main() {
+    // Initialize logging configuration
+    val isDevelopment = System.getenv("ENVIRONMENT") != "production"
+    AppConfig.initialize(isDevelopment = isDevelopment)
+
     // Validate and print configuration
     EnvironmentConfig.validate()
     EnvironmentConfig.printSummary()
@@ -44,7 +49,7 @@ fun Application.module() {
     }
 
     // Configure plugins
-    configureErrorHandling()  // Must be installed first to catch errors from other plugins
+    configureErrorHandling()  // Must be installed early to catch errors from other plugins
     configureSerialization()
     configureAuthentication()
 

@@ -39,7 +39,7 @@ class UserRepository(
             })
         }
         install(Logging) {
-            logger = Logger.DEFAULT
+            logger = util.KtorLogger  // Use our custom logger that outputs to platform logs
             // Use BODY in development, INFO in production
             level = if (LoggerConfig.logSensitiveData) LogLevel.BODY else LogLevel.INFO
         }
