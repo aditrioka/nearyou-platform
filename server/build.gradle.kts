@@ -54,6 +54,11 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.13") // For mocking
     testImplementation("com.h2database:h2:2.2.224") // In-memory database for testing
     testImplementation("io.insert-koin:koin-test:4.0.1") // Koin testing
+
+    // Testcontainers for integration tests
+    testImplementation("org.testcontainers:testcontainers:1.19.3")
+    testImplementation("org.testcontainers:postgresql:1.19.3")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.3")
 }
 
 // Task untuk test database connection
