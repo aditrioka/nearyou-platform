@@ -7,9 +7,20 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+
+/**
+ * Simple error response for parsing API errors
+ */
+@Serializable
+private data class ApiErrorResponse(
+    val error: String,
+    val message: String
+)
 
 /**
  * Repository for authentication operations
@@ -42,6 +53,18 @@ class AuthRepository(
     }
 
     /**
+     * Parse error response from API
+     */
+    private suspend fun parseErrorMessage(response: HttpResponse): String {
+        return try {
+            val errorResponse = response.body<ApiErrorResponse>()
+            errorResponse.message
+        } catch (e: Exception) {
+            response.status.description
+        }
+    }
+
+    /**
      * Register a new user
      * @return OtpSentResponse with OTP details
      */
@@ -55,7 +78,8 @@ class AuthRepository(
             if (response.status.isSuccess()) {
                 Result.success(response.body<OtpSentResponse>())
             } else {
-                Result.failure(Exception("Registration failed: ${response.status.description}"))
+                val errorMessage = parseErrorMessage(response)
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -80,7 +104,8 @@ class AuthRepository(
             if (response.status.isSuccess()) {
                 Result.success(response.body<OtpSentResponse>())
             } else {
-                Result.failure(Exception("Login failed: ${response.status.description}"))
+                val errorMessage = parseErrorMessage(response)
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -97,7 +122,7 @@ class AuthRepository(
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
-            
+
             if (response.status.isSuccess()) {
                 val authResponse = response.body<AuthResponse>()
                 // Save tokens
@@ -105,7 +130,8 @@ class AuthRepository(
                 tokenStorage.saveRefreshToken(authResponse.refreshToken)
                 Result.success(authResponse)
             } else {
-                Result.failure(Exception("OTP verification failed: ${response.status.description}"))
+                val errorMessage = parseErrorMessage(response)
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -122,7 +148,7 @@ class AuthRepository(
                 contentType(ContentType.Application.Json)
                 setBody(GoogleLoginRequest(idToken))
             }
-            
+
             if (response.status.isSuccess()) {
                 val authResponse = response.body<AuthResponse>()
                 // Save tokens
@@ -130,7 +156,8 @@ class AuthRepository(
                 tokenStorage.saveRefreshToken(authResponse.refreshToken)
                 Result.success(authResponse)
             } else {
-                Result.failure(Exception("Google login failed: ${response.status.description}"))
+                val errorMessage = parseErrorMessage(response)
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -145,12 +172,12 @@ class AuthRepository(
         return try {
             val refreshToken = tokenStorage.getRefreshToken()
                 ?: return Result.failure(Exception("No refresh token available"))
-            
+
             val response = client.post("$baseUrl/auth/refresh") {
                 contentType(ContentType.Application.Json)
                 setBody(RefreshTokenRequest(refreshToken))
             }
-            
+
             if (response.status.isSuccess()) {
                 val tokenResponse = response.body<TokenResponse>()
                 // Save new tokens
@@ -158,7 +185,8 @@ class AuthRepository(
                 tokenStorage.saveRefreshToken(tokenResponse.refreshToken)
                 Result.success(tokenResponse)
             } else {
-                Result.failure(Exception("Token refresh failed: ${response.status.description}"))
+                val errorMessage = parseErrorMessage(response)
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             Result.failure(e)

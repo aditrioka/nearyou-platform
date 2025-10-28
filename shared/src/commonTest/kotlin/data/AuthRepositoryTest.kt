@@ -11,9 +11,19 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.*
+
+/**
+ * Simple error response for testing purposes
+ */
+@Serializable
+private data class ErrorResponse(
+    val error: String,
+    val message: String
+)
 
 /**
  * Comprehensive tests for AuthRepository
