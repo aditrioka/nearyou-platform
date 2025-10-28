@@ -48,6 +48,9 @@ dependencies {
     implementation("io.insert-koin:koin-ktor:4.0.1")
     implementation("io.insert-koin:koin-logger-slf4j:4.0.1")
 
+    // Environment variables from .env file
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
