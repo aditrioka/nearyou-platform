@@ -211,8 +211,23 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 SELECT PostGIS_Version();
 ```
 
+Expected output:
+```
+           postgis_version
+-------------------------------------
+ 3.3 USE_GEOS=1 USE_PROJ=1 USE_STATS=1
+```
+
 **Test Geo Query:**
 ```sql
+-- Insert test post
+INSERT INTO posts (user_id, content, location)
+VALUES (
+    gen_random_uuid(),
+    'Test post',
+    ST_MakePoint(106.8456, -6.2088)::geography
+);
+
 -- Find posts within 1 km of a location
 SELECT 
     id, 
@@ -226,6 +241,89 @@ WHERE ST_DWithin(
 )
 ORDER BY created_at DESC
 LIMIT 50;
+```
+
+### Database Migrations
+
+The database migrations are located in `database/migrations/` directory.
+
+**Structure:**
+```
+database/
+├── init.sql                    # PostGIS extension and initial setup
+├── migrations/                 # Database migrations
+│   ├── 001_initial_schema.sql # Initial schema with all core tables
+│   └── 002_auth_tables.sql    # Authentication tables (otp_codes, refresh_tokens)
+└── README.md                   # Merged into this document
+```
+
+#### Adding New Migrations
+
+1. Create new file: `database/migrations/00X_description.sql`
+2. Follow naming convention: `XXX_description.sql` (e.g., `003_add_user_settings.sql`)
+3. Include rollback instructions in comments
+4. Test migration on local database
+5. Update this document with migration details
+
+#### Migration Template
+
+```sql
+-- Migration XXX: Description
+-- Created: YYYY-MM-DD
+-- Description: What this migration does
+
+-- Forward migration
+CREATE TABLE ...;
+
+-- Rollback (in comments)
+-- DROP TABLE ...;
+```
+
+### Database Performance
+
+#### Analyze Query Performance
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM posts
+WHERE ST_DWithin(location, ST_MakePoint(106.8456, -6.2088)::geography, 1000);
+```
+
+Look for:
+- "Index Scan using idx_posts_location" (good)
+- "Seq Scan" (bad - means index not used)
+
+#### Vacuum and Analyze
+
+```sql
+VACUUM ANALYZE posts;
+```
+
+#### Check Index Usage
+
+```sql
+SELECT 
+    schemaname,
+    tablename,
+    indexname,
+    idx_scan,
+    idx_tup_read,
+    idx_tup_fetch
+FROM pg_stat_user_indexes
+WHERE schemaname = 'public'
+ORDER BY idx_scan DESC;
+```
+
+#### Database Backup & Restore
+
+**Backup:**
+```bash
+docker exec nearyou-postgres pg_dump -U nearyou_user nearyou_db > backup.sql
+```
+
+**Restore:**
+```bash
+docker exec -i nearyou-postgres psql -U nearyou_user nearyou_db < backup.sql
 ```
 
 ---

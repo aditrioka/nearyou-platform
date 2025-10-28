@@ -54,16 +54,6 @@ Sync and fix outdated or conflicting documentation **before** code changes.
 
 ---
 
-## 🧪 Validation Reference
-
-| Resource | Purpose |
-|----------|---------|
-| **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** | Complete validation procedures |
-| **[TASK_VALIDATION_TEMPLATE.md](../TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md)** | Validation report template |
-| **[TESTING.md](../CORE/TESTING.md)** | Testing strategy |
-
----
-
 ## 🔍 Validation Decision Matrix
 
 | Task Type | Validation Owner | Rationale |
@@ -77,6 +67,8 @@ Sync and fix outdated or conflicting documentation **before** code changes.
 | Push notifications | HUMAN | Requires physical device |
 | UI/UX verification | HUMAN | Requires human eyes |
 | Complex features | HYBRID | Both automated + manual |
+
+**For complete validation procedures, see [VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)**
 
 ---
 
@@ -109,13 +101,16 @@ Sync and fix outdated or conflicting documentation **before** code changes.
 
 ## 📚 Key Documentation
 
-- **[PROJECT_MAP.md](../CORE/PROJECT_MAP.md)** → Documentation index
+- **[PROJECT_MAP.md](../CORE/PROJECT_MAP.md)** → Complete documentation index
 - **[ARCHITECTURE.md](../CORE/ARCHITECTURE.md)** → System design
 - **[SPEC.md](../CORE/SPEC.md)** → Product specification
-- **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** → Validation procedures
+- **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** → Validation procedures (detailed)
 - **[TESTING.md](../CORE/TESTING.md)** → Testing strategy
-- **[INFRA.md](../CORE/INFRA.md)** → Infrastructure setup
+- **[INFRA.md](../CORE/INFRA.md)** → Infrastructure setup (includes database guide)
+- **[PERFORMANCE.md](../CORE/PERFORMANCE.md)** → Performance testing and optimization
 - **[PRE_PUSH_CHECKLIST.md](../CHECKLISTS/PRE_PUSH_CHECKLIST.md)** → Pre-push verification
+- **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)** → API reference
+- **[NearYou_ID_MVP_Plan.md](../PLANS/NearYou_ID_MVP_Plan.md)** → MVP execution plan
 
 ---
 
@@ -148,3 +143,18 @@ Sync and fix outdated or conflicting documentation **before** code changes.
    - Human: Test OAuth flow in browser
    - Create `docs/TEST_REPORTS/T-101_VALIDATION.md`
    - Update Progress Ledger and Changelog
+
+---
+
+## 🧪 Quick Reference: Validation Resources
+
+| Resource | Purpose | Location |
+|----------|---------|----------|
+| **VALIDATION_GUIDE.md** | Complete validation procedures | [Link](../CORE/VALIDATION_GUIDE.md) |
+| **TASK_VALIDATION_TEMPLATE.md** | Validation report template | [Link](../TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md) |
+| **TESTING.md** | Testing strategy | [Link](../CORE/TESTING.md) |
+| **PERFORMANCE.md** | Performance testing guide | [Link](../CORE/PERFORMANCE.md) |
+
+---
+
+**This is a concise workflow guide. For complete details, see the linked documentation.**
