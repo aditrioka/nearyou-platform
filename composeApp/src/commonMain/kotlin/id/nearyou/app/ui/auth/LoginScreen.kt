@@ -11,6 +11,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import id.nearyou.app.ui.components.PrimaryButton
 import id.nearyou.app.ui.components.TextInput
 import id.nearyou.app.ui.theme.Spacing
+import id.nearyou.app.ui.theme.Strings
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -50,6 +51,7 @@ fun LoginScreen(
         modifier = modifier
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.systemBars) // Proper system bars padding
+            .imePadding() // Handle keyboard
             .verticalScroll(scrollState)
             .padding(Spacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -64,7 +66,7 @@ fun LoginScreen(
 
         // Email or Phone Label
         Text(
-            text = "Email or Phone",
+            text = Strings.EMAIL_OR_PHONE_LABEL,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
@@ -76,8 +78,8 @@ fun LoginScreen(
         TextInput(
             value = uiState.identifier,
             onValueChange = viewModel::updateIdentifier,
-            label = "Email or Phone",
-            placeholder = "Enter your email or phone",
+            label = Strings.EMAIL_OR_PHONE_LABEL,
+            placeholder = Strings.EMAIL_OR_PHONE_PLACEHOLDER,
             keyboardType = KeyboardType.Email,
             enabled = !uiState.isLoading,
             error = uiState.error
@@ -88,7 +90,7 @@ fun LoginScreen(
         // Sign In Button
         PrimaryButton(
             onClick = viewModel::login,
-            text = "Sign In",
+            text = Strings.SIGN_IN,
             isLoading = uiState.isLoading,
             enabled = !uiState.isLoading
         )
@@ -97,7 +99,7 @@ fun LoginScreen(
 
         // Helper Text
         Text(
-            text = "We'll send you a verification code",
+            text = Strings.VERIFICATION_CODE_MESSAGE,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -112,7 +114,7 @@ fun LoginScreen(
             modifier = Modifier.padding(vertical = Spacing.md)
         ) {
             Text(
-                text = "Don't have an account? ",
+                text = Strings.DONT_HAVE_ACCOUNT,
                 style = MaterialTheme.typography.bodyMedium
             )
             TextButton(
@@ -122,7 +124,7 @@ fun LoginScreen(
                 },
                 enabled = !uiState.isLoading
             ) {
-                Text("Sign Up")
+                Text(Strings.SIGN_UP)
             }
         }
     }

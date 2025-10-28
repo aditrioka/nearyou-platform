@@ -5,8 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import id.nearyou.app.ui.auth.AuthViewModel
+import id.nearyou.app.ui.theme.Dimensions
+import id.nearyou.app.ui.theme.Spacing
+import id.nearyou.app.ui.theme.Strings
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -24,21 +26,22 @@ fun MainScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .padding(Dimensions.SCREEN_PADDING),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Welcome to NearYou ID!",
+            text = Strings.WELCOME_MESSAGE,
             style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = Spacing.md)
         )
         
         Text(
-            text = "You are successfully authenticated",
+            text = Strings.AUTHENTICATED_MESSAGE,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = Spacing.xl)
         )
         
         Button(
@@ -46,15 +49,15 @@ fun MainScreen(
             enabled = !authState.isLoading,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(Dimensions.MAIN_BUTTON_HEIGHT)
         ) {
             if (authState.isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(Dimensions.BUTTON_LOADING_INDICATOR_SIZE),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Logout")
+                Text(Strings.LOGOUT)
             }
         }
     }

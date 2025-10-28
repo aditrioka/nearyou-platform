@@ -1,6 +1,8 @@
 package id.nearyou.app.ui.auth
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,7 +11,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import id.nearyou.app.ui.components.OtpInput
 import id.nearyou.app.ui.components.PrimaryButton
+import id.nearyou.app.ui.theme.Dimensions
 import id.nearyou.app.ui.theme.Spacing
+import id.nearyou.app.ui.theme.Strings
 import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -31,6 +35,7 @@ fun OtpVerificationScreen(
     val uiState by viewModel.uiState.collectAsState()
     val event by viewModel.events.collectAsState()
     val isSignup = username != null
+    val scrollState = rememberScrollState()
 
     // Handle navigation events
     LaunchedEffect(event) {
@@ -43,13 +48,11 @@ fun OtpVerificationScreen(
         }
     }
 
-    // Countdown timer - using derivedStateOf to minimize recomposition
-    LaunchedEffect(Unit) {
-        while (true) {
+    // Countdown timer - using LaunchedEffect with key
+    LaunchedEffect(uiState.otpTimeRemaining) {
+        if (uiState.otpTimeRemaining > 0) {
             delay(1000)
-            if (uiState.otpTimeRemaining > 0) {
-                viewModel.updateOtpTimer()
-            }
+            viewModel.updateOtpTimer()
         }
     }
 
@@ -60,10 +63,14 @@ fun OtpVerificationScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .imePadding()
+            .verticalScroll(scrollState)
             .padding(Spacing.lg),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Push content down with spacer
+        Spacer(modifier = Modifier.weight(0.3f))
         // Logo and Title
         AuthHeader()
 
@@ -71,7 +78,7 @@ fun OtpVerificationScreen(
 
         // Verification message
         Text(
-            text = "Verification code sent to",
+            text = Strings.VERIFICATION_CODE_SENT,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -99,7 +106,7 @@ fun OtpVerificationScreen(
         // Timer - wrapped in derivedStateOf for optimization
         val timerText by remember {
             derivedStateOf {
-                "Code expires in 0:${uiState.otpTimeRemaining.toString().padStart(2, '0')}"
+                "${Strings.CODE_EXPIRES_IN} 0:${uiState.otpTimeRemaining.toString().padStart(2, '0')}"
             }
         }
         
@@ -109,11 +116,11 @@ fun OtpVerificationScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Box(
-                    modifier = Modifier.size(8.dp),
+                    modifier = Modifier.size(Dimensions.TIMER_DOT_SIZE),
                     contentAlignment = Alignment.Center
                 ) {
                     Surface(
-                        modifier = Modifier.size(8.dp),
+                        modifier = Modifier.size(Dimensions.TIMER_DOT_SIZE),
                         shape = MaterialTheme.shapes.extraSmall,
                         color = MaterialTheme.colorScheme.primary
                     ) {}
@@ -136,7 +143,7 @@ fun OtpVerificationScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Didn't receive the code? ",
+                    text = Strings.DIDNT_RECEIVE_CODE,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -146,12 +153,12 @@ fun OtpVerificationScreen(
                     },
                     enabled = !uiState.isLoading
                 ) {
-                    Text("Resend")
+                    Text(Strings.RESEND)
                 }
             }
         } else {
             Text(
-                text = "Didn't receive the code? Resend in 0:${uiState.otpTimeRemaining.toString().padStart(2, '0')}",
+                text = "${Strings.RESEND_IN} 0:${uiState.otpTimeRemaining.toString().padStart(2, '0')}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -191,7 +198,7 @@ fun OtpVerificationScreen(
             onClick = {
                 viewModel.verifyOtp(identifier, identifierType)
             },
-            text = "Verify",
+            text = Strings.VERIFY,
             isLoading = uiState.isLoading,
             enabled = !uiState.isLoading && uiState.otpCode.length == 6
         )
@@ -206,7 +213,7 @@ fun OtpVerificationScreen(
             },
             enabled = !uiState.isLoading
         ) {
-            Text("Use Different Email or Phone")
+            Text(Strings.USE_DIFFERENT_CONTACT)
         }
     }
 }

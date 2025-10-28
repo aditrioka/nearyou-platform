@@ -36,14 +36,19 @@ data class AuthUiState(
  * Sealed class for one-time events (navigation, etc.)
  * These events are consumed once and don't persist in state
  */
+@Immutable
 sealed class AuthEvent {
+    @Immutable
     data class NavigateToOtpVerification(
         val identifier: String,
         val identifierType: String,
         val username: String? = null
     ) : AuthEvent()
     
+    @Immutable
     data object NavigateToMain : AuthEvent()
+    
+    @Immutable
     data class ShowError(val message: String) : AuthEvent()
 }
 
@@ -139,12 +144,20 @@ class AuthViewModel(
     }
     
     /**
+     * Check if email is valid using multiplatform-compatible regex
+     */
+    private fun isValidEmail(email: String): Boolean {
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$".toRegex()
+        return emailRegex.matches(email)
+    }
+    
+    /**
      * Validate identifier input
      */
     private fun validateIdentifier(identifier: String): String? {
         return when {
             identifier.isBlank() -> "Please enter your email or phone"
-            identifier.contains("@") && !android.util.Patterns.EMAIL_ADDRESS.matcher(identifier).matches() -> 
+            identifier.contains("@") && !isValidEmail(identifier) -> 
                 "Please enter a valid email address"
             !identifier.contains("@") && identifier.length < 10 -> 
                 "Please enter a valid phone number"

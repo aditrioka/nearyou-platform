@@ -18,7 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import id.nearyou.app.ui.theme.Dimensions
 import id.nearyou.app.ui.theme.Spacing
 
 /**
@@ -37,8 +37,8 @@ fun ErrorScreen(
     ) {
         Icon(
             imageVector = Icons.Outlined.ErrorOutline,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
+            contentDescription = "Error indicator",
+            modifier = Modifier.size(Dimensions.ERROR_ICON_SIZE),
             tint = MaterialTheme.colorScheme.error
         )
         
@@ -63,7 +63,10 @@ fun ErrorScreen(
         Spacer(modifier = Modifier.height(Spacing.lg))
 
         Button(onClick = onRetry) {
-            Icon(Icons.Filled.Refresh, contentDescription = null)
+            Icon(
+                Icons.Filled.Refresh,
+                contentDescription = "Retry"
+            )
             Spacer(modifier = Modifier.width(Spacing.xs))
             Text("Try Again")
         }

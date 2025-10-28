@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import id.nearyou.app.ui.theme.Dimensions
 import id.nearyou.app.ui.theme.Spacing
 
 /**
@@ -89,8 +90,8 @@ fun OtpInput(
                 }
             },
             modifier = Modifier
-                .width(1.dp)  // Nearly invisible but still focusable
-                .height(1.dp)
+                .width(Dimensions.OTP_HIDDEN_FIELD_SIZE)  // Nearly invisible but still focusable
+                .height(Dimensions.OTP_HIDDEN_FIELD_SIZE)
                 .focusRequester(focusRequester),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.NumberPassword
@@ -110,7 +111,7 @@ private fun OtpDigitBox(
 ) {
     Box(
         modifier = modifier
-            .size(48.dp)
+            .size(Dimensions.OTP_BOX_SIZE)
             .border(
                 width = if (isFocused) 2.dp else 1.dp,
                 color = when {

@@ -1,6 +1,8 @@
 package id.nearyou.app.ui.auth
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,6 +11,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import id.nearyou.app.ui.components.PrimaryButton
 import id.nearyou.app.ui.components.TextInput
 import id.nearyou.app.ui.theme.Spacing
+import id.nearyou.app.ui.theme.Strings
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -24,6 +27,7 @@ fun SignupScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val event by viewModel.events.collectAsState()
+    val scrollState = rememberScrollState()
     
     // Handle one-time events
     LaunchedEffect(event) {
@@ -39,10 +43,14 @@ fun SignupScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .imePadding()
+            .verticalScroll(scrollState)
             .padding(Spacing.lg),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Push content down with spacer
+        Spacer(modifier = Modifier.weight(0.3f))
         // Logo and Title
         AuthHeader()
 
@@ -50,7 +58,7 @@ fun SignupScreen(
 
         // Email or Phone Label
         Text(
-            text = "Email or Phone",
+            text = Strings.EMAIL_OR_PHONE_LABEL,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
@@ -63,8 +71,8 @@ fun SignupScreen(
         TextInput(
             value = uiState.identifier,
             onValueChange = viewModel::updateIdentifier,
-            label = "Email or Phone",
-            placeholder = "Enter your email or phone",
+            label = Strings.EMAIL_OR_PHONE_LABEL,
+            placeholder = Strings.EMAIL_OR_PHONE_PLACEHOLDER,
             keyboardType = KeyboardType.Email,
             enabled = !uiState.isLoading,
             error = if (currentError != null && 
@@ -76,7 +84,7 @@ fun SignupScreen(
 
         // Username Label
         Text(
-            text = "Username",
+            text = Strings.USERNAME_LABEL,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
@@ -88,8 +96,8 @@ fun SignupScreen(
         TextInput(
             value = uiState.username,
             onValueChange = viewModel::updateUsername,
-            label = "Username",
-            placeholder = "Choose a username",
+            label = Strings.USERNAME_LABEL,
+            placeholder = Strings.USERNAME_PLACEHOLDER,
             enabled = !uiState.isLoading,
             error = if (currentError != null && currentError.contains("username", ignoreCase = true)) currentError else null
         )
@@ -114,7 +122,7 @@ fun SignupScreen(
         // Create Account Button
         PrimaryButton(
             onClick = viewModel::register,
-            text = "Create Account",
+            text = Strings.CREATE_ACCOUNT,
             isLoading = uiState.isLoading,
             enabled = !uiState.isLoading
         )
@@ -123,7 +131,7 @@ fun SignupScreen(
 
         // Helper Text
         Text(
-            text = "We'll send you a verification code",
+            text = Strings.VERIFICATION_CODE_MESSAGE,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -136,7 +144,7 @@ fun SignupScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Already have an account? ",
+                text = Strings.ALREADY_HAVE_ACCOUNT,
                 style = MaterialTheme.typography.bodyMedium
             )
             TextButton(
@@ -146,7 +154,7 @@ fun SignupScreen(
                 },
                 enabled = !uiState.isLoading
             ) {
-                Text("Sign In")
+                Text(Strings.SIGN_IN_LINK)
             }
         }
     }
