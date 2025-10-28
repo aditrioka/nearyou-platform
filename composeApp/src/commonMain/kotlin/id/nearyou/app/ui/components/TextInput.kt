@@ -6,11 +6,18 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 
 /**
  * Reusable text input component following design system
+ * 
+ * Improvements:
+ * - Better accessibility with semantic properties
+ * - Consistent label/placeholder handling
+ * - Proper error state management
  */
 @Composable
 fun TextInput(
@@ -28,13 +35,15 @@ fun TextInput(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
-        placeholder = { Text(placeholder) },
-        supportingText = {
-            if (error != null) {
-                Text(error)
-            }
-        },
+        label = if (label.isNotEmpty()) {
+            { Text(label) }
+        } else null,
+        placeholder = if (placeholder.isNotEmpty()) {
+            { Text(placeholder) }
+        } else null,
+        supportingText = if (error != null) {
+            { Text(error) }
+        } else null,
         isError = error != null,
         enabled = enabled,
         singleLine = singleLine,
@@ -42,7 +51,10 @@ fun TextInput(
             keyboardType = keyboardType,
             imeAction = imeAction
         ),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                contentDescription = label.ifEmpty { placeholder }
+            }
     )
 }
-

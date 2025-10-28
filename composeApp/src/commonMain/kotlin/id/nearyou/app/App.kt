@@ -13,12 +13,17 @@ import id.nearyou.app.ui.main.MainScreen
 import id.nearyou.app.ui.theme.NearYouTheme
 import org.koin.compose.viewmodel.koinViewModel
 
+/**
+ * Main App Composable - Refactored
+ * 
+ * Now uses koinViewModel() consistently for proper lifecycle management
+ */
 @Composable
 @Preview
 fun App() {
     NearYouTheme {
-        // Get AuthViewModel from Koin DI container
-        val authViewModel = koinViewModel<AuthViewModel>()
+        // Get AuthViewModel from Koin DI container with proper lifecycle
+        val authViewModel: AuthViewModel = koinViewModel()
         val authState by authViewModel.uiState.collectAsState()
 
         when {
@@ -33,13 +38,14 @@ fun App() {
             }
             authState.isAuthenticated -> {
                 // Show main app if authenticated
-                // Pass authViewModel to ensure same instance is used
-                MainScreen(authViewModel = authViewModel)
+                MainScreen()
             }
             else -> {
                 // Show auth flow if not authenticated
                 AuthNavigation(
                     onAuthSuccess = {
+                        // AuthViewModel handles state update
+                        // This just ensures we refresh if needed
                         authViewModel.checkAuthStatus()
                     }
                 )

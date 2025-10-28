@@ -1,9 +1,12 @@
 package id.nearyou.app.ui.navigation
 
 import androidx.compose.runtime.*
+import id.nearyou.app.ui.auth.AuthEvent
+import id.nearyou.app.ui.auth.AuthViewModel
 import id.nearyou.app.ui.auth.LoginScreen
 import id.nearyou.app.ui.auth.SignupScreen
 import id.nearyou.app.ui.auth.OtpVerificationScreen
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Navigation state for auth flow
@@ -19,28 +22,44 @@ sealed class AuthRoute {
 }
 
 /**
- * Auth navigation composable
+ * Auth navigation composable - Refactored
+ * 
+ * Now uses events from ViewModel to trigger navigation
+ * instead of callbacks from screens
  */
 @Composable
 fun AuthNavigation(
-    onAuthSuccess: () -> Unit
+    onAuthSuccess: () -> Unit,
+    viewModel: AuthViewModel = koinViewModel()
 ) {
     var currentRoute by remember { mutableStateOf<AuthRoute>(AuthRoute.Login) }
+    val event by viewModel.events.collectAsState()
+    
+    // Handle navigation events from ViewModel
+    LaunchedEffect(event) {
+        when (val currentEvent = event) {
+            is AuthEvent.NavigateToOtpVerification -> {
+                currentRoute = AuthRoute.OtpVerification(
+                    identifier = currentEvent.identifier,
+                    identifierType = currentEvent.identifierType,
+                    username = currentEvent.username
+                )
+                viewModel.onEventConsumed()
+            }
+            is AuthEvent.NavigateToMain -> {
+                onAuthSuccess()
+                viewModel.onEventConsumed()
+            }
+            else -> {}
+        }
+    }
     
     when (val route = currentRoute) {
         is AuthRoute.Login -> {
             LoginScreen(
                 onNavigateToSignup = {
                     currentRoute = AuthRoute.Signup
-                },
-                onNavigateToOtpVerification = { identifier, identifierType ->
-                    currentRoute = AuthRoute.OtpVerification(
-                        identifier = identifier,
-                        identifierType = identifierType,
-                        username = null
-                    )
-                },
-                onLoginSuccess = onAuthSuccess
+                }
             )
         }
         
@@ -48,13 +67,6 @@ fun AuthNavigation(
             SignupScreen(
                 onNavigateToLogin = {
                     currentRoute = AuthRoute.Login
-                },
-                onNavigateToOtpVerification = { identifier, identifierType, username ->
-                    currentRoute = AuthRoute.OtpVerification(
-                        identifier = identifier,
-                        identifierType = identifierType,
-                        username = username
-                    )
                 }
             )
         }
@@ -76,4 +88,3 @@ fun AuthNavigation(
         }
     }
 }
-

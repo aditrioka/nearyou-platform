@@ -7,17 +7,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import id.nearyou.app.ui.auth.AuthViewModel
-import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
+/**
+ * Main Screen - Refactored
+ * 
+ * Uses consistent koinViewModel injection
+ */
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    authViewModel: AuthViewModel = koinInject()
+    authViewModel: AuthViewModel = koinViewModel()
 ) {
-    val scope = rememberCoroutineScope()
     val authState by authViewModel.uiState.collectAsState()
-    var isLoggingOut by remember { mutableStateOf(false) }
     
     Column(
         modifier = modifier
@@ -40,19 +42,13 @@ fun MainScreen(
         )
         
         Button(
-            onClick = {
-                scope.launch {
-                    isLoggingOut = true
-                    authViewModel.logout()
-                    isLoggingOut = false
-                }
-            },
-            enabled = !isLoggingOut,
+            onClick = authViewModel::logout,
+            enabled = !authState.isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
-            if (isLoggingOut) {
+            if (authState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
                     color = MaterialTheme.colorScheme.onPrimary
@@ -63,4 +59,3 @@ fun MainScreen(
         }
     }
 }
-

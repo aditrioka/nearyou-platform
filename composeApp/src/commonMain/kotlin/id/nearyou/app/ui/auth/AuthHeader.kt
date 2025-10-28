@@ -7,9 +7,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import id.nearyou.app.ui.theme.Dimensions
 import id.nearyou.app.ui.theme.Spacing
+import id.nearyou.app.ui.theme.Strings
 
+/**
+ * Auth Header Component - Refactored
+ * 
+ * Uses centralized strings and dimensions
+ */
 @Composable
 fun AuthHeader(
     modifier: Modifier = Modifier
@@ -21,18 +27,17 @@ fun AuthHeader(
         // Logo/Icon placeholder - using Material Icon for now
         Icon(
             imageVector = Icons.Filled.AccountCircle,
-            contentDescription = "NearYou ID Logo",
-            modifier = Modifier.size(80.dp),
+            contentDescription = "${Strings.APP_NAME} Logo",
+            modifier = Modifier.size(Dimensions.AUTH_LOGO_SIZE),
             tint = MaterialTheme.colorScheme.primary
         )
         
         Spacer(modifier = Modifier.height(Spacing.md))
         
         Text(
-            text = "NearYou ID",
+            text = Strings.APP_NAME,
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
-
