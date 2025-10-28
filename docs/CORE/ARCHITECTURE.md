@@ -248,6 +248,369 @@ iosApp/
 
 ---
 
+## Frontend Architecture Pattern
+
+### MVI (Model-View-Intent) Pattern
+
+**Updated:** 2025-10-28
+
+The frontend layer follows the **MVI (Model-View-Intent)** architectural pattern, which provides a unidirectional data flow and clear separation between UI and business logic. This pattern ensures predictable state management and excellent testability.
+
+### Architecture Layers
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         View Layer                           │
+│                    (Composable Functions)                    │
+│  - Stateless UI components                                   │
+│  - Observes state from ViewModel                             │
+│  - Sends user intents to ViewModel                           │
+│  - Handles one-time events (navigation, snackbars)           │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         │ collectAsState()
+                         │ onClick = viewModel::action
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      ViewModel Layer                         │
+│                   (Business Logic & State)                   │
+│  - Manages UI state with StateFlow                           │
+│  - Handles user intents (login, register, etc.)              │
+│  - Emits one-time events (navigation, errors)                │
+│  - Validates input                                           │
+│  - Coordinates with repositories                             │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         │ suspend functions
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Repository Layer                         │
+│                    (Data Access - shared/)                   │
+│  - Network calls via Ktor Client                             │
+│  - Local database via SQLDelight                             │
+│  - Token storage (platform-specific)                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### State Management
+
+#### UI State (Single Source of Truth)
+
+All UI state is consolidated into a single immutable data class:
+
+```kotlin
+@Immutable
+data class AuthUiState(
+    val isAuthenticated: Boolean = false,
+    val isLoading: Boolean = true,
+    val error: String? = null,
+    val identifier: String = "",
+    val username: String = "",
+    val otpCode: String = "",
+    val otpTimeRemaining: Int = 0,
+    val canResendOtp: Boolean = false,
+    val successMessage: String? = null
+)
+```
+
+**Benefits:**
+- **@Immutable annotation** - Helps Compose optimize recomposition
+- **Single source of truth** - All state in one place
+- **Type-safe** - Compile-time guarantees
+- **Testable** - Easy to create test states
+
+#### Event Handling (One-Time Actions)
+
+Events that should happen only once (navigation, showing snackbars) use a separate event channel:
+
+```kotlin
+sealed class AuthEvent {
+    data class NavigateToOtpVerification(
+        val identifier: String,
+        val identifierType: String,
+        val username: String? = null
+    ) : AuthEvent()
+
+    data object NavigateToMain : AuthEvent()
+    data class ShowError(val message: String) : AuthEvent()
+}
+```
+
+**Why separate events from state?**
+- Navigation should happen once, not on every recomposition
+- Prevents duplicate navigation or snackbar displays
+- Clear distinction between persistent state and one-time actions
+
+### ViewModel Implementation
+
+```kotlin
+class AuthViewModel(
+    private val authRepository: AuthRepository
+) : ViewModel() {
+
+    // Private mutable state
+    private val _uiState = MutableStateFlow(AuthUiState())
+    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+
+    // One-time events
+    private val _events = MutableStateFlow<AuthEvent?>(null)
+    val events: StateFlow<AuthEvent?> = _events.asStateFlow()
+
+    // User intents
+    fun login() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            authRepository.login(uiState.value.identifier, getIdentifierType())
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _events.value = AuthEvent.NavigateToOtpVerification(...)
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = error.message)
+                    }
+                }
+        }
+    }
+
+    fun updateIdentifier(value: String) {
+        _uiState.update { it.copy(identifier = value, error = null) }
+    }
+
+    fun onEventConsumed() {
+        _events.value = null
+    }
+}
+```
+
+**Key Principles:**
+- All business logic in ViewModel
+- UI state updates via `_uiState.update { }`
+- Coroutines launched in `viewModelScope`
+- Repository calls return `Result<T>` for error handling
+
+### View (Composable) Implementation
+
+```kotlin
+@Composable
+fun LoginScreen(
+    onNavigateToSignup: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = koinViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val event by viewModel.events.collectAsState()
+
+    // Handle one-time events
+    LaunchedEffect(event) {
+        when (val currentEvent = event) {
+            is AuthEvent.NavigateToOtpVerification -> {
+                // Navigate to OTP screen
+                viewModel.onEventConsumed()
+            }
+            else -> {}
+        }
+    }
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // UI observes state
+        TextInput(
+            value = uiState.identifier,
+            onValueChange = viewModel::updateIdentifier,
+            enabled = !uiState.isLoading,
+            error = uiState.error
+        )
+
+        // UI delegates actions to ViewModel
+        PrimaryButton(
+            onClick = viewModel::login,
+            isLoading = uiState.isLoading,
+            enabled = !uiState.isLoading
+        )
+    }
+}
+```
+
+**Key Principles:**
+- **Stateless** - No local state management
+- **Observes** - Collects state from ViewModel
+- **Delegates** - Sends all actions to ViewModel
+- **Reacts** - Handles one-time events with LaunchedEffect
+
+### UI Resource Organization
+
+#### Centralized Constants
+
+All UI constants are centralized for consistency and easy maintenance:
+
+**`Dimensions.kt`** - Size constants
+```kotlin
+object Dimensions {
+    val BUTTON_HEIGHT = 50.dp
+    val BUTTON_LOADING_INDICATOR_SIZE = 24.dp
+    val OTP_BOX_SIZE = 48.dp
+    val AUTH_LOGO_SIZE = 80.dp
+    val SCREEN_PADDING = 24.dp
+    const val OTP_TIMER_DURATION = 60
+}
+```
+
+**`Strings.kt`** - User-facing text (i18n preparation)
+```kotlin
+object Strings {
+    const val APP_NAME = "NearYou ID"
+    const val SIGN_IN = "Sign In"
+    const val EMAIL_OR_PHONE_LABEL = "Email or Phone"
+    const val VERIFICATION_CODE_MESSAGE = "We'll send you a verification code"
+    // ... all UI strings
+}
+```
+
+**Benefits:**
+- **Consistency** - Same values used everywhere
+- **Maintainability** - Change once, update everywhere
+- **i18n Ready** - Easy to replace with resource strings
+- **Type Safety** - Compile-time checks
+
+### Accessibility
+
+All UI components include proper accessibility support:
+
+```kotlin
+@Composable
+fun PrimaryButton(
+    onClick: () -> Unit,
+    text: String,
+    isLoading: Boolean = false,
+    enabled: Boolean = true
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled && !isLoading,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Dimensions.BUTTON_HEIGHT)
+            .semantics {
+                contentDescription = if (isLoading) "Loading..." else text
+            }
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(Dimensions.BUTTON_LOADING_INDICATOR_SIZE),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        } else {
+            Text(text)
+        }
+    }
+}
+```
+
+**Accessibility Features:**
+- `contentDescription` for screen readers
+- `semantics` modifiers for interactive elements
+- Proper focus management
+- Keyboard navigation support
+
+### Platform-Specific Considerations
+
+#### Keyboard Handling
+```kotlin
+Column(
+    modifier = Modifier
+        .fillMaxSize()
+        .windowInsetsPadding(WindowInsets.systemBars)  // System bars
+        .imePadding()  // Keyboard
+        .verticalScroll(scrollState)  // Scroll when keyboard appears
+)
+```
+
+#### Multiplatform Validation
+```kotlin
+// ❌ Android-specific (doesn't work on iOS)
+android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+
+// ✅ Multiplatform-compatible
+private fun isValidEmail(email: String): Boolean {
+    val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$".toRegex()
+    return emailRegex.matches(email)
+}
+```
+
+### Navigation Pattern
+
+Navigation is event-driven and handled at the navigation level:
+
+```kotlin
+@Composable
+fun AuthNavigation(
+    onAuthSuccess: () -> Unit,
+    viewModel: AuthViewModel = koinViewModel()
+) {
+    var currentRoute by remember { mutableStateOf<AuthRoute>(AuthRoute.Login) }
+    val event by viewModel.events.collectAsState()
+
+    // React to navigation events from ViewModel
+    LaunchedEffect(event) {
+        when (val currentEvent = event) {
+            is AuthEvent.NavigateToOtpVerification -> {
+                currentRoute = AuthRoute.OtpVerification(...)
+                viewModel.onEventConsumed()
+            }
+            is AuthEvent.NavigateToMain -> {
+                onAuthSuccess()
+                viewModel.onEventConsumed()
+            }
+            else -> {}
+        }
+    }
+
+    when (val route = currentRoute) {
+        is AuthRoute.Login -> LoginScreen(...)
+        is AuthRoute.Signup -> SignupScreen(...)
+        is AuthRoute.OtpVerification -> OtpVerificationScreen(...)
+    }
+}
+```
+
+### Testing Strategy
+
+The MVI pattern enables excellent testability:
+
+```kotlin
+class AuthViewModelTest {
+    @Test
+    fun `login with valid credentials should navigate to OTP`() = runTest {
+        // Given
+        val mockRepository = mockk<AuthRepository>()
+        coEvery { mockRepository.login(any(), any()) } returns Result.success(Unit)
+        val viewModel = AuthViewModel(mockRepository)
+
+        // When
+        viewModel.updateIdentifier("test@example.com")
+        viewModel.login()
+
+        // Then
+        val event = viewModel.events.value
+        assertTrue(event is AuthEvent.NavigateToOtpVerification)
+        assertEquals("test@example.com", (event as AuthEvent.NavigateToOtpVerification).identifier)
+    }
+}
+```
+
+### Benefits of This Architecture
+
+1. **Predictable State** - Unidirectional data flow
+2. **Testable** - Easy to test ViewModels and UI separately
+3. **Maintainable** - Clear separation of concerns
+4. **Performant** - @Immutable annotations optimize Compose
+5. **Scalable** - Pattern works for simple and complex screens
+6. **Accessible** - Built-in accessibility support
+7. **Multiplatform** - Works on Android, iOS, and Desktop
+
+---
+
 ## Data Flow
 
 ### 1. User Authentication Flow

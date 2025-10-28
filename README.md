@@ -68,7 +68,7 @@ nearyou-id/
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | Compose Multiplatform, Kotlin 2.2.20 |
+| **Frontend** | Compose Multiplatform, Kotlin 2.2.20, MVI Pattern |
 | **Backend** | Ktor 3.3.0, Kotlin Coroutines |
 | **Database** | PostgreSQL 15+ with PostGIS |
 | **Caching** | Redis |

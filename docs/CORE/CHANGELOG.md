@@ -22,6 +22,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LoginRequest model in shared module
 
 #### Changed
+- **MAJOR:** Refactored authentication UI to MVI (Model-View-Intent) pattern (2025-10-28)
+  - Migrated from stateful, callback-driven UI to centralized ViewModel state management
+  - Implemented `StateFlow` for reactive state updates instead of `mutableStateOf`
+  - Introduced event-driven navigation with `AuthEvent` sealed class for one-time events
+  - Made UI components stateless and "dumb" (presentation only)
+  - Consolidated all business logic, validation, and state in `AuthViewModel`
+  - Screens now observe state and delegate all actions to ViewModel methods
+- Centralized UI resources for consistency and maintainability (2025-10-28)
+  - Created `Dimensions.kt` for all size constants (button heights, spacing, etc.)
+  - Created `Strings.kt` for all user-facing text (preparation for i18n)
+  - Replaced all hardcoded values with references to centralized constants
+- Enhanced screen layouts and user experience (2025-10-28)
+  - Added proper keyboard handling with `imePadding()` modifier
+  - Implemented `windowInsetsPadding(WindowInsets.systemBars)` for system bars
+  - Added vertical scroll support for smaller devices when keyboard is active
+  - Improved content centering with flexible spacers
+- Improved accessibility and performance (2025-10-28)
+  - Added `@Immutable` annotations to state classes for better Compose performance
+  - Enhanced components with `contentDescription` for screen readers
+  - Added semantic properties to interactive elements
+  - Improved focus management in `OtpInput` component
+- Implemented multiplatform-compatible email validation
+  - Removed dependency on Android-specific `android.util.Patterns`
+  - Created regex-based validation that works across all platforms
+- Refactored `OtpInput` component for better UX
+  - Uses single hidden `BasicTextField` controlling visual boxes
+  - Fixed focus management and keyboard handling issues
+  - Improved accessibility with proper focus requester
 - **BREAKING:** Refactored to KMP best practices - shared models architecture
   - Removed duplicate model definitions between server and client
   - Server now imports all DTOs from `shared/` module (single source of truth)
