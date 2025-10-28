@@ -418,6 +418,28 @@ class AuthService(
             }
         }
     }
-    
+
+    /**
+     * Revoke all refresh tokens for a user (used for logout)
+     */
+    fun revokeAllUserTokens(userId: String): Result<Unit> {
+        return try {
+            transaction {
+                RefreshTokens.update({
+                    (RefreshTokens.userId eq UUID.fromString(userId)) and
+                    (RefreshTokens.isRevoked eq false)
+                }) {
+                    it[isRevoked] = true
+                    it[revokedAt] = kotlinx.datetime.Clock.System.now()
+                }
+            }
+            logger.info("Revoked all tokens for user: $userId")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            logger.error("Failed to revoke tokens for user: $userId", e)
+            Result.failure(e)
+        }
+    }
+
 }
 

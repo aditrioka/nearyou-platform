@@ -212,10 +212,28 @@ class AuthRepository(
     }
 
     /**
-     * Logout user (clear tokens)
+     * Logout user (revoke tokens on server and clear locally)
      */
     suspend fun logout() {
-        tokenStorage.clearTokens()
+        try {
+            // Get access token before clearing
+            val accessToken = tokenStorage.getAccessToken()
+
+            if (accessToken != null) {
+                // Call server logout endpoint to revoke tokens
+                httpClient.post("${AppConfig.baseUrl}/auth/logout") {
+                    headers {
+                        append(HttpHeaders.Authorization, "Bearer $accessToken")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Log error but continue with local logout
+            println("Server logout failed: ${e.message}")
+        } finally {
+            // Always clear local tokens
+            tokenStorage.clearTokens()
+        }
     }
 
     /**

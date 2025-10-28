@@ -4,6 +4,8 @@ import domain.model.auth.*
 import id.nearyou.app.exceptions.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -99,6 +101,32 @@ fun Route.authRoutes() {
             )
         }
         
+        /**
+         * POST /auth/logout
+         * Logout user and revoke all refresh tokens
+         * Requires JWT authentication
+         */
+        authenticate("auth-jwt") {
+            post("/logout") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+
+                val userId = principal.payload.subject
+                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+
+                val result = authService.revokeAllUserTokens(userId)
+
+                result.fold(
+                    onSuccess = {
+                        call.respond(HttpStatusCode.OK, mapOf("message" to "Logged out successfully"))
+                    },
+                    onFailure = { error ->
+                        throw AuthenticationException(error.message ?: "Logout failed", "LOGOUT_FAILED")
+                    }
+                )
+            }
+        }
+
         /**
          * POST /auth/login/google
          * Login with Google OAuth
