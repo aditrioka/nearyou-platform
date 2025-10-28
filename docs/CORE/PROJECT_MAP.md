@@ -20,12 +20,6 @@ Helps developers and AI tools locate all relevant project files efficiently.
 - **[DECISIONS.md](./DECISIONS.md)** → Architectural Decision Records (ADRs)
 - **[CHANGELOG.md](./CHANGELOG.md)** → Version history, release notes, and current status
 
-### Archived Resources
-- **[BEST_PRACTICES_EVALUATION.md](../ARCHIVE/BEST_PRACTICES_EVALUATION.md)** → Codebase compliance evaluation (2025-10-22)
-- **[IMPROVEMENT_ROADMAP.md](../ARCHIVE/IMPROVEMENT_ROADMAP.md)** → Phased improvement plan
-- **[IMPLEMENTATION_LOG.md](../ARCHIVE/IMPLEMENTATION_LOG.md)** → Log of implemented changes (2025-10-22)
-- **[DEPLOYMENT_READY_SUMMARY.md](../ARCHIVE/DEPLOYMENT_READY_SUMMARY.md)** → Deployment readiness (merged into CHANGELOG)
-
 ---
 
 ## 🗺️ Project Plans
@@ -49,15 +43,6 @@ Helps developers and AI tools locate all relevant project files efficiently.
   - Quick reference for vibe code development
 
 ---
-
-## ⚙️ Task Management
-
-- **[TASKS/active/](../TASKS/active/)** → Active tasks
-- **[TASKS/completed/](../TASKS/completed/)** → Completed tasks
-
-### Archived Task Documentation
-- **[TASK_PLANS/](../ARCHIVE/TASK_PLANS/)** → Granular task execution plans (T-###)
-- **[TEST_REPORTS/](../ARCHIVE/TEST_REPORTS/)** → Validation and test reports for specific tasks
 
 ---
 
@@ -206,20 +191,6 @@ Root (README.md)
 │
 ├─── Plans (docs/PLANS/)
 │    └─── NearYou_ID_MVP_Plan.md (Complete execution plan)
-│
-├─── Tasks (docs/TASKS/)
-│    ├─── active/
-│    └─── completed/
-│
-├─── Archive (docs/ARCHIVE/)
-│    ├─── BEST_PRACTICES_EVALUATION.md
-│    ├─── IMPROVEMENT_ROADMAP.md
-│    ├─── IMPLEMENTATION_LOG.md
-│    ├─── PHASE_0_COMPLETION_SUMMARY.md
-│    ├─── DEPLOYMENT_READY_SUMMARY.md
-│    ├─── TASK_PLANS/
-│    ├─── TEST_REPORTS/
-│    └─── legacy_test_reports/
 │
 ├─── Database (database/)
 │    ├─── README.md (Quick ref → see INFRA.md)
