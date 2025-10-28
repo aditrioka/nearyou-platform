@@ -4,48 +4,23 @@ import domain.model.User
 import domain.model.UpdateUserRequest
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
 import util.AppLogger
-import util.LoggerConfig
 
 /**
  * Repository for user profile operations
  *
  * @param tokenStorage Storage for access and refresh tokens
- * @param baseUrl Base URL for the API
- * @param httpClient Optional HTTP client for testing (if null, creates default client)
+ * @param httpClient Shared HTTP client instance
  */
 class UserRepository(
     private val tokenStorage: TokenStorage,
-    private val baseUrl: String = "http://localhost:8080",
-    httpClient: HttpClient? = null
+    private val httpClient: HttpClient
 ) {
     companion object {
         private const val TAG = "UserRepository"
-    }
-    private val client = httpClient ?: HttpClient {
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
-        }
-        install(Logging) {
-            logger = util.KtorLogger  // Use our custom logger that outputs to platform logs
-            // Use BODY in development, INFO in production
-            level = if (LoggerConfig.logSensitiveData) LogLevel.BODY else LogLevel.INFO
-        }
-        install(HttpTimeout) {
-            requestTimeoutMillis = 30000
-        }
     }
 
     /**
@@ -71,7 +46,7 @@ class UserRepository(
             val accessToken = tokenStorage.getAccessToken()
                 ?: return Result.failure(Exception("Not authenticated"))
 
-            val response = client.get("$baseUrl/users/me") {
+            val response = httpClient.get("/users/me") {
                 contentType(ContentType.Application.Json)
                 bearerAuth(accessToken)
             }
@@ -103,7 +78,7 @@ class UserRepository(
             val accessToken = tokenStorage.getAccessToken()
                 ?: return Result.failure(Exception("Not authenticated"))
 
-            val response = client.put("$baseUrl/users/me") {
+            val response = httpClient.put("/users/me") {
                 contentType(ContentType.Application.Json)
                 bearerAuth(accessToken)
                 setBody(request)
@@ -122,13 +97,6 @@ class UserRepository(
             AppLogger.error(TAG, "Error updating user profile", e)
             Result.failure(e)
         }
-    }
-
-    /**
-     * Close the HTTP client
-     */
-    fun close() {
-        client.close()
     }
 }
 

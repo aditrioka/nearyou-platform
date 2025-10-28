@@ -3,49 +3,24 @@ package data
 import domain.model.auth.*
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
+import util.AppConfig
 import util.AppLogger
-import util.LoggerConfig
 
 /**
  * Repository for authentication operations
  *
  * @param tokenStorage Storage for access and refresh tokens
- * @param baseUrl Base URL for the API
- * @param httpClient Optional HTTP client for testing (if null, creates default client)
+ * @param httpClient Shared HTTP client instance
  */
 class AuthRepository(
     private val tokenStorage: TokenStorage,
-    private val baseUrl: String = "http://localhost:8080",
-    httpClient: HttpClient? = null
+    private val httpClient: HttpClient
 ) {
     companion object {
         private const val TAG = "AuthRepository"
-    }
-    private val client = httpClient ?: HttpClient {
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
-        }
-        install(Logging) {
-            logger = util.KtorLogger  // Use our custom logger that outputs to platform logs
-            // Use BODY in development, INFO in production
-            level = if (LoggerConfig.logSensitiveData) LogLevel.BODY else LogLevel.INFO
-        }
-        install(HttpTimeout) {
-            requestTimeoutMillis = 30000
-            connectTimeoutMillis = 30000
-        }
     }
 
     /**
@@ -68,7 +43,7 @@ class AuthRepository(
         return try {
             AppLogger.info(TAG, "Registering user: ${request.username}")
 
-            val response = client.post("$baseUrl/auth/register") {
+            val response = httpClient.post("/auth/register") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
@@ -100,7 +75,7 @@ class AuthRepository(
                 email = if (identifierType == "email") identifier else null,
                 phone = if (identifierType == "phone") identifier else null
             )
-            val response = client.post("$baseUrl/auth/login") {
+            val response = httpClient.post("/auth/login") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
@@ -126,7 +101,7 @@ class AuthRepository(
      */
     suspend fun verifyOtp(request: VerifyOtpRequest): Result<AuthResponse> {
         return try {
-            val response = client.post("$baseUrl/auth/verify-otp") {
+            val response = httpClient.post("/auth/verify-otp") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
@@ -162,7 +137,7 @@ class AuthRepository(
      */
     suspend fun loginWithGoogle(idToken: String): Result<AuthResponse> {
         return try {
-            val response = client.post("$baseUrl/auth/login/google") {
+            val response = httpClient.post("/auth/login/google") {
                 contentType(ContentType.Application.Json)
                 setBody(GoogleLoginRequest(idToken))
             }
@@ -191,7 +166,7 @@ class AuthRepository(
             val refreshToken = tokenStorage.getRefreshToken()
                 ?: return Result.failure(Exception("No refresh token available"))
 
-            val response = client.post("$baseUrl/auth/refresh") {
+            val response = httpClient.post("/auth/refresh") {
                 contentType(ContentType.Application.Json)
                 setBody(RefreshTokenRequest(refreshToken))
             }
@@ -221,7 +196,7 @@ class AuthRepository(
 
             if (accessToken != null) {
                 // Call server logout endpoint to revoke tokens
-                httpClient.post("${AppConfig.baseUrl}/auth/logout") {
+                httpClient.post("/auth/logout") {
                     headers {
                         append(HttpHeaders.Authorization, "Bearer $accessToken")
                     }
@@ -229,7 +204,7 @@ class AuthRepository(
             }
         } catch (e: Exception) {
             // Log error but continue with local logout
-            println("Server logout failed: ${e.message}")
+            AppLogger.error(TAG, "Server logout failed: ${e.message}")
         } finally {
             // Always clear local tokens
             tokenStorage.clearTokens()
@@ -248,13 +223,6 @@ class AuthRepository(
      */
     suspend fun getAccessToken(): String? {
         return tokenStorage.getAccessToken()
-    }
-
-    /**
-     * Close HTTP client
-     */
-    fun close() {
-        client.close()
     }
 }
 
