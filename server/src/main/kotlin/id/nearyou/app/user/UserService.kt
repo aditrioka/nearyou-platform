@@ -2,6 +2,7 @@ package id.nearyou.app.user
 
 import domain.model.User
 import domain.model.UpdateUserRequest
+import domain.validation.UserValidation
 import id.nearyou.app.exceptions.NotFoundException
 import id.nearyou.app.exceptions.ValidationException
 import id.nearyou.app.repository.UserRepository
@@ -10,7 +11,7 @@ import id.nearyou.app.repository.UserRepository
  * User service handling user profile operations
  */
 class UserService {
-    
+
     /**
      * Get user by ID
      * @param userId User ID
@@ -19,7 +20,7 @@ class UserService {
     fun getUserById(userId: String): User? {
         return UserRepository.findById(userId)
     }
-    
+
     /**
      * Update user profile
      * @param userId User ID
@@ -29,25 +30,27 @@ class UserService {
      * @throws ValidationException if validation fails
      */
     fun updateUserProfile(userId: String, request: UpdateUserRequest): User {
-        // Validate input
+        // Validate input using shared validation
         request.displayName?.let { name ->
-            if (name.isBlank() || name.length > 50) {
+            val result = UserValidation.validateDisplayName(name)
+            if (!result.isValid) {
                 throw ValidationException(
-                    "Display name must be between 1 and 50 characters",
+                    result.error ?: "Invalid display name",
                     "INVALID_DISPLAY_NAME"
                 )
             }
         }
-        
+
         request.bio?.let { bio ->
-            if (bio.length > 200) {
+            val result = UserValidation.validateBio(bio)
+            if (!result.isValid) {
                 throw ValidationException(
-                    "Bio must not exceed 200 characters",
+                    result.error ?: "Invalid bio",
                     "INVALID_BIO"
                 )
             }
         }
-        
+
         request.profilePhotoUrl?.let { url ->
             if (url.isBlank()) {
                 throw ValidationException(
