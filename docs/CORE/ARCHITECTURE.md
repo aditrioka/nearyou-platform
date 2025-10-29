@@ -193,8 +193,11 @@ server/
 │       │   ├── AuthRoutes.kt  # Auth endpoints
 │       │   ├── AuthService.kt # Auth business logic
 │       │   └── JwtConfig.kt   # JWT token generation
+│       ├── post/              # ✅ IMPLEMENTED (T-201)
+│       │   ├── PostRoutes.kt  # Post endpoints (nearby, CRUD)
+│       │   ├── PostService.kt # Post business logic & validation
+│       │   └── PostRepository.kt # PostGIS geo queries & data access
 │       ├── routes/
-│       │   ├── PostRoutes.kt
 │       │   ├── ChatRoutes.kt
 │       │   ├── UserRoutes.kt
 │       │   ├── NotificationRoutes.kt
@@ -202,13 +205,11 @@ server/
 │       │   ├── SearchRoutes.kt
 │       │   └── AdminRoutes.kt
 │       ├── service/
-│       │   ├── PostService.kt
 │       │   ├── ChatService.kt
 │       │   ├── NotificationService.kt
 │       │   └── SubscriptionService.kt
 │       ├── repository/
 │       │   ├── UserRepository.kt
-│       │   ├── PostRepository.kt
 │       │   ├── ChatRepository.kt
 │       │   └── NotificationRepository.kt
 │       ├── middleware/

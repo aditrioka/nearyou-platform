@@ -125,6 +125,22 @@ database/README.md (see docs/CORE/INFRA.md#database)
 
 ## [Unreleased]
 
+### Phase 2: Core Timeline & Posts (In Progress)
+
+#### Added
+- **PostGIS Geo Queries (T-201)** - 2025-10-29
+  - PostRepository with PostGIS spatial queries (`ST_DWithin`, `ST_Distance`)
+  - PostService with business logic and validation
+  - PostRoutes with REST API endpoints (`/posts/nearby`, `/posts`, `/posts/:id`)
+  - Custom GeographyColumnType for PostgreSQL GEOGRAPHY type
+  - Support for 4 distance levels: 1km, 5km, 10km, 20km
+  - Comprehensive test suites (25 tests total)
+    - PostRepositoryTest (11 tests)
+    - PostServiceTest (14 tests)
+  - CRUD operations with soft delete
+  - Distance calculation and sorting
+  - Premium user media upload restrictions
+
 ### Phase 1: Authentication & User Management (In Progress)
 
 #### Added

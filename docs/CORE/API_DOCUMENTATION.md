@@ -1,8 +1,8 @@
 # Near You ID - API Documentation
 
-**Version:** 1.0.1
+**Version:** 1.1.0
 **Base URL:** `http://localhost:8080`
-**Last Updated:** 2025-10-28
+**Last Updated:** 2025-10-29
 
 ## Overview
 
@@ -463,7 +463,310 @@ curl -X PUT http://localhost:8080/users/me \
 
 ---
 
+## Post Endpoints
+
+### 1. Get Nearby Posts
+
+Get posts within a specified radius of a location using PostGIS spatial queries.
+
+**Endpoint:** `GET /posts/nearby`
+
+**Authentication:** Required (JWT Bearer token)
+
+**Query Parameters:**
+- `lat` (required): Latitude of the user's location (e.g., -6.2088)
+- `lon` (required): Longitude of the user's location (e.g., 106.8456)
+- `radius` (required): Search radius in meters. Must be one of: 1000, 5000, 10000, 20000
+- `limit` (optional): Maximum number of posts to return (1-100, default: 20)
+
+**Success Response (200 OK):**
+```json
+{
+  "posts": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "userId": "550e8400-e29b-41d4-a716-446655440001",
+      "content": "Great coffee at this cafe!",
+      "location": {
+        "latitude": -6.2088,
+        "longitude": 106.8456
+      },
+      "mediaUrls": [
+        "https://example.com/image1.jpg"
+      ],
+      "likeCount": 42,
+      "commentCount": 5,
+      "isLikedByCurrentUser": false,
+      "distance": 150.5,
+      "createdAt": "2025-10-29T10:30:00Z",
+      "updatedAt": "2025-10-29T10:30:00Z",
+      "author": {
+        "id": "550e8400-e29b-41d4-a716-446655440001",
+        "username": "johndoe",
+        "displayName": "John Doe",
+        "profilePhotoUrl": "https://example.com/profile.jpg",
+        "subscriptionTier": "PREMIUM"
+      }
+    }
+  ]
+}
+```
+
+**Error Responses:**
+
+- **400 Bad Request** - Invalid parameters
+  ```json
+  {
+    "error": {
+      "code": "INVALID_RADIUS",
+      "message": "Radius must be one of: 1000, 5000, 10000, 20000 meters",
+      "timestamp": 1234567890,
+      "details": null
+    }
+  }
+  ```
+
+- **401 Unauthorized** - Missing or invalid token
+
+### 2. Create Post
+
+Create a new post at the user's current location.
+
+**Endpoint:** `POST /posts`
+
+**Authentication:** Required (JWT Bearer token)
+
+**Request Body:**
+```json
+{
+  "content": "string (1-500 chars)",
+  "location": {
+    "latitude": -6.2088,
+    "longitude": 106.8456
+  },
+  "mediaUrls": ["https://example.com/image.jpg"] // Optional, premium users only
+}
+```
+
+**Success Response (201 Created):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "content": "Great coffee at this cafe!",
+  "location": {
+    "latitude": -6.2088,
+    "longitude": 106.8456
+  },
+  "mediaUrls": ["https://example.com/image.jpg"],
+  "likeCount": 0,
+  "commentCount": 0,
+  "isLikedByCurrentUser": false,
+  "distance": null,
+  "createdAt": "2025-10-29T10:30:00Z",
+  "updatedAt": "2025-10-29T10:30:00Z",
+  "author": {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "profilePhotoUrl": "https://example.com/profile.jpg",
+    "subscriptionTier": "PREMIUM"
+  }
+}
+```
+
+**Error Responses:**
+
+- **400 Bad Request** - Invalid content
+  ```json
+  {
+    "error": {
+      "code": "INVALID_CONTENT",
+      "message": "Content must be between 1 and 500 characters",
+      "timestamp": 1234567890,
+      "details": null
+    }
+  }
+  ```
+
+- **403 Forbidden** - Media upload requires premium subscription
+  ```json
+  {
+    "error": {
+      "code": "PREMIUM_REQUIRED",
+      "message": "Media upload is only available for premium users",
+      "timestamp": 1234567890,
+      "details": null
+    }
+  }
+  ```
+
+### 3. Get Post by ID
+
+Retrieve a specific post by its ID.
+
+**Endpoint:** `GET /posts/:id`
+
+**Authentication:** Required (JWT Bearer token)
+
+**Success Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "content": "Great coffee at this cafe!",
+  "location": {
+    "latitude": -6.2088,
+    "longitude": 106.8456
+  },
+  "mediaUrls": ["https://example.com/image.jpg"],
+  "likeCount": 42,
+  "commentCount": 5,
+  "isLikedByCurrentUser": false,
+  "distance": null,
+  "createdAt": "2025-10-29T10:30:00Z",
+  "updatedAt": "2025-10-29T10:30:00Z",
+  "author": {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "profilePhotoUrl": "https://example.com/profile.jpg",
+    "subscriptionTier": "PREMIUM"
+  }
+}
+```
+
+**Error Responses:**
+
+- **404 Not Found** - Post not found or deleted
+
+### 4. Update Post
+
+Update a post's content (owner only).
+
+**Endpoint:** `PUT /posts/:id`
+
+**Authentication:** Required (JWT Bearer token)
+
+**Request Body:**
+```json
+{
+  "content": "Updated content (1-500 chars)"
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "content": "Updated content",
+  "location": {
+    "latitude": -6.2088,
+    "longitude": 106.8456
+  },
+  "mediaUrls": [],
+  "likeCount": 42,
+  "commentCount": 5,
+  "isLikedByCurrentUser": false,
+  "distance": null,
+  "createdAt": "2025-10-29T10:30:00Z",
+  "updatedAt": "2025-10-29T11:00:00Z",
+  "author": {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "profilePhotoUrl": "https://example.com/profile.jpg",
+    "subscriptionTier": "FREE"
+  }
+}
+```
+
+**Error Responses:**
+
+- **403 Forbidden** - Not the post owner
+  ```json
+  {
+    "error": {
+      "code": "AUTHORIZATION_ERROR",
+      "message": "You can only update your own posts",
+      "timestamp": 1234567890,
+      "details": null
+    }
+  }
+  ```
+
+- **404 Not Found** - Post not found
+
+### 5. Delete Post
+
+Soft delete a post (owner only).
+
+**Endpoint:** `DELETE /posts/:id`
+
+**Authentication:** Required (JWT Bearer token)
+
+**Success Response (204 No Content)**
+
+**Error Responses:**
+
+- **403 Forbidden** - Not the post owner
+- **404 Not Found** - Post not found
+
+---
+
+## Example Usage
+
+**Get Nearby Posts:**
+```bash
+curl -X GET "http://localhost:8080/posts/nearby?lat=-6.2088&lon=106.8456&radius=1000&limit=20" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+**Create Post:**
+```bash
+curl -X POST http://localhost:8080/posts \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Great coffee at this cafe!",
+    "location": {
+      "latitude": -6.2088,
+      "longitude": 106.8456
+    }
+  }'
+```
+
+**Update Post:**
+```bash
+curl -X PUT http://localhost:8080/posts/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Updated content"
+  }'
+```
+
+**Delete Post:**
+```bash
+curl -X DELETE http://localhost:8080/posts/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+---
+
 ## Changelog
+
+### Version 1.1.0 (2025-10-29)
+- Added post endpoints with PostGIS geo queries
+  - `GET /posts/nearby` - Get posts within radius using spatial queries
+  - `POST /posts` - Create new post
+  - `GET /posts/:id` - Get post by ID
+  - `PUT /posts/:id` - Update post (owner only)
+  - `DELETE /posts/:id` - Delete post (owner only)
+- Support for 4 distance levels: 1km, 5km, 10km, 20km
+- Premium user restrictions for media uploads
+- Distance calculation and sorting
 
 ### Version 1.0.1 (2025-10-28)
 - Added user profile management endpoints (`GET /users/me`, `PUT /users/me`)

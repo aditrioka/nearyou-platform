@@ -1529,8 +1529,8 @@ NearYou ID is a location-based social application that connects users within pro
 | PL-004 | T-004 | Setup CI/CD Pipeline | DONE | 2025-10-16 | 2025-10-16 | GitHub Actions workflow and Dockerfile created |
 | PL-005 | T-101 | Implement Backend Auth Service | DONE | 2025-10-18 | 2025-10-18 | JWT auth, OTP verification, token refresh |
 | PL-006 | T-102 | Implement Frontend Auth Flows | DONE | 2025-10-18 | 2025-10-20 | Auth screens, token storage, navigation (AI validation passed, human validation pending) |
-| PL-007 | T-103 | Implement User Profile Management | TODO | - | - | - |
-| PL-008 | T-201 | Implement PostGIS Geo Queries | TODO | - | - | - |
+| PL-007 | T-103 | Implement User Profile Management | DONE | 2025-10-28 | 2025-10-28 | UserRoutes, UserService with GET/PUT /users/me endpoints |
+| PL-008 | T-201 | Implement PostGIS Geo Queries | DONE | 2025-10-29 | 2025-10-29 | PostRepository, PostService, PostRoutes with comprehensive tests |
 | PL-009 | T-202 | Implement Post Creation & CRUD | TODO | - | - | - |
 | PL-010 | T-203 | Implement Timeline UI | TODO | - | - | - |
 | PL-011 | T-204 | Implement Like & Comment | TODO | - | - | - |
@@ -1588,16 +1588,16 @@ NearYou ID is a location-based social application that connects users within pro
 - [x] CI/CD pipeline functional
 
 ### Phase 1: Authentication & User Management
-- [ ] Backend auth endpoints (register, login, verify OTP, refresh)
-- [ ] Frontend auth screens (login, signup, OTP verification)
-- [ ] JWT token generation and validation
-- [ ] Secure token storage (Keystore/Keychain)
-- [ ] User profile management (view, edit)
+- [x] Backend auth endpoints (register, login, verify OTP, refresh)
+- [x] Frontend auth screens (login, signup, OTP verification)
+- [x] JWT token generation and validation
+- [x] Secure token storage (Keystore/Keychain)
+- [x] User profile management (view, edit)
 - [ ] Profile photo upload (S3/GCS)
 
 ### Phase 2: Core Timeline & Posts
-- [ ] PostGIS geo queries with GiST index
-- [ ] Post CRUD endpoints
+- [x] PostGIS geo queries with GiST index
+- [x] Post CRUD endpoints
 - [ ] Timeline UI (Nearby, Following)
 - [ ] Post creation UI with media upload (premium)
 - [ ] Like/comment functionality
