@@ -6,6 +6,7 @@ import domain.model.auth.*
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
@@ -46,9 +47,7 @@ class AuthRepositoryTest {
     
     @AfterTest
     fun tearDown() {
-        if (::repository.isInitialized) {
-            repository.close()
-        }
+        // HttpClient is now managed by DI, no need to close repository
     }
     
     // ========== Register Tests ==========
@@ -424,11 +423,13 @@ class AuthRepositoryTest {
             install(ContentNegotiation) {
                 json(json)
             }
+            defaultRequest {
+                url("http://localhost:8080")
+            }
         }
 
         return AuthRepository(
             tokenStorage = mockTokenStorage,
-            baseUrl = "http://localhost:8080",
             httpClient = client
         )
     }

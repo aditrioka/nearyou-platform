@@ -9,6 +9,7 @@ import domain.model.auth.*
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.Dispatchers
@@ -63,6 +64,9 @@ class AuthViewModelTest {
         val client = HttpClient(engine) {
             install(ContentNegotiation) {
                 json(json)
+            }
+            defaultRequest {
+                url("http://localhost:8080")
             }
         }
         return AuthRepository(
@@ -165,13 +169,19 @@ class AuthViewModelTest {
         val repo = createRepository(engine)
         val vm = AuthViewModel(repo)
 
-        val result = vm.register(
-            displayName = "Test User",
-            identifier = "test@example.com",
-            identifierType = "email"
-        )
+        // Set the state
+        vm.updateUsername("testuser")
+        vm.updateIdentifier("test@example.com")
 
-        assertTrue(result.isSuccess)
+        // Call register
+        vm.register()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify state - should have OTP timer started
+        val state = vm.uiState.value
+        assertFalse(state.isLoading)
+        assertEquals(60, state.otpTimeRemaining)
+        assertFalse(state.canResendOtp)
     }
     
     // ========== Login Tests ==========
@@ -196,13 +206,18 @@ class AuthViewModelTest {
         val repo = createRepository(engine)
         val vm = AuthViewModel(repo)
 
-        val result = vm.login(
-            identifier = "test@example.com",
-            identifierType = "email"
-        )
+        // Set the state
+        vm.updateIdentifier("test@example.com")
 
-        assertTrue(result.isSuccess)
-        repo.close()
+        // Call login
+        vm.login()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify state - should have OTP timer started
+        val state = vm.uiState.value
+        assertFalse(state.isLoading)
+        assertEquals(60, state.otpTimeRemaining)
+        assertFalse(state.canResendOtp)
     }
     
     // ========== Verify OTP Tests ==========
@@ -231,39 +246,40 @@ class AuthViewModelTest {
         // Advance past init
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val result = vm.verifyOtp(
+        // Set OTP code in state
+        vm.updateOtpCode("123456")
+
+        // Call verifyOtp
+        vm.verifyOtp(
             identifier = "test@example.com",
-            identifierType = "email",
-            otpCode = "123456"
+            identifierType = "email"
         )
 
         // Advance to complete the coroutine
         testDispatcher.scheduler.advanceUntilIdle()
-
-        assertTrue(result.isSuccess)
 
         // Verify state was updated
         vm.uiState.test {
             val state = awaitItem()
             assertTrue(state.isAuthenticated, "Expected state to be authenticated but was: $state")
         }
-
-        repo.close()
     }
     
     // ========== Logout Tests ==========
 
     @Test
     fun `logout should update state to not authenticated`() = runTest {
+        // Setup: make user authenticated first
+        mockTokenStorage.saveAccessToken("test_token")
+
         // Advance past init
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val result = viewModel.logout()
+        // Call logout
+        viewModel.logout()
 
         // Advance to complete the coroutine
         testDispatcher.scheduler.advanceUntilIdle()
-
-        assertTrue(result.isSuccess)
 
         // Verify state was updated
         viewModel.uiState.test {
