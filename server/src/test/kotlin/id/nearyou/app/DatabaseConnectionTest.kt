@@ -19,6 +19,7 @@ class DatabaseConnectionTest {
         ?: "nearyou_password"
 
     @Test
+    @Ignore("Requires PostgreSQL with PostGIS to be running. Use docker-compose up -d to start infrastructure, or use Testcontainers-based tests instead.")
     fun testDatabaseConnection() {
         // Connect to database
         Database.connect(
@@ -40,6 +41,7 @@ class DatabaseConnectionTest {
     }
 
     @Test
+    @Ignore("Requires PostgreSQL with PostGIS to be running. Use docker-compose up -d to start infrastructure, or use Testcontainers-based tests instead.")
     fun testPostGISFunctions() {
         Database.connect(
             url = getDatabaseUrl(),

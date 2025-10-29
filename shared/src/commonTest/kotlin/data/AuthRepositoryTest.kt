@@ -354,7 +354,16 @@ class AuthRepositoryTest {
         mockTokenStorage.saveRefreshToken("refresh_token")
 
         val mockEngine = MockEngine { request ->
-            fail("Should not make HTTP request for logout")
+            // Expect POST to /auth/logout
+            assertEquals("/auth/logout", request.url.encodedPath)
+            assertEquals(HttpMethod.Post, request.method)
+
+            // Return success
+            respond(
+                content = json.encodeToString(mapOf("message" to "Logged out successfully")),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
         }
 
         repository = createRepository(mockEngine)

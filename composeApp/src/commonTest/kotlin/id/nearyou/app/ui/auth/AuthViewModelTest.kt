@@ -169,19 +169,33 @@ class AuthViewModelTest {
         val repo = createRepository(engine)
         val vm = AuthViewModel(repo)
 
-        // Set the state
-        vm.updateUsername("testuser")
-        vm.updateIdentifier("test@example.com")
+        vm.uiState.test {
+            // Skip initial state and checkAuthStatus completion
+            // Initial state has isLoading = true, checkAuthStatus sets it to false
+            skipItems(2)
 
-        // Call register
-        vm.register()
-        testDispatcher.scheduler.advanceUntilIdle()
+            // Set the state
+            vm.updateUsername("testuser")
+            val usernameState = awaitItem()
+            assertEquals("testuser", usernameState.username)
 
-        // Verify state - should have OTP timer started
-        val state = vm.uiState.value
-        assertFalse(state.isLoading)
-        assertEquals(60, state.otpTimeRemaining)
-        assertFalse(state.canResendOtp)
+            vm.updateIdentifier("test@example.com")
+            val identifierState = awaitItem()
+            assertEquals("test@example.com", identifierState.identifier)
+
+            // Call register
+            vm.register()
+
+            // Wait for loading state
+            val registerLoadingState = awaitItem()
+            assertTrue(registerLoadingState.isLoading)
+
+            // Wait for final state after register
+            val finalState = awaitItem()
+            assertFalse(finalState.isLoading, "Expected isLoading to be false but was: ${finalState.isLoading}")
+            assertEquals(60, finalState.otpTimeRemaining)
+            assertFalse(finalState.canResendOtp)
+        }
     }
     
     // ========== Login Tests ==========
@@ -206,18 +220,28 @@ class AuthViewModelTest {
         val repo = createRepository(engine)
         val vm = AuthViewModel(repo)
 
-        // Set the state
-        vm.updateIdentifier("test@example.com")
+        vm.uiState.test {
+            // Skip initial state and checkAuthStatus completion
+            skipItems(2)
 
-        // Call login
-        vm.login()
-        testDispatcher.scheduler.advanceUntilIdle()
+            // Set the state
+            vm.updateIdentifier("test@example.com")
+            val identifierState = awaitItem()
+            assertEquals("test@example.com", identifierState.identifier)
 
-        // Verify state - should have OTP timer started
-        val state = vm.uiState.value
-        assertFalse(state.isLoading)
-        assertEquals(60, state.otpTimeRemaining)
-        assertFalse(state.canResendOtp)
+            // Call login
+            vm.login()
+
+            // Wait for loading state
+            val loginLoadingState = awaitItem()
+            assertTrue(loginLoadingState.isLoading)
+
+            // Wait for final state after login
+            val finalState = awaitItem()
+            assertFalse(finalState.isLoading, "Expected isLoading to be false but was: ${finalState.isLoading}")
+            assertEquals(60, finalState.otpTimeRemaining)
+            assertFalse(finalState.canResendOtp)
+        }
     }
     
     // ========== Verify OTP Tests ==========
@@ -243,25 +267,29 @@ class AuthViewModelTest {
         val repo = createRepository(engine)
         val vm = AuthViewModel(repo)
 
-        // Advance past init
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Set OTP code in state
-        vm.updateOtpCode("123456")
-
-        // Call verifyOtp
-        vm.verifyOtp(
-            identifier = "test@example.com",
-            identifierType = "email"
-        )
-
-        // Advance to complete the coroutine
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Verify state was updated
         vm.uiState.test {
-            val state = awaitItem()
-            assertTrue(state.isAuthenticated, "Expected state to be authenticated but was: $state")
+            // Skip initial state and checkAuthStatus completion
+            skipItems(2)
+
+            // Set OTP code in state
+            vm.updateOtpCode("123456")
+            val otpState = awaitItem()
+            assertEquals("123456", otpState.otpCode)
+
+            // Call verifyOtp
+            vm.verifyOtp(
+                identifier = "test@example.com",
+                identifierType = "email"
+            )
+
+            // Wait for loading state
+            val verifyLoadingState = awaitItem()
+            assertTrue(verifyLoadingState.isLoading)
+
+            // Wait for final authenticated state
+            val finalState = awaitItem()
+            assertTrue(finalState.isAuthenticated, "Expected state to be authenticated but was: $finalState")
+            assertFalse(finalState.isLoading)
         }
     }
     
