@@ -2,6 +2,7 @@ package id.nearyou.app.di
 
 import id.nearyou.app.auth.AuthService
 import id.nearyou.app.user.UserService
+import id.nearyou.app.post.PostService
 import id.nearyou.app.config.EnvironmentConfig
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.StatefulRedisConnection
@@ -31,5 +32,6 @@ val serverModule = module {
     // Services
     single { AuthService(get()) }
     single { UserService() }
+    single { PostService() }
 }
 

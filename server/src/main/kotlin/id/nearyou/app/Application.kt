@@ -2,6 +2,7 @@ package id.nearyou.app
 
 import id.nearyou.app.auth.authRoutes
 import id.nearyou.app.user.userRoutes
+import id.nearyou.app.post.postRoutes
 import id.nearyou.app.config.DatabaseConfig
 import id.nearyou.app.config.EnvironmentConfig
 import id.nearyou.app.di.serverModule
@@ -73,6 +74,9 @@ fun Application.module() {
 
         // User routes (services injected via Koin)
         userRoutes()
+
+        // Post routes (services injected via Koin)
+        postRoutes()
     }
 
     // Shutdown hook
