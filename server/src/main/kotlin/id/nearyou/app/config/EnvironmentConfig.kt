@@ -66,6 +66,11 @@ object EnvironmentConfig {
     // Server Configuration
     val serverPort: Int = getEnv("SERVER_PORT")?.toIntOrNull() ?: 8080
     val serverHost: String = getEnv("SERVER_HOST") ?: "0.0.0.0"
+    val baseUrl: String = getEnv("BASE_URL") ?: "http://localhost:$serverPort"
+
+    // File Upload Configuration
+    val uploadDir: String = getEnv("UPLOAD_DIR") ?: "uploads"
+    val maxFileSize: Long = 5 * 1024 * 1024 // 5MB
 
     // BCrypt Configuration
     val bcryptRounds: Int = 12

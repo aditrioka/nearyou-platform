@@ -19,7 +19,9 @@ data class ProfileUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val isEditing: Boolean = false,
-    val updateSuccess: Boolean = false
+    val updateSuccess: Boolean = false,
+    val isUploadingPhoto: Boolean = false,
+    val uploadedPhotoUrl: String? = null
 )
 
 /**
@@ -154,6 +156,55 @@ class ProfileViewModel(
      */
     fun clearSuccess() {
         _uiState.update { it.copy(updateSuccess = false) }
+    }
+
+    /**
+     * Upload profile photo
+     * @param imageBytes Image data as ByteArray
+     * @param fileName Original file name
+     * @param contentType MIME type of the image
+     */
+    fun uploadProfilePhoto(
+        imageBytes: ByteArray,
+        fileName: String,
+        contentType: String = "image/jpeg"
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUploadingPhoto = true, error = null) }
+
+            try {
+                val result = userRepository.uploadProfilePhoto(imageBytes, fileName, contentType)
+                result.fold(
+                    onSuccess = { uploadResponse ->
+                        _uiState.update {
+                            it.copy(
+                                isUploadingPhoto = false,
+                                uploadedPhotoUrl = uploadResponse.url,
+                                error = null
+                            )
+                        }
+
+                        // Automatically update profile with new photo URL
+                        updateProfile(profilePhotoUrl = uploadResponse.url)
+                    },
+                    onFailure = { error ->
+                        _uiState.update {
+                            it.copy(
+                                isUploadingPhoto = false,
+                                error = error.message ?: "Failed to upload photo"
+                            )
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isUploadingPhoto = false,
+                        error = e.message ?: "Failed to upload photo"
+                    )
+                }
+            }
+        }
     }
 }
 

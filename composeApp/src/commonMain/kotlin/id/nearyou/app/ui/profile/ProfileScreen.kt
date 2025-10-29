@@ -13,8 +13,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import id.nearyou.app.ui.components.ErrorScreen
 import id.nearyou.app.ui.components.PrimaryButton
 import id.nearyou.app.ui.theme.Spacing
@@ -59,7 +61,8 @@ fun ProfileScreen(
                 uiState.error != null -> {
                     ErrorScreen(
                         error = uiState.error ?: "Unknown error",
-                        onRetry = { viewModel.loadProfile() }
+                        onRetry = { viewModel.loadProfile() },
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
                 
@@ -96,12 +99,13 @@ private fun ProfileContent(
             contentAlignment = Alignment.Center
         ) {
             if (user.profilePhotoUrl != null) {
-                // TODO: Load image from URL when image loading is implemented
-                Icon(
-                    Icons.Default.Person,
+                AsyncImage(
+                    model = user.profilePhotoUrl,
                     contentDescription = "Profile Photo",
-                    modifier = Modifier.size(60.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
                 )
             } else {
                 Icon(

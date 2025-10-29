@@ -3,6 +3,8 @@ package id.nearyou.app.di
 import id.nearyou.app.auth.AuthService
 import id.nearyou.app.user.UserService
 import id.nearyou.app.post.PostService
+import id.nearyou.app.storage.LocalStorageService
+import id.nearyou.app.storage.StorageService
 import id.nearyou.app.config.EnvironmentConfig
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.StatefulRedisConnection
@@ -27,6 +29,14 @@ val serverModule = module {
     // Redis Commands (Singleton)
     single<RedisCommands<String, String>> {
         get<StatefulRedisConnection<String, String>>().sync()
+    }
+
+    // Storage Service
+    single<StorageService> {
+        LocalStorageService(
+            uploadDir = EnvironmentConfig.uploadDir,
+            baseUrl = EnvironmentConfig.baseUrl
+        )
     }
 
     // Services

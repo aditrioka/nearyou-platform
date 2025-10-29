@@ -370,7 +370,7 @@ NearYou ID is a location-based social application that connects users within pro
 4. Implement profile photo upload (S3/GCS integration)
 5. Add validation for name, bio, username (unique check)
 6. Create `shared/src/commonMain/kotlin/data/UserRepository.kt`
-7. Handle profile update errors
+   7. Handle profile update errorsqq
 
 **Expected Artifacts:**
 - Backend: `server/src/main/kotlin/user/UserRoutes.kt`

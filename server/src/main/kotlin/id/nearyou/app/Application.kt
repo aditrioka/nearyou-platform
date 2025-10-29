@@ -3,6 +3,8 @@ package id.nearyou.app
 import id.nearyou.app.auth.authRoutes
 import id.nearyou.app.user.userRoutes
 import id.nearyou.app.post.postRoutes
+import id.nearyou.app.upload.uploadRoutes
+import id.nearyou.app.storage.StorageService
 import id.nearyou.app.config.DatabaseConfig
 import id.nearyou.app.config.EnvironmentConfig
 import id.nearyou.app.di.serverModule
@@ -14,12 +16,15 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.http.content.*
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.StatefulRedisConnection
+import org.koin.ktor.ext.get
 import org.koin.ktor.ext.getKoin
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import util.AppConfig
+import java.io.File
 
 fun main() {
     // Initialize logging configuration
@@ -69,6 +74,9 @@ fun Application.module() {
             ))
         }
 
+        // Static files for uploads
+        staticFiles("/uploads", File(EnvironmentConfig.uploadDir))
+
         // Auth routes (services injected via Koin)
         authRoutes()
 
@@ -77,6 +85,9 @@ fun Application.module() {
 
         // Post routes (services injected via Koin)
         postRoutes()
+
+        // Upload routes (services injected via Koin)
+        uploadRoutes()
     }
 
     // Shutdown hook

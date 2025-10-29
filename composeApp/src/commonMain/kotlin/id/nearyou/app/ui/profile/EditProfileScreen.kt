@@ -1,15 +1,27 @@
 package id.nearyou.app.ui.profile
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.preat.peekaboo.image.picker.SelectionMode
+import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
+import com.preat.peekaboo.image.picker.toImageBitmap
 import domain.validation.UserValidation
 import id.nearyou.app.ui.components.PrimaryButton
 import id.nearyou.app.ui.components.SecondaryButton
@@ -27,12 +39,32 @@ fun EditProfileScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     var displayName by remember { mutableStateOf(uiState.user?.displayName ?: "") }
     var bio by remember { mutableStateOf(uiState.user?.bio ?: "") }
     var displayNameError by remember { mutableStateOf<String?>(null) }
     var bioError by remember { mutableStateOf<String?>(null) }
-    
+    var selectedImage by remember { mutableStateOf<ImageBitmap?>(null) }
+    var selectedImageBytes by remember { mutableStateOf<ByteArray?>(null) }
+
+    // Image picker launcher
+    val singleImagePicker = rememberImagePickerLauncher(
+        selectionMode = SelectionMode.Single,
+        scope = rememberCoroutineScope(),
+        onResult = { byteArrays ->
+            byteArrays.firstOrNull()?.let { bytes ->
+                selectedImageBytes = bytes
+                selectedImage = bytes.toImageBitmap()
+                // Upload the photo
+                viewModel.uploadProfilePhoto(
+                    imageBytes = bytes,
+                    fileName = "profile_${System.currentTimeMillis()}.jpg",
+                    contentType = "image/jpeg"
+                )
+            }
+        }
+    )
+
     // Update fields when user data loads
     LaunchedEffect(uiState.user) {
         uiState.user?.let { user ->
@@ -40,7 +72,7 @@ fun EditProfileScreen(
             bio = user.bio ?: ""
         }
     }
-    
+
     // Navigate back on success
     LaunchedEffect(uiState.updateSuccess) {
         if (uiState.updateSuccess) {
@@ -105,8 +137,8 @@ fun EditProfileScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
-                // Profile Photo URL (placeholder until upload is implemented)
+
+                // Profile Photo Upload
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -114,15 +146,66 @@ fun EditProfileScreen(
                     )
                 ) {
                     Column(
-                        modifier = Modifier.padding(Spacing.md)
+                        modifier = Modifier.padding(Spacing.md),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "Profile Photo",
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.fillMaxWidth()
                         )
+                        Spacer(modifier = Modifier.height(Spacing.md))
+
+                        // Photo preview or placeholder
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = CircleShape
+                                )
+                                .clickable(enabled = !uiState.isUploadingPhoto) {
+                                    singleImagePicker.launch()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            when {
+                                uiState.isUploadingPhoto -> {
+                                    CircularProgressIndicator()
+                                }
+                                selectedImage != null -> {
+                                    Image(
+                                        bitmap = selectedImage!!,
+                                        contentDescription = "Selected profile photo",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                                uiState.uploadedPhotoUrl != null || uiState.user?.profilePhotoUrl != null -> {
+                                    AsyncImage(
+                                        model = uiState.uploadedPhotoUrl ?: uiState.user?.profilePhotoUrl,
+                                        contentDescription = "Current profile photo",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                                else -> {
+                                    Icon(
+                                        imageVector = Icons.Default.CameraAlt,
+                                        contentDescription = "Upload photo",
+                                        modifier = Modifier.size(48.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(Spacing.sm))
+
                         Text(
-                            text = "Photo upload will be available soon",
+                            text = if (uiState.isUploadingPhoto) "Uploading..." else "Tap to change photo",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
