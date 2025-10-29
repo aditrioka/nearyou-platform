@@ -360,7 +360,7 @@ NearYou ID is a location-based social application that connects users within pro
 
 ---
 
-#### T-103: Implement User Profile Management
+#### T-103: Implement User   Management
 **Purpose:** Allow users to view and edit their profiles.
 
 **Steps:**
