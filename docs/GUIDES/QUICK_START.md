@@ -186,7 +186,7 @@ java -version  # Should be 17+
    ```
 
 5. **Create Pull Request**
-   - See [VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md) for validation procedures
+   - See [TESTING.md](../CORE/TESTING.md) for validation procedures
 
 ---
 
@@ -194,14 +194,13 @@ java -version  # Should be 17+
 
 - **[ARCHITECTURE.md](../CORE/ARCHITECTURE.md)** → Understand system design
 - **[SPEC.md](../CORE/SPEC.md)** → Read product specification
-- **[TESTING.md](../CORE/TESTING.md)** → Learn testing strategy
-- **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** → Validation procedures
-- **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)** → API reference
+- **[TESTING.md](../CORE/TESTING.md)** → Learn testing strategy and validation procedures
+- **[API_DOCUMENTATION.md](../CORE/API_DOCUMENTATION.md)** → API reference
 
 ---
 
 ## Getting Help
 
-- Check [PROJECT_MAP.md](../CORE/PROJECT_MAP.md) for documentation index
+- Check [README.md](../README.md) for documentation index
 - Review [INFRA.md](../CORE/INFRA.md) for detailed infrastructure setup
 - See [DECISIONS.md](../CORE/DECISIONS.md) for architectural decisions

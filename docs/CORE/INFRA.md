@@ -484,107 +484,13 @@ docker run -p 8080:8080 --env-file .env nearyou-server:latest
 
 ### Kubernetes Deployment
 
-**Deployment Manifest (`k8s/deployment.yaml`):**
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nearyou-server
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nearyou-server
-  template:
-    metadata:
-      labels:
-        app: nearyou-server
-    spec:
-      containers:
-      - name: server
-        image: nearyou-server:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: nearyou-secrets
-              key: database-url
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
-```
-
-**Service Manifest (`k8s/service.yaml`):**
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: nearyou-server
-spec:
-  selector:
-    app: nearyou-server
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8080
-  type: LoadBalancer
-```
-
-**Apply Manifests:**
-```bash
-kubectl apply -f k8s/
-```
+> Production Kubernetes deployment documentation will be added when infrastructure is provisioned.
 
 ---
 
 ## Monitoring & Logging
 
-### Prometheus Metrics
-
-**Exposed Metrics:**
-- `http_requests_total` - Total HTTP requests
-- `http_request_duration_seconds` - Request latency
-- `database_query_duration_seconds` - Database query time
-- `geo_query_duration_seconds` - Geo query execution time
-- `active_users` - Current active users
-
-**Prometheus Configuration:**
-```yaml
-scrape_configs:
-  - job_name: 'nearyou-server'
-    static_configs:
-      - targets: ['localhost:8080']
-    metrics_path: '/metrics'
-```
-
-### Grafana Dashboards
-
-**Key Dashboards:**
-1. **API Health:** Request rate, error rate, latency
-2. **Geo Query Performance:** Query execution time, cache hit rate
-3. **User Activity:** Active users, posts created, messages sent
-4. **Database Performance:** Connection pool, query time, slow queries
-
-### Structured Logging
-
-**Log Format (JSON):**
-```json
-{
-  "timestamp": "2025-10-16T10:30:00Z",
-  "level": "INFO",
-  "logger": "com.nearyou.server.routes.PostRoutes",
-  "message": "Post created",
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "postId": "987fcdeb-51a2-43f7-8d9e-123456789abc",
-  "duration_ms": 45
-}
-```
+> Production monitoring (Prometheus/Grafana) and structured JSON logging documentation will be added when infrastructure is provisioned.
 
 ---
 
@@ -620,39 +526,7 @@ gunzip -c /backups/nearyou_db_20251016_020000.sql.gz | psql -h localhost -U near
 
 ## Security
 
-### SSL/TLS Configuration
-
-**Let's Encrypt Certificate:**
-```bash
-certbot certonly --standalone -d api.nearyou.id
-```
-
-**Nginx Configuration:**
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name api.nearyou.id;
-
-    ssl_certificate /etc/letsencrypt/live/api.nearyou.id/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.nearyou.id/privkey.pem;
-
-    location / {
-        proxy_pass http://localhost:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-### Secrets Management
-
-**Kubernetes Secrets:**
-```bash
-kubectl create secret generic nearyou-secrets \
-  --from-literal=database-url=jdbc:postgresql://... \
-  --from-literal=jwt-secret=... \
-  --from-literal=storage-access-key=...
-```
+> Production security configuration (SSL/TLS, Nginx, Kubernetes secrets) will be added when infrastructure is provisioned.
 
 ---
 
@@ -735,26 +609,5 @@ val config = HikariConfig().apply {
 
 ## Runbook
 
-### Deployment Checklist
-
-- [ ] Run all tests locally
-- [ ] Update version in `CHANGELOG.md`
-- [ ] Build Docker image
-- [ ] Push image to registry
-- [ ] Update Kubernetes manifests
-- [ ] Apply database migrations
-- [ ] Deploy to staging
-- [ ] Run smoke tests
-- [ ] Deploy to production
-- [ ] Monitor metrics for 1 hour
-- [ ] Notify stakeholders
-
-### Rollback Procedure
-
-1. Identify problematic deployment version
-2. Revert Kubernetes deployment: `kubectl rollout undo deployment/nearyou-server`
-3. Verify rollback: `kubectl rollout status deployment/nearyou-server`
-4. Revert database migrations if needed
-5. Monitor metrics
-6. Notify stakeholders
+> Production deployment checklist and rollback procedures will be added when infrastructure is provisioned.
 

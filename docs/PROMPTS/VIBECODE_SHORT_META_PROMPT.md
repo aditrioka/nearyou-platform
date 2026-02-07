@@ -2,7 +2,7 @@
 
 **Concise execution guide for AI-assisted development**
 
-Use **[PROJECT_MAP.md](../CORE/PROJECT_MAP.md)** as the main index to locate all required files.
+Use **[README.md](../README.md)** as the main index to locate all required files.
 
 ---
 
@@ -22,7 +22,7 @@ Create or update task plan with:
 
 ### 2. Validate First
 **Before implementing:**
-- Review **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** for validation procedures
+- Review **[TESTING.md](../CORE/TESTING.md)** for validation procedures
 - For doc-only tasks: Review consistency, cross-references, formatting
 - For code tasks: Run tests, build, verify compilation
 - AI validates: File consistency, automated tests, builds
@@ -262,7 +262,7 @@ Sync and fix outdated or conflicting documentation **before** code changes:
 | UI/UX verification | HUMAN | Requires human eyes |
 | Complex features | HYBRID | Both automated + manual |
 
-**For complete validation procedures, see [VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)**
+**For complete validation procedures, see [TESTING.md](../CORE/TESTING.md)**
 
 ---
 
@@ -295,14 +295,12 @@ Sync and fix outdated or conflicting documentation **before** code changes:
 
 ## 📚 Key Documentation
 
-- **[PROJECT_MAP.md](../CORE/PROJECT_MAP.md)** → Complete documentation index
+- **[README.md](../README.md)** → Complete documentation index
 - **[ARCHITECTURE.md](../CORE/ARCHITECTURE.md)** → System design
 - **[SPEC.md](../CORE/SPEC.md)** → Product specification
-- **[VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)** → Validation procedures (detailed)
-- **[TESTING.md](../CORE/TESTING.md)** → Testing strategy
+- **[TESTING.md](../CORE/TESTING.md)** → Testing strategy and validation procedures
 - **[INFRA.md](../CORE/INFRA.md)** → Infrastructure setup (includes database guide)
 - **[PERFORMANCE.md](../CORE/PERFORMANCE.md)** → Performance testing and optimization
-- **[PRE_PUSH_CHECKLIST.md](../GUIDES/PRE_PUSH_CHECKLIST.md)** → Pre-push verification
 - **[API_DOCUMENTATION.md](../CORE/API_DOCUMENTATION.md)** → API reference
 - **[DESIGN_SYSTEM.md](../CORE/DESIGN_SYSTEM.md)** → UI components and patterns
 - **[NearYou_ID_MVP_Plan.md](../PLANS/NearYou_ID_MVP_Plan.md)** → MVP execution plan
@@ -318,7 +316,7 @@ Sync and fix outdated or conflicting documentation **before** code changes:
     - Define validation_owner = HYBRID (AI for code, HUMAN for OAuth setup)
 
 2. **Validate First:**
-    - Review [VALIDATION_GUIDE.md](../CORE/VALIDATION_GUIDE.md)
+    - Review [TESTING.md](../CORE/TESTING.md)
     - AI: Can verify code structure, tests, build
     - Human: Must configure Google OAuth console
 
@@ -355,9 +353,8 @@ Sync and fix outdated or conflicting documentation **before** code changes:
 
 | Resource | Purpose | Location |
 |----------|---------|----------|
-| **VALIDATION_GUIDE.md** | Complete validation procedures | [Link](../CORE/VALIDATION_GUIDE.md) |
+| **TESTING.md** | Testing strategy and validation procedures | [Link](../CORE/TESTING.md) |
 | **TASK_VALIDATION_TEMPLATE.md** | Validation report template | [Link](../TEST_REPORTS/TASK_VALIDATION_TEMPLATE.md) |
-| **TESTING.md** | Testing strategy | [Link](../CORE/TESTING.md) |
 | **PERFORMANCE.md** | Performance testing guide | [Link](../CORE/PERFORMANCE.md) |
 
 ---

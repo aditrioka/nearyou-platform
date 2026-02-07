@@ -343,7 +343,7 @@ println("Sensitive logging: ${LoggerConfig.logSensitiveData}")
 
 ## Related Documents
 
-- **[TESTING_USER_PROFILE.md](./TESTING_USER_PROFILE.md)** → Testing guide
-- **[PRE_PUSH_CHECKLIST.md](./PRE_PUSH_CHECKLIST.md)** → Pre-push verification
+- **[TESTING.md](../CORE/TESTING.md)** → Testing strategy and procedures
 - **[API_DOCUMENTATION.md](../CORE/API_DOCUMENTATION.md)** → API reference
+- **GitHub Actions CI Pipeline** → CI/CD verification and automated testing
 

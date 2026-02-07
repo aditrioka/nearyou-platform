@@ -712,38 +712,7 @@ See **[INFRA.md](./INFRA.md#database-schema)** for complete database schema and 
 
 ## API Design
 
-### RESTful Endpoints
-
-#### Authentication
-- `POST /auth/register` - Register new user (sends OTP)
-- `POST /auth/login` - Login existing user (sends OTP)
-- `POST /auth/verify-otp` - Verify OTP and get JWT tokens
-- `POST /auth/resend-otp` - Resend OTP code
-- `POST /auth/login/google` - Google Sign-In
-- `POST /auth/refresh` - Refresh JWT token
-
-#### Posts
-- `GET /posts/nearby?lat={lat}&lon={lon}&radius={radius}` - Get nearby posts
-- `GET /posts/following` - Get following feed
-- `POST /posts` - Create post
-- `GET /posts/:id` - Get post details
-- `PUT /posts/:id` - Update post
-- `DELETE /posts/:id` - Delete post
-- `POST /posts/:id/like` - Toggle like
-- `GET /posts/:id/comments` - Get comments
-- `POST /posts/:id/comments` - Add comment
-
-#### Chat
-- `GET /conversations` - List conversations
-- `GET /conversations/:id/messages` - Get messages
-- `POST /conversations/:id/messages` - Send message
-- `POST /conversations` - Start new conversation
-
-#### Users
-- `GET /users/me` - Get current user profile
-- `PUT /users/me` - Update profile
-- `GET /users/:id` - Get user profile
-- `POST /users/:id/follow` - Toggle follow
+For API endpoint details, see [API_DOCUMENTATION.md](./API_DOCUMENTATION.md).
 
 ---
 

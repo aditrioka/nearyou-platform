@@ -1,3 +1,5 @@
+> **Archived:** This performance report is from 2025-10-24. Results may not reflect current state.
+
 # Performance Characteristics - NearYou ID Authentication Service
 
 **Last Updated:** 2025-10-24  

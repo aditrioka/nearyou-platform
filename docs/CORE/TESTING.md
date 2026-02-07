@@ -232,20 +232,42 @@ Tests run automatically on:
 
 ---
 
-## Validation
+## Validation Modes
 
-For detailed validation procedures, see **[VALIDATION_GUIDE.md](./VALIDATION_GUIDE.md)**.
+Every task must be validated before being marked complete. Choose the appropriate validation mode:
 
-**Quick reference:**
-- **AI validation** → Automated tests, builds, file consistency
-- **Human validation** → Manual testing, external services, UI/UX
-- **Hybrid validation** → Combination of both
+| Mode | Who Validates | When to Use |
+|------|---------------|-------------|
+| **AI** | AI assistant | File consistency, structure, automated tests, build verification |
+| **HUMAN** | Human developer | Manual testing, external services, UI/UX, first-time setup |
+| **HYBRID** | Both AI & Human | Complex features requiring both automated and manual validation |
+
+### Validation Decision Matrix
+
+| Task Type | Terminal Testable? | Validation Owner |
+|-----------|-------------------|------------------|
+| Backend API endpoints | Yes | AI |
+| Database operations | Yes | AI |
+| Unit/Integration tests | Yes | AI |
+| Build & compilation | Yes | AI |
+| Code structure | Yes | AI |
+| First-time app launch | No | HUMAN |
+| Google OAuth setup | No | HUMAN |
+| Push notification flow | No | HUMAN |
+| Payment processing | No | HUMAN |
+| Visual UI verification | No | HUMAN |
+| Third-party service setup | No | HUMAN |
+
+### AI Validation Capabilities
+
+**Can validate:** Running tests, checking file existence/content, verifying syntax/structure, running linters, checking DB schema, git operations, building/compiling, inspecting logs.
+
+**Cannot validate:** First-time account setup (Google, Firebase, Twilio), OAuth flows, app store submissions, first-time app launch on physical devices, manual UI testing, online configuration consoles, payment gateway testing, push notification testing on devices.
 
 ---
 
 ## Related Documents
 
-- **[VALIDATION_GUIDE.md](./VALIDATION_GUIDE.md)** → Comprehensive validation procedures
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** → System architecture
 - **[INFRA.md](./INFRA.md)** → Infrastructure and deployment
 - **[BEST_PRACTICES_EVALUATION.md](./BEST_PRACTICES_EVALUATION.md)** → Best practices compliance
