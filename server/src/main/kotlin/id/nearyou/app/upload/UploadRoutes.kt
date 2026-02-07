@@ -64,12 +64,24 @@ fun Route.uploadRoutes() {
                             val originalFileName = part.originalFileName ?: "unknown"
                             val partContentType = part.contentType?.toString() ?: "application/octet-stream"
 
-                            // Validate content type (only images)
-                            if (!partContentType.startsWith("image/")) {
+                            // Validate content type (only specific image types)
+                            val allowedTypes = listOf("image/jpeg", "image/png", "image/gif", "image/webp")
+                            if (partContentType !in allowedTypes) {
                                 part.dispose()
                                 throw ValidationException(
-                                    "Only image files are allowed",
+                                    "Only JPEG, PNG, GIF, and WebP images are allowed",
                                     "INVALID_FILE_TYPE",
+                                )
+                            }
+
+                            // Validate file extension
+                            val allowedExtensions = listOf("jpg", "jpeg", "png", "gif", "webp")
+                            val extension = originalFileName.substringAfterLast(".", "").lowercase()
+                            if (extension !in allowedExtensions) {
+                                part.dispose()
+                                throw ValidationException(
+                                    "File extension not allowed. Allowed: ${allowedExtensions.joinToString(", ")}",
+                                    "INVALID_FILE_EXTENSION",
                                 )
                             }
 

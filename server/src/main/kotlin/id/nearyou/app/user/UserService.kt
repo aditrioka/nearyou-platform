@@ -58,6 +58,12 @@ class UserService {
                     "INVALID_PHOTO_URL",
                 )
             }
+            if (!url.startsWith("/uploads/") && !url.contains("/uploads/") && !url.startsWith("https://")) {
+                throw ValidationException(
+                    "Profile photo URL must be from the upload service or a secure HTTPS URL",
+                    "INVALID_PHOTO_URL",
+                )
+            }
         }
 
         // Update user

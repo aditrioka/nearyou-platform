@@ -72,11 +72,20 @@ object EnvironmentConfig {
     // Rate Limiting
     val otpRateLimit: Int = 5 // requests per hour
     val otpRateLimitWindow: Long = 60 * 60 * 1000L // 1 hour
+    val loginRateLimit: Int = 10 // attempts per 15 minutes
+    val loginRateLimitWindow: Long = 15 * 60L // 15 minutes in seconds
 
     // Server Configuration
     val serverPort: Int = getEnv("SERVER_PORT")?.toIntOrNull() ?: 8080
     val serverHost: String = getEnv("SERVER_HOST") ?: "0.0.0.0"
     val baseUrl: String = getEnv("BASE_URL") ?: "http://localhost:$serverPort"
+
+    // CORS Configuration
+    val corsAllowedOrigins: List<String> =
+        getEnv("CORS_ALLOWED_ORIGINS")
+            ?.split(",")
+            ?.map { it.trim() }
+            ?: listOf("localhost:$serverPort", "localhost:3000")
 
     // File Upload Configuration
     val uploadDir: String = getEnv("UPLOAD_DIR") ?: "uploads"

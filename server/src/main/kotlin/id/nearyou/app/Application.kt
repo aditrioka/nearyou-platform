@@ -6,6 +6,8 @@ import id.nearyou.app.config.EnvironmentConfig
 import id.nearyou.app.di.serverModule
 import id.nearyou.app.plugins.configureAuthentication
 import id.nearyou.app.plugins.configureErrorHandling
+import id.nearyou.app.plugins.configureLogging
+import id.nearyou.app.plugins.configureSecurity
 import id.nearyou.app.plugins.configureSerialization
 import id.nearyou.app.post.postRoutes
 import id.nearyou.app.upload.uploadRoutes
@@ -53,10 +55,17 @@ fun Application.module() {
         modules(serverModule)
     }
 
+    // Request body size limit (1MB for JSON, file uploads handled separately in multipart)
+    install(io.ktor.server.plugins.bodylimit.RequestBodyLimit) {
+        bodyLimit { 1_048_576L } // 1 MB
+    }
+
     // Configure plugins
     configureErrorHandling() // Must be installed early to catch errors from other plugins
     configureSerialization()
     configureAuthentication()
+    configureSecurity()
+    configureLogging()
 
     // Configure routing
     routing {

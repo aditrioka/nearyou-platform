@@ -61,6 +61,11 @@ class LocalStorageService(
         val extension = fileName.substringAfterLast(".", "")
         val uniqueFileName = "${UUID.randomUUID()}${if (extension.isNotEmpty()) ".$extension" else ""}"
 
+        // Prevent path traversal
+        if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            throw IllegalArgumentException("Invalid file name")
+        }
+
         // Create subdirectory based on file type
         val subDir =
             when {
@@ -89,6 +94,15 @@ class LocalStorageService(
         try {
             // Extract file path from URL
             val path = fileUrl.substringAfter("/uploads/")
+            // Prevent path traversal
+            if (path.contains("..")) {
+                return
+            }
+            val resolvedPath = File(uploadDir, path).canonicalPath
+            val uploadDirPath = File(uploadDir).canonicalPath
+            if (!resolvedPath.startsWith(uploadDirPath)) {
+                return
+            }
             val file = File(uploadDir, path)
 
             if (file.exists()) {

@@ -52,6 +52,13 @@ fun Route.postRoutes() {
                     call.request.queryParameters["longitude"]?.toDoubleOrNull()
                         ?: throw ValidationException("Longitude is required", "MISSING_LONGITUDE")
 
+                if (latitude < -90.0 || latitude > 90.0) {
+                    throw ValidationException("Latitude must be between -90 and 90", "INVALID_LATITUDE")
+                }
+                if (longitude < -180.0 || longitude > 180.0) {
+                    throw ValidationException("Longitude must be between -180 and 180", "INVALID_LONGITUDE")
+                }
+
                 val radius = call.request.queryParameters["radius"]?.toDoubleOrNull() ?: 1000.0
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
 

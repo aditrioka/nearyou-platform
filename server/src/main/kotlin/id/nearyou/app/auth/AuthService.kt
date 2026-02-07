@@ -63,6 +63,20 @@ class AuthService(
             val identifier = request.email ?: request.phone!!
             val type = if (request.email != null) "email" else "phone"
 
+            // Validate email format
+            request.email?.let { email ->
+                if (!isValidEmail(email)) {
+                    return Result.failure(ValidationException("Invalid email format", "INVALID_EMAIL"))
+                }
+            }
+
+            // Validate phone format
+            request.phone?.let { phone ->
+                if (!isValidPhone(phone)) {
+                    return Result.failure(ValidationException("Invalid phone format", "INVALID_PHONE"))
+                }
+            }
+
             val email = request.email
             if (email != null && UserRepository.emailExists(email)) {
                 return Result.failure(ConflictException("Email already registered", "EMAIL_EXISTS"))
@@ -116,6 +130,20 @@ class AuthService(
             val identifier = request.email ?: request.phone!!
             val type = if (request.email != null) "email" else "phone"
 
+            // Validate email format
+            request.email?.let { email ->
+                if (!isValidEmail(email)) {
+                    return Result.failure(ValidationException("Invalid email format", "INVALID_EMAIL"))
+                }
+            }
+
+            // Validate phone format
+            request.phone?.let { phone ->
+                if (!isValidPhone(phone)) {
+                    return Result.failure(ValidationException("Invalid phone format", "INVALID_PHONE"))
+                }
+            }
+
             // First, check if there's a pending registration in Redis
             val pendingRegistration = redis.get("pending_registration:$identifier")
             if (pendingRegistration != null) {
@@ -126,6 +154,11 @@ class AuthService(
                         "VERIFICATION_PENDING",
                     ),
                 )
+            }
+
+            // Check login rate limiting
+            if (!checkLoginRateLimit(identifier)) {
+                return Result.failure(RateLimitException("Too many login attempts. Please try again later."))
             }
 
             // Check if user exists in database (verified users)
@@ -399,6 +432,33 @@ class AuthService(
     /**
      * Hash password using BCrypt
      */
+    private fun isValidEmail(email: String): Boolean {
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$".toRegex()
+        return email.length <= 254 && emailRegex.matches(email)
+    }
+
+    private fun isValidPhone(phone: String): Boolean {
+        val phoneRegex = "^\\+?[1-9]\\d{6,14}$".toRegex()
+        return phoneRegex.matches(phone)
+    }
+
+    private fun checkLoginRateLimit(identifier: String): Boolean {
+        val key = "rate_limit:login:$identifier"
+        val count = redis.get(key)?.toIntOrNull() ?: 0
+
+        if (count >= 10) {
+            return false
+        }
+
+        if (count == 0) {
+            redis.setex(key, 900, "1") // 15 minute TTL
+        } else {
+            redis.incr(key)
+        }
+
+        return true
+    }
+
     private fun hashPassword(password: String): String = BCrypt.hashpw(password, BCrypt.gensalt(EnvironmentConfig.bcryptRounds))
 
     /**

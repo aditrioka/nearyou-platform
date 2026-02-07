@@ -32,6 +32,16 @@ dependencies {
     // Error Handling
     implementation("io.ktor:ktor-server-status-pages:3.3.0")
 
+    // CORS & Security Headers
+    implementation("io.ktor:ktor-server-cors:3.3.0")
+    implementation("io.ktor:ktor-server-default-headers:3.3.0")
+
+    // Logging
+    implementation("io.ktor:ktor-server-call-logging:3.3.0")
+
+    // Request Body Size Limit
+    implementation("io.ktor:ktor-server-body-limit:3.3.0")
+
     // Database
     implementation("org.jetbrains.exposed:exposed-core:0.48.0")
     implementation("org.jetbrains.exposed:exposed-dao:0.48.0")

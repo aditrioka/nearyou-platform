@@ -73,6 +73,9 @@ class PostService {
             )
         }
 
+        // Sanitize content (strip HTML tags to prevent XSS)
+        val sanitizedContent = request.content.replace(Regex("<[^>]*>"), "")
+
         // Validate media URLs (premium only)
         if (request.mediaUrls.isNotEmpty()) {
             val user =
@@ -92,6 +95,16 @@ class PostService {
                     "TOO_MANY_MEDIA",
                 )
             }
+
+            // Validate media URLs format
+            request.mediaUrls.forEach { url ->
+                if (!url.startsWith("/uploads/") && !url.contains("/uploads/") && !url.startsWith("https://")) {
+                    throw ValidationException(
+                        "Invalid media URL format",
+                        "INVALID_MEDIA_URL",
+                    )
+                }
+            }
         }
 
         // TODO: Check daily post quota for free users (100 posts/day)
@@ -100,7 +113,7 @@ class PostService {
         val post =
             PostRepository.createPost(
                 userId = userId,
-                content = request.content,
+                content = sanitizedContent,
                 location = request.location,
                 mediaUrls = request.mediaUrls,
             )
@@ -162,7 +175,10 @@ class PostService {
             )
         }
 
-        val updatedPost = PostRepository.updatePost(postId, request.content)
+        // Sanitize content
+        val sanitizedContent = request.content.replace(Regex("<[^>]*>"), "")
+
+        val updatedPost = PostRepository.updatePost(postId, sanitizedContent)
         return updatedPost ?: throw RuntimeException("Failed to update post")
     }
 
