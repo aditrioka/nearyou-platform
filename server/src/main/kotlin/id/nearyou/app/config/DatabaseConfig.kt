@@ -9,7 +9,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
  * Database configuration and connection management with HikariCP connection pooling
  */
 object DatabaseConfig {
-
     private var database: Database? = null
     private var dataSource: HikariDataSource? = null
 
@@ -17,28 +16,29 @@ object DatabaseConfig {
      * Initialize database connection with HikariCP connection pooling
      */
     fun init() {
-        val config = HikariConfig().apply {
-            jdbcUrl = EnvironmentConfig.databaseUrl
-            driverClassName = "org.postgresql.Driver"
-            username = EnvironmentConfig.databaseUser
-            password = EnvironmentConfig.databasePassword
+        val config =
+            HikariConfig().apply {
+                jdbcUrl = EnvironmentConfig.databaseUrl
+                driverClassName = "org.postgresql.Driver"
+                username = EnvironmentConfig.databaseUser
+                password = EnvironmentConfig.databasePassword
 
-            // Connection pool settings
-            maximumPoolSize = 10  // Maximum number of connections in the pool
-            minimumIdle = 2       // Minimum number of idle connections
-            idleTimeout = 600000  // 10 minutes - max time a connection can sit idle
-            connectionTimeout = 30000  // 30 seconds - max time to wait for connection
-            maxLifetime = 1800000  // 30 minutes - max lifetime of a connection
+                // Connection pool settings
+                maximumPoolSize = 10 // Maximum number of connections in the pool
+                minimumIdle = 2 // Minimum number of idle connections
+                idleTimeout = 600000 // 10 minutes - max time a connection can sit idle
+                connectionTimeout = 30000 // 30 seconds - max time to wait for connection
+                maxLifetime = 1800000 // 30 minutes - max lifetime of a connection
 
-            // Performance tuning
-            leakDetectionThreshold = 60000  // 1 minute - detect connection leaks
+                // Performance tuning
+                leakDetectionThreshold = 60000 // 1 minute - detect connection leaks
 
-            // Connection test query
-            connectionTestQuery = "SELECT 1"
+                // Connection test query
+                connectionTestQuery = "SELECT 1"
 
-            // Pool name for monitoring
-            poolName = "NearYouDB-Pool"
-        }
+                // Pool name for monitoring
+                poolName = "NearYouDB-Pool"
+            }
 
         dataSource = HikariDataSource(config)
         database = Database.connect(dataSource!!)
@@ -59,9 +59,7 @@ object DatabaseConfig {
     /**
      * Get the database instance
      */
-    fun getDatabase(): Database {
-        return database ?: throw IllegalStateException("Database not initialized. Call init() first.")
-    }
+    fun getDatabase(): Database = database ?: throw IllegalStateException("Database not initialized. Call init() first.")
 
     /**
      * Close the connection pool (call on application shutdown)
@@ -71,4 +69,3 @@ object DatabaseConfig {
         println("✓ Database connection pool closed")
     }
 }
-

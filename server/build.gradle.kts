@@ -9,7 +9,7 @@ group = "id.nearyou.app"
 version = "1.0.0"
 application {
     mainClass.set("id.nearyou.app.ApplicationKt")
-    
+
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
@@ -39,7 +39,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.48.0")
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("net.postgis:postgis-jdbc:2.5.1")
-    implementation("com.zaxxer:HikariCP:5.1.0")  // Connection pooling
+    implementation("com.zaxxer:HikariCP:5.1.0") // Connection pooling
 
     // Redis
     implementation("io.lettuce:lettuce-core:6.3.1.RELEASE")

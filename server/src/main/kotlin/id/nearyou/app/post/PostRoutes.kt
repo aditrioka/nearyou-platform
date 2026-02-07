@@ -21,7 +21,6 @@ fun Route.postRoutes() {
     val postService by inject<PostService>()
 
     route("/posts") {
-
         /**
          * GET /posts/nearby
          * Get nearby posts within a specified radius
@@ -36,43 +35,52 @@ fun Route.postRoutes() {
         authenticate("auth-jwt") {
             get("/nearby") {
                 // Extract user ID from JWT token
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
 
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
 
                 // Parse query parameters
-                val latitude = call.request.queryParameters["latitude"]?.toDoubleOrNull()
-                    ?: throw ValidationException("Latitude is required", "MISSING_LATITUDE")
+                val latitude =
+                    call.request.queryParameters["latitude"]?.toDoubleOrNull()
+                        ?: throw ValidationException("Latitude is required", "MISSING_LATITUDE")
 
-                val longitude = call.request.queryParameters["longitude"]?.toDoubleOrNull()
-                    ?: throw ValidationException("Longitude is required", "MISSING_LONGITUDE")
+                val longitude =
+                    call.request.queryParameters["longitude"]?.toDoubleOrNull()
+                        ?: throw ValidationException("Longitude is required", "MISSING_LONGITUDE")
 
                 val radius = call.request.queryParameters["radius"]?.toDoubleOrNull() ?: 1000.0
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
 
                 // Validate location
-                val userLocation = try {
-                    Location(latitude, longitude)
-                } catch (e: IllegalArgumentException) {
-                    throw ValidationException(e.message ?: "Invalid location", "INVALID_LOCATION")
-                }
+                val userLocation =
+                    try {
+                        Location(latitude, longitude)
+                    } catch (e: IllegalArgumentException) {
+                        throw ValidationException(e.message ?: "Invalid location", "INVALID_LOCATION")
+                    }
 
                 // Get nearby posts
-                val posts = postService.getNearbyPosts(
-                    userLocation = userLocation,
-                    radiusMeters = radius,
-                    limit = limit,
-                    currentUserId = userId
-                )
+                val posts =
+                    postService.getNearbyPosts(
+                        userLocation = userLocation,
+                        radiusMeters = radius,
+                        limit = limit,
+                        currentUserId = userId,
+                    )
 
-                call.respond(HttpStatusCode.OK, mapOf(
-                    "posts" to posts,
-                    "count" to posts.size,
-                    "radius" to radius,
-                    "location" to userLocation
-                ))
+                call.respond(
+                    HttpStatusCode.OK,
+                    mapOf(
+                        "posts" to posts,
+                        "count" to posts.size,
+                        "radius" to radius,
+                        "location" to userLocation,
+                    ),
+                )
             }
 
             /**
@@ -82,11 +90,13 @@ fun Route.postRoutes() {
              */
             post {
                 // Extract user ID from JWT token
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
 
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
 
                 // Parse request body
                 val request = call.receive<CreatePostRequest>()
@@ -104,15 +114,18 @@ fun Route.postRoutes() {
              */
             get("/{id}") {
                 // Extract user ID from JWT token
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
 
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
 
                 // Get post ID from path parameter
-                val postId = call.parameters["id"]
-                    ?: throw ValidationException("Post ID is required", "MISSING_POST_ID")
+                val postId =
+                    call.parameters["id"]
+                        ?: throw ValidationException("Post ID is required", "MISSING_POST_ID")
 
                 // Get post
                 val post = postService.getPostById(postId, userId)
@@ -128,15 +141,18 @@ fun Route.postRoutes() {
              */
             put("/{id}") {
                 // Extract user ID from JWT token
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
 
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
 
                 // Get post ID from path parameter
-                val postId = call.parameters["id"]
-                    ?: throw ValidationException("Post ID is required", "MISSING_POST_ID")
+                val postId =
+                    call.parameters["id"]
+                        ?: throw ValidationException("Post ID is required", "MISSING_POST_ID")
 
                 // Parse request body
                 val request = call.receive<UpdatePostRequest>()
@@ -155,25 +171,30 @@ fun Route.postRoutes() {
              */
             delete("/{id}") {
                 // Extract user ID from JWT token
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
 
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
 
                 // Get post ID from path parameter
-                val postId = call.parameters["id"]
-                    ?: throw ValidationException("Post ID is required", "MISSING_POST_ID")
+                val postId =
+                    call.parameters["id"]
+                        ?: throw ValidationException("Post ID is required", "MISSING_POST_ID")
 
                 // Delete post
                 postService.deletePost(postId, userId)
 
-                call.respond(HttpStatusCode.OK, mapOf(
-                    "message" to "Post deleted successfully",
-                    "postId" to postId
-                ))
+                call.respond(
+                    HttpStatusCode.OK,
+                    mapOf(
+                        "message" to "Post deleted successfully",
+                        "postId" to postId,
+                    ),
+                )
             }
         }
     }
 }
-

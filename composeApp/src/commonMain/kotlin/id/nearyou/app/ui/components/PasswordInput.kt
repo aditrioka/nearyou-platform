@@ -28,7 +28,7 @@ fun PasswordInput(
     error: String? = null,
     imeAction: ImeAction = ImeAction.Done,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -43,28 +43,32 @@ fun PasswordInput(
             }
         },
         isError = error != null,
-        visualTransformation = if (passwordVisible) 
-            VisualTransformation.None 
-        else 
-            PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-            imeAction = imeAction
-        ),
+        visualTransformation =
+            if (passwordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = imeAction,
+            ),
         trailingIcon = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                 Icon(
-                    imageVector = if (passwordVisible)
-                        Icons.Filled.Visibility
-                    else
-                        Icons.Filled.VisibilityOff,
-                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                    imageVector =
+                        if (passwordVisible) {
+                            Icons.Filled.Visibility
+                        } else {
+                            Icons.Filled.VisibilityOff
+                        },
+                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
                 )
             }
         },
         enabled = enabled,
         singleLine = true,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     )
 }
-

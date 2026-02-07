@@ -8,9 +8,8 @@ import io.ktor.client.plugins.logging.Logger
  */
 object KtorLogger : Logger {
     private const val TAG = "HttpClient"
-    
+
     override fun log(message: String) {
         AppLogger.debug(TAG, message)
     }
 }
-

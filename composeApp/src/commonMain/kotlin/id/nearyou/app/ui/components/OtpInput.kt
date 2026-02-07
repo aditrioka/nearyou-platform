@@ -20,7 +20,7 @@ import id.nearyou.app.ui.theme.Spacing
 
 /**
  * OTP Input Component - Refactored for better UX
- * 
+ *
  * Shows 6 individual boxes but uses a single TextField for proper input handling
  * This approach:
  * - Maintains proper focus management
@@ -34,48 +34,48 @@ fun OtpInput(
     onValueChange: (String) -> Unit,
     length: Int = 6,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     val focusRequester = remember { FocusRequester() }
-    
+
     // Request focus when component becomes enabled
     LaunchedEffect(enabled) {
         if (enabled) {
             focusRequester.requestFocus()
         }
     }
-    
+
     Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Visual OTP boxes
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.xs, Alignment.CenterHorizontally),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             repeat(length) { index ->
                 OtpDigitBox(
                     digit = value.getOrNull(index)?.toString() ?: "",
                     isFocused = value.length == index && enabled,
-                    enabled = enabled
+                    enabled = enabled,
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(Spacing.xs))
-        
+
         // Actual text field (visible for accessibility and input)
         // Using TextFieldValue to control cursor position
         var textFieldValue by remember(value) {
             mutableStateOf(
                 TextFieldValue(
                     text = value,
-                    selection = TextRange(value.length)
-                )
+                    selection = TextRange(value.length),
+                ),
             )
         }
-        
+
         BasicTextField(
             value = textFieldValue,
             onValueChange = { newValue ->
@@ -83,21 +83,24 @@ fun OtpInput(
                 val filtered = newValue.text.filter { it.isDigit() }.take(length)
                 if (filtered != value) {
                     onValueChange(filtered)
-                    textFieldValue = newValue.copy(
-                        text = filtered,
-                        selection = TextRange(filtered.length)
-                    )
+                    textFieldValue =
+                        newValue.copy(
+                            text = filtered,
+                            selection = TextRange(filtered.length),
+                        )
                 }
             },
-            modifier = Modifier
-                .width(Dimensions.OTP_HIDDEN_FIELD_SIZE)  // Nearly invisible but still focusable
-                .height(Dimensions.OTP_HIDDEN_FIELD_SIZE)
-                .focusRequester(focusRequester),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.NumberPassword
-            ),
+            modifier =
+                Modifier
+                    .width(Dimensions.OTP_HIDDEN_FIELD_SIZE) // Nearly invisible but still focusable
+                    .height(Dimensions.OTP_HIDDEN_FIELD_SIZE)
+                    .focusRequester(focusRequester),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.NumberPassword,
+                ),
             enabled = enabled,
-            singleLine = true
+            singleLine = true,
         )
     }
 }
@@ -107,32 +110,35 @@ private fun OtpDigitBox(
     digit: String,
     isFocused: Boolean,
     enabled: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .size(Dimensions.OTP_BOX_SIZE)
-            .border(
-                width = if (isFocused) 2.dp else 1.dp,
-                color = when {
-                    !enabled -> MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                    isFocused -> MaterialTheme.colorScheme.primary
-                    digit.isNotEmpty() -> MaterialTheme.colorScheme.primary
-                    else -> MaterialTheme.colorScheme.outline
-                },
-                shape = MaterialTheme.shapes.small
-            ),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .size(Dimensions.OTP_BOX_SIZE)
+                .border(
+                    width = if (isFocused) 2.dp else 1.dp,
+                    color =
+                        when {
+                            !enabled -> MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                            isFocused -> MaterialTheme.colorScheme.primary
+                            digit.isNotEmpty() -> MaterialTheme.colorScheme.primary
+                            else -> MaterialTheme.colorScheme.outline
+                        },
+                    shape = MaterialTheme.shapes.small,
+                ),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = digit,
             style = MaterialTheme.typography.headlineMedium,
-            color = if (enabled) {
-                MaterialTheme.colorScheme.onSurface
-            } else {
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-            },
-            textAlign = TextAlign.Center
+            color =
+                if (enabled) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                },
+            textAlign = TextAlign.Center,
         )
     }
 }

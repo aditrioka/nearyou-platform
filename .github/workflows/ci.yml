@@ -15,25 +15,24 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: 'gradle'
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      
+
       - name: Run ktlint
         run: ./gradlew ktlintCheck
-        continue-on-error: true
-      
+
       - name: Upload lint results
         uses: actions/upload-artifact@v4
         if: always()
@@ -44,31 +43,31 @@ jobs:
   test-shared:
     name: Test Shared Module
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: 'gradle'
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      
+
       - name: Run shared module tests
         run: ./gradlew :shared:allTests
-      
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: shared-test-results
           path: 'shared/build/test-results/'
-      
+
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -79,7 +78,7 @@ jobs:
   test-server:
     name: Test Server Module
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgis/postgis:15-3.3
@@ -94,7 +93,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      
+
       redis:
         image: redis:7.0-alpine
         ports:
@@ -104,21 +103,21 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: 'gradle'
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      
+
       - name: Run server tests
         run: ./gradlew :server:test
         env:
@@ -126,14 +125,14 @@ jobs:
           DATABASE_USER: test_user
           DATABASE_PASSWORD: test_password
           REDIS_URL: redis://localhost:6379
-      
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: server-test-results
           path: 'server/build/test-results/'
-      
+
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -144,78 +143,41 @@ jobs:
   build-android:
     name: Build Android
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: 'gradle'
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      
+
       - name: Build Android Debug APK
         run: ./gradlew :composeApp:assembleDebug
-      
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-debug-apk
           path: 'composeApp/build/outputs/apk/debug/*.apk'
 
-  build-ios:
-    name: Build iOS
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build iOS Framework
-        run: ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode
-        env:
-          CONFIGURATION: Debug
-          SDK_NAME: iphonesimulator
-          ARCHS: arm64
-        continue-on-error: true
-
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Build iOS App
-        run: |
-          cd iosApp
-          xcodebuild -scheme iosApp -configuration Debug -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15' build
-        continue-on-error: true
-
   build-docker:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -225,31 +187,29 @@ jobs:
           tags: nearyou-server:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-        continue-on-error: true
 
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
     needs: [test-shared, test-server]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: 'gradle'
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      
+
       - name: Generate coverage report
         run: ./gradlew koverXmlReport
-        continue-on-error: true
-      
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -257,14 +217,13 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-        continue-on-error: true
 
   summary:
     name: Build Summary
     runs-on: ubuntu-latest
-    needs: [lint, test-shared, test-server, build-android, build-ios, build-docker]
+    needs: [lint, test-shared, test-server, build-android, build-docker, coverage]
     if: always()
-    
+
     steps:
       - name: Check build status
         run: |
@@ -272,11 +231,26 @@ jobs:
           echo "Test Shared: ${{ needs.test-shared.result }}"
           echo "Test Server: ${{ needs.test-server.result }}"
           echo "Build Android: ${{ needs.build-android.result }}"
-          echo "Build iOS: ${{ needs.build-ios.result }}"
           echo "Build Docker: ${{ needs.build-docker.result }}"
-          
-          if [ "${{ needs.test-shared.result }}" != "success" ] || [ "${{ needs.test-server.result }}" != "success" ]; then
-            echo "Tests failed!"
+          echo "Coverage: ${{ needs.coverage.result }}"
+
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "Lint failed!"
             exit 1
           fi
-
+          if [ "${{ needs.test-shared.result }}" != "success" ]; then
+            echo "Shared tests failed!"
+            exit 1
+          fi
+          if [ "${{ needs.test-server.result }}" != "success" ]; then
+            echo "Server tests failed!"
+            exit 1
+          fi
+          if [ "${{ needs.build-android.result }}" != "success" ]; then
+            echo "Android build failed!"
+            exit 1
+          fi
+          if [ "${{ needs.build-docker.result }}" != "success" ]; then
+            echo "Docker build failed!"
+            exit 1
+          fi

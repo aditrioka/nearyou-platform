@@ -3,11 +3,10 @@ package domain.model
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class LocationTest {
-
     @Test
     fun `location creation with valid coordinates`() {
         val location = Location(latitude = -6.2088, longitude = 106.8456)
@@ -46,9 +45,9 @@ class LocationTest {
     fun `distance calculation between different locations`() {
         val jakarta = Location(latitude = -6.2088, longitude = 106.8456)
         val bandung = Location(latitude = -6.9175, longitude = 107.6191)
-        
+
         val distance = jakarta.distanceTo(bandung)
-        
+
         // Distance between Jakarta and Bandung is approximately 120 km
         assertTrue(distance > 100_000) // > 100 km
         assertTrue(distance < 150_000) // < 150 km
@@ -58,7 +57,7 @@ class LocationTest {
     fun `isWithinRadius returns true for nearby locations`() {
         val location1 = Location(latitude = 0.0, longitude = 0.0)
         val location2 = Location(latitude = 0.001, longitude = 0.001)
-        
+
         // ~157 meters apart
         assertTrue(location1.isWithinRadius(location2, 200.0))
     }
@@ -67,7 +66,7 @@ class LocationTest {
     fun `isWithinRadius returns false for distant locations`() {
         val location1 = Location(latitude = 0.0, longitude = 0.0)
         val location2 = Location(latitude = 1.0, longitude = 1.0)
-        
+
         // ~157 km apart
         assertFalse(location1.isWithinRadius(location2, 1000.0))
     }
@@ -90,4 +89,3 @@ class LocationTest {
         assertEquals("15 km", formatted)
     }
 }
-

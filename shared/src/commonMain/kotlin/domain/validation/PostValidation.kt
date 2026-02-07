@@ -12,29 +12,30 @@ object PostValidation {
     /**
      * Validate post content
      */
-    fun validateContent(content: String): ValidationResult {
-        return when {
+    fun validateContent(content: String): ValidationResult =
+        when {
             content.isBlank() -> ValidationResult.failure("Post content cannot be empty")
-            content.length < CONTENT_MIN_LENGTH -> 
+            content.length < CONTENT_MIN_LENGTH ->
                 ValidationResult.failure("Post content must be at least $CONTENT_MIN_LENGTH character")
-            content.length > CONTENT_MAX_LENGTH -> 
+            content.length > CONTENT_MAX_LENGTH ->
                 ValidationResult.failure("Post content must be at most $CONTENT_MAX_LENGTH characters")
             else -> ValidationResult.success()
         }
-    }
 
     /**
      * Validate media URLs
      */
-    fun validateMediaUrls(mediaUrls: List<String>, isPremium: Boolean): ValidationResult {
-        return when {
-            mediaUrls.isNotEmpty() && !isPremium -> 
+    fun validateMediaUrls(
+        mediaUrls: List<String>,
+        isPremium: Boolean,
+    ): ValidationResult =
+        when {
+            mediaUrls.isNotEmpty() && !isPremium ->
                 ValidationResult.failure("Media uploads are only available for premium users")
-            mediaUrls.size > MAX_MEDIA_COUNT -> 
+            mediaUrls.size > MAX_MEDIA_COUNT ->
                 ValidationResult.failure("Maximum $MAX_MEDIA_COUNT images allowed per post")
             else -> ValidationResult.success()
         }
-    }
 
     /**
      * Validate post creation
@@ -42,11 +43,11 @@ object PostValidation {
     fun validateCreatePost(
         content: String,
         mediaUrls: List<String>,
-        isPremium: Boolean
+        isPremium: Boolean,
     ): ValidationResult {
         validateContent(content).let { if (!it.isValid) return it }
         validateMediaUrls(mediaUrls, isPremium).let { if (!it.isValid) return it }
-        
+
         return ValidationResult.success()
     }
 }
@@ -61,15 +62,13 @@ object CommentValidation {
     /**
      * Validate comment content
      */
-    fun validateContent(content: String): ValidationResult {
-        return when {
+    fun validateContent(content: String): ValidationResult =
+        when {
             content.isBlank() -> ValidationResult.failure("Comment cannot be empty")
-            content.length < CONTENT_MIN_LENGTH -> 
+            content.length < CONTENT_MIN_LENGTH ->
                 ValidationResult.failure("Comment must be at least $CONTENT_MIN_LENGTH character")
-            content.length > CONTENT_MAX_LENGTH -> 
+            content.length > CONTENT_MAX_LENGTH ->
                 ValidationResult.failure("Comment must be at most $CONTENT_MAX_LENGTH characters")
             else -> ValidationResult.success()
         }
-    }
 }
-

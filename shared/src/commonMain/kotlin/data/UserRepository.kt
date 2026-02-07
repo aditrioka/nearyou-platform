@@ -1,8 +1,8 @@
 package data
 
-import domain.model.User
 import domain.model.UpdateUserRequest
 import domain.model.UploadResponse
+import domain.model.User
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -19,7 +19,7 @@ import util.AppLogger
  */
 class UserRepository(
     private val tokenStorage: TokenStorage,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
     companion object {
         private const val TAG = "UserRepository"
@@ -28,14 +28,13 @@ class UserRepository(
     /**
      * Parse error response from API
      */
-    private suspend fun parseErrorMessage(response: HttpResponse): String {
-        return try {
+    private suspend fun parseErrorMessage(response: HttpResponse): String =
+        try {
             val errorResponse = response.body<ApiErrorResponse>()
             errorResponse.message
         } catch (e: Exception) {
             response.status.description
         }
-    }
 
     /**
      * Get current user's profile
@@ -45,13 +44,15 @@ class UserRepository(
         return try {
             AppLogger.debug(TAG, "Fetching current user profile")
 
-            val accessToken = tokenStorage.getAccessToken()
-                ?: return Result.failure(Exception("Not authenticated"))
+            val accessToken =
+                tokenStorage.getAccessToken()
+                    ?: return Result.failure(Exception("Not authenticated"))
 
-            val response = httpClient.get("/users/me") {
-                contentType(ContentType.Application.Json)
-                bearerAuth(accessToken)
-            }
+            val response =
+                httpClient.get("/users/me") {
+                    contentType(ContentType.Application.Json)
+                    bearerAuth(accessToken)
+                }
 
             if (response.status.isSuccess()) {
                 val user = response.body<User>()
@@ -77,14 +78,16 @@ class UserRepository(
         return try {
             AppLogger.info(TAG, "Updating user profile")
 
-            val accessToken = tokenStorage.getAccessToken()
-                ?: return Result.failure(Exception("Not authenticated"))
+            val accessToken =
+                tokenStorage.getAccessToken()
+                    ?: return Result.failure(Exception("Not authenticated"))
 
-            val response = httpClient.put("/users/me") {
-                contentType(ContentType.Application.Json)
-                bearerAuth(accessToken)
-                setBody(request)
-            }
+            val response =
+                httpClient.put("/users/me") {
+                    contentType(ContentType.Application.Json)
+                    bearerAuth(accessToken)
+                    setBody(request)
+                }
 
             if (response.status.isSuccess()) {
                 val user = response.body<User>()
@@ -111,27 +114,33 @@ class UserRepository(
     suspend fun uploadProfilePhoto(
         imageBytes: ByteArray,
         fileName: String,
-        contentType: String = "image/jpeg"
+        contentType: String = "image/jpeg",
     ): Result<UploadResponse> {
         return try {
             AppLogger.info(TAG, "Uploading profile photo: $fileName")
 
-            val accessToken = tokenStorage.getAccessToken()
-                ?: return Result.failure(Exception("Not authenticated"))
+            val accessToken =
+                tokenStorage.getAccessToken()
+                    ?: return Result.failure(Exception("Not authenticated"))
 
-            val response = httpClient.post("/upload/profile-photo") {
-                bearerAuth(accessToken)
-                setBody(
-                    MultiPartFormDataContent(
-                        formData {
-                            append("file", imageBytes, Headers.build {
-                                append(HttpHeaders.ContentType, contentType)
-                                append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
-                            })
-                        }
+            val response =
+                httpClient.post("/upload/profile-photo") {
+                    bearerAuth(accessToken)
+                    setBody(
+                        MultiPartFormDataContent(
+                            formData {
+                                append(
+                                    "file",
+                                    imageBytes,
+                                    Headers.build {
+                                        append(HttpHeaders.ContentType, contentType)
+                                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                                    },
+                                )
+                            },
+                        ),
                     )
-                )
-            }
+                }
 
             if (response.status.isSuccess()) {
                 val uploadResponse = response.body<UploadResponse>()
@@ -148,4 +157,3 @@ class UserRepository(
         }
     }
 }
-

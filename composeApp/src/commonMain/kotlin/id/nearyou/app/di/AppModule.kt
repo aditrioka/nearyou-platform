@@ -8,9 +8,9 @@ import org.koin.dsl.module
 /**
  * App-level DI module for ViewModels and UI dependencies
  */
-val appModule = module {
-    // ViewModels
-    viewModel { AuthViewModel(get()) }
-    viewModel { ProfileViewModel(get()) }
-}
-
+val appModule =
+    module {
+        // ViewModels
+        viewModel { AuthViewModel(get()) }
+        viewModel { ProfileViewModel(get()) }
+    }

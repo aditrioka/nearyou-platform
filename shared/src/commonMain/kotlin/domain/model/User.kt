@@ -30,7 +30,7 @@ data class User(
     val isVerified: Boolean = false,
     val subscriptionTier: SubscriptionTier = SubscriptionTier.FREE,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
 ) {
     init {
         require(email != null || phone != null) {
@@ -57,7 +57,7 @@ data class User(
 @Serializable
 enum class SubscriptionTier {
     FREE,
-    PREMIUM
+    PREMIUM,
 }
 
 /**
@@ -69,7 +69,7 @@ data class CreateUserRequest(
     val displayName: String,
     val email: String? = null,
     val phone: String? = null,
-    val bio: String? = null
+    val bio: String? = null,
 )
 
 /**
@@ -79,7 +79,7 @@ data class CreateUserRequest(
 data class UpdateUserRequest(
     val displayName: String? = null,
     val bio: String? = null,
-    val profilePhotoUrl: String? = null
+    val profilePhotoUrl: String? = null,
 )
 
 /**
@@ -91,6 +91,5 @@ data class UserSummary(
     val username: String,
     val displayName: String,
     val profilePhotoUrl: String? = null,
-    val subscriptionTier: SubscriptionTier = SubscriptionTier.FREE
+    val subscriptionTier: SubscriptionTier = SubscriptionTier.FREE,
 )
-

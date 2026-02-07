@@ -1,9 +1,9 @@
 package data
 
 import kotlinx.cinterop.*
+import platform.CoreFoundation.*
 import platform.Foundation.*
 import platform.Security.*
-import platform.CoreFoundation.*
 import platform.posix.memcpy
 
 /**
@@ -11,33 +11,29 @@ import platform.posix.memcpy
  */
 @OptIn(ExperimentalForeignApi::class)
 class TokenStorageIOS : TokenStorage {
-
     override suspend fun saveAccessToken(token: String) {
         saveToKeychain(KEY_ACCESS_TOKEN, token)
     }
 
-    override suspend fun getAccessToken(): String? {
-        return getFromKeychain(KEY_ACCESS_TOKEN)
-    }
+    override suspend fun getAccessToken(): String? = getFromKeychain(KEY_ACCESS_TOKEN)
 
     override suspend fun saveRefreshToken(token: String) {
         saveToKeychain(KEY_REFRESH_TOKEN, token)
     }
 
-    override suspend fun getRefreshToken(): String? {
-        return getFromKeychain(KEY_REFRESH_TOKEN)
-    }
+    override suspend fun getRefreshToken(): String? = getFromKeychain(KEY_REFRESH_TOKEN)
 
     override suspend fun clearTokens() {
         deleteFromKeychain(KEY_ACCESS_TOKEN)
         deleteFromKeychain(KEY_REFRESH_TOKEN)
     }
 
-    override suspend fun isAuthenticated(): Boolean {
-        return getAccessToken() != null && getRefreshToken() != null
-    }
+    override suspend fun isAuthenticated(): Boolean = getAccessToken() != null && getRefreshToken() != null
 
-    private fun saveToKeychain(key: String, value: String) {
+    private fun saveToKeychain(
+        key: String,
+        value: String,
+    ) {
         // Delete existing item first
         deleteFromKeychain(key)
 
@@ -64,17 +60,18 @@ class TokenStorageIOS : TokenStorage {
         query[kSecReturnData] = kCFBooleanTrue
         query[kSecMatchLimit] = kSecMatchLimitOne
 
-        val result = memScoped {
-            val resultRef = alloc<CFTypeRefVar>()
-            val status = SecItemCopyMatching(query as CFDictionaryRef, resultRef.ptr)
-            
-            if (status == errSecSuccess) {
-                val data = resultRef.value as? NSData
-                data?.toByteArray()?.decodeToString()
-            } else {
-                null
+        val result =
+            memScoped {
+                val resultRef = alloc<CFTypeRefVar>()
+                val status = SecItemCopyMatching(query as CFDictionaryRef, resultRef.ptr)
+
+                if (status == errSecSuccess) {
+                    val data = resultRef.value as? NSData
+                    data?.toByteArray()?.decodeToString()
+                } else {
+                    null
+                }
             }
-        }
 
         return result
     }
@@ -99,21 +96,18 @@ class TokenStorageIOS : TokenStorage {
  * Extension to convert NSData to ByteArray
  */
 @OptIn(ExperimentalForeignApi::class)
-private fun NSData.toByteArray(): ByteArray {
-    return ByteArray(this.length.toInt()).apply {
+private fun NSData.toByteArray(): ByteArray =
+    ByteArray(this.length.toInt()).apply {
         usePinned {
             memcpy(it.addressOf(0), this@toByteArray.bytes, this@toByteArray.length)
         }
     }
-}
 
 /**
  * Extension to convert ByteArray to NSData
  */
 @OptIn(ExperimentalForeignApi::class)
-private fun ByteArray.toNSData(): NSData {
-    return this.usePinned {
+private fun ByteArray.toNSData(): NSData =
+    this.usePinned {
         NSData.create(bytes = it.addressOf(0), length = this.size.toULong())
     }
-}
-

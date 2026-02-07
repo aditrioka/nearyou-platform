@@ -8,6 +8,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class ApiErrorResponse(
     val error: String,
-    val message: String
+    val message: String,
 )
-

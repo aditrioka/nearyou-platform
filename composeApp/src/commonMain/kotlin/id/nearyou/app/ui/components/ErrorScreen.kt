@@ -28,48 +28,47 @@ import id.nearyou.app.ui.theme.Spacing
 fun ErrorScreen(
     error: String,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Icon(
             imageVector = Icons.Outlined.ErrorOutline,
             contentDescription = "Error indicator",
             modifier = Modifier.size(Dimensions.ERROR_ICON_SIZE),
-            tint = MaterialTheme.colorScheme.error
+            tint = MaterialTheme.colorScheme.error,
         )
-        
+
         Spacer(modifier = Modifier.height(Spacing.md))
-        
+
         Text(
             text = "Something went wrong",
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.error
+            color = MaterialTheme.colorScheme.error,
         )
-        
+
         Spacer(modifier = Modifier.height(Spacing.xs))
-        
+
         Text(
             text = error,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = Spacing.lg)
+            modifier = Modifier.padding(horizontal = Spacing.lg),
         )
-        
+
         Spacer(modifier = Modifier.height(Spacing.lg))
 
         Button(onClick = onRetry) {
             Icon(
                 Icons.Filled.Refresh,
-                contentDescription = "Retry"
+                contentDescription = "Retry",
             )
             Spacer(modifier = Modifier.width(Spacing.xs))
             Text("Try Again")
         }
     }
 }
-

@@ -23,24 +23,24 @@ fun SecondaryButton(
     text: String,
     leadingIcon: ImageVector? = null,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     OutlinedButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(50.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(50.dp),
     ) {
         leadingIcon?.let {
             Icon(
                 imageVector = it,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
             Spacer(modifier = Modifier.width(Spacing.xs))
         }
         Text(text)
     }
 }
-

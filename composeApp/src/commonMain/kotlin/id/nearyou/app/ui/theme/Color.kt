@@ -3,8 +3,8 @@ package id.nearyou.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Light theme colors
-val md_theme_light_primary = Color(0xFF006C4C)          // Main brand color
-val md_theme_light_onPrimary = Color(0xFFFFFFFF)        // Text on primary
+val md_theme_light_primary = Color(0xFF006C4C) // Main brand color
+val md_theme_light_onPrimary = Color(0xFFFFFFFF) // Text on primary
 val md_theme_light_primaryContainer = Color(0xFF89F8C7) // Lighter primary variant
 val md_theme_light_onPrimaryContainer = Color(0xFF002114) // Text on primaryContainer
 
@@ -61,4 +61,3 @@ val md_theme_dark_surfaceVariant = Color(0xFF404943)
 val md_theme_dark_onSurfaceVariant = Color(0xFFC0C9C1)
 val md_theme_dark_outline = Color(0xFF8A938C)
 val md_theme_dark_outlineVariant = Color(0xFF404943)
-

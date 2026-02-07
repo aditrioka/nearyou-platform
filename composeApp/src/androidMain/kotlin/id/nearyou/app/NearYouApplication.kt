@@ -6,7 +6,6 @@ import di.sharedModule
 import id.nearyou.app.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
 import util.AppConfig
 
 /**
@@ -27,11 +26,10 @@ class NearYouApplication : Application() {
             androidContext(this@NearYouApplication)
             // Load modules
             modules(
-                platformModule,  // Platform-specific (Android TokenStorage)
-                sharedModule,    // Shared (AuthRepository)
-                appModule        // App-level (ViewModels)
+                platformModule, // Platform-specific (Android TokenStorage)
+                sharedModule, // Shared (AuthRepository)
+                appModule, // App-level (ViewModels)
             )
         }
     }
 }
-

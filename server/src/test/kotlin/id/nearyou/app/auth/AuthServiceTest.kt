@@ -1,6 +1,5 @@
 package id.nearyou.app.auth
 
-import domain.model.auth.RegisterRequest
 import io.lettuce.core.api.sync.RedisCommands
 import io.mockk.*
 import org.junit.After
@@ -16,7 +15,6 @@ import kotlin.test.assertTrue
  * Note: Database integration tests should be run separately with real PostgreSQL
  */
 class AuthServiceTest {
-
     private lateinit var mockRedis: RedisCommands<String, String>
     private lateinit var authService: AuthService
 
@@ -33,7 +31,7 @@ class AuthServiceTest {
     fun tearDown() {
         clearAllMocks()
     }
-    
+
     // ========== Redis Integration Tests ==========
 
     @Test
@@ -66,39 +64,41 @@ class AuthServiceTest {
         // Verify
         assertTrue(capturedKey.captured.startsWith("rate_limit:"))
     }
-    
+
     // ========== Helper Method Tests ==========
-    
+
     @Test
     fun `generateOtp should return 6-digit code`() {
         // Use reflection to access private method for testing
         val method = AuthService::class.java.getDeclaredMethod("generateOtp")
         method.isAccessible = true
-        
+
         val otp = method.invoke(authService) as String
-        
+
         assertEquals(6, otp.length)
         assertTrue(otp.all { it.isDigit() })
     }
-    
+
     @Test
     fun `hashPassword should create valid BCrypt hash`() {
         // Use reflection to access private method
         val method = AuthService::class.java.getDeclaredMethod("hashPassword", String::class.java)
         method.isAccessible = true
-        
+
         val password = "testPassword123"
         val hash = method.invoke(authService, password) as String
-        
+
         // Verify it's a BCrypt hash
         assertTrue(hash.startsWith("$2"))
-        
+
         // Verify the hash can verify the original password
-        assertTrue(org.mindrot.jbcrypt.BCrypt.checkpw(password, hash))
-        
+        assertTrue(
+            org.mindrot.jbcrypt.BCrypt
+                .checkpw(password, hash),
+        )
+
         // Verify different calls produce different hashes (due to salt)
         val hash2 = method.invoke(authService, password) as String
         assertFalse(hash == hash2)
     }
 }
-

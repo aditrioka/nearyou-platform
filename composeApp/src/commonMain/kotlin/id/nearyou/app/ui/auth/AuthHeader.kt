@@ -13,31 +13,29 @@ import id.nearyou.app.ui.theme.Strings
 
 /**
  * Auth Header Component - Refactored
- * 
+ *
  * Uses centralized strings and dimensions
  */
 @Composable
-fun AuthHeader(
-    modifier: Modifier = Modifier
-) {
+fun AuthHeader(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Logo/Icon placeholder - using Material Icon for now
         Icon(
             imageVector = Icons.Filled.AccountCircle,
             contentDescription = "${Strings.APP_NAME} Logo",
             modifier = Modifier.size(Dimensions.AUTH_LOGO_SIZE),
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
         )
-        
+
         Spacer(modifier = Modifier.height(Spacing.md))
-        
+
         Text(
             text = Strings.APP_NAME,
             style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }

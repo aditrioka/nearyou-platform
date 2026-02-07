@@ -18,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import id.nearyou.app.ui.components.ErrorScreen
-import id.nearyou.app.ui.components.PrimaryButton
 import id.nearyou.app.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -30,10 +29,10 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
     onEditProfile: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -42,35 +41,36 @@ fun ProfileScreen(
                     IconButton(onClick = onEditProfile) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit Profile")
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         ) {
             when {
                 uiState.isLoading -> {
                     CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
-                
+
                 uiState.error != null -> {
                     ErrorScreen(
                         error = uiState.error ?: "Unknown error",
                         onRetry = { viewModel.loadProfile() },
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
-                
+
                 uiState.user != null -> {
                     ProfileContent(
                         user = uiState.user!!,
                         onLogout = onLogout,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }
@@ -82,37 +82,40 @@ fun ProfileScreen(
 private fun ProfileContent(
     user: domain.model.User,
     onLogout: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(Spacing.md),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            modifier
+                .verticalScroll(rememberScrollState())
+                .padding(Spacing.md),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Profile Photo
         Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center,
         ) {
             if (user.profilePhotoUrl != null) {
                 AsyncImage(
                     model = user.profilePhotoUrl,
                     contentDescription = "Profile Photo",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
+                    modifier =
+                        Modifier
+                            .size(120.dp)
+                            .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
                 )
             } else {
                 Icon(
                     Icons.Default.Person,
                     contentDescription = "Profile Photo",
                     modifier = Modifier.size(60.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
@@ -123,7 +126,7 @@ private fun ProfileContent(
         Text(
             text = user.displayName,
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
 
         Spacer(modifier = Modifier.height(Spacing.xxs))
@@ -132,23 +135,24 @@ private fun ProfileContent(
         Text(
             text = "@${user.username}",
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Spacer(modifier = Modifier.height(Spacing.md))
-        
+
         // Bio
         user.bio?.let { bioText ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
             ) {
                 Text(
                     text = bioText,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(Spacing.md)
+                    modifier = Modifier.padding(Spacing.md),
                 )
             }
 
@@ -157,15 +161,15 @@ private fun ProfileContent(
 
         // User Info
         Card(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Column(
-                modifier = Modifier.padding(Spacing.md)
+                modifier = Modifier.padding(Spacing.md),
             ) {
                 Text(
                     text = "Account Information",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
 
                 Spacer(modifier = Modifier.height(Spacing.sm))
@@ -182,14 +186,14 @@ private fun ProfileContent(
 
                 InfoRow(
                     label = "Subscription",
-                    value = user.subscriptionTier.name
+                    value = user.subscriptionTier.name,
                 )
 
                 Spacer(modifier = Modifier.height(Spacing.sm))
 
                 InfoRow(
                     label = "Verified",
-                    value = if (user.isVerified) "Yes" else "No"
+                    value = if (user.isVerified) "Yes" else "No",
                 )
             }
         }
@@ -200,9 +204,10 @@ private fun ProfileContent(
         Button(
             onClick = onLogout,
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error
-            )
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                ),
         ) {
             Text("Logout")
         }
@@ -213,22 +218,21 @@ private fun ProfileContent(
 private fun InfoRow(
     label: String,
     value: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
     }
 }
-

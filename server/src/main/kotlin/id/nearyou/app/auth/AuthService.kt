@@ -18,7 +18,7 @@ import java.util.*
  * Dependencies are injected via constructor (Dependency Injection)
  */
 class AuthService(
-    private val redis: RedisCommands<String, String>
+    private val redis: RedisCommands<String, String>,
 ) {
     companion object {
         private const val TAG = "AuthService"
@@ -53,7 +53,7 @@ class AuthService(
             override val primaryKey = PrimaryKey(id)
         }
     }
-    
+
     /**
      * Register a new user
      */
@@ -91,7 +91,7 @@ class AuthService(
             val passwordHash = request.password?.let { hashPassword(it) } ?: ""
 
             // Store pending registration in Redis with hashed password
-            val registrationData = "${request.username}|${request.displayName}|${request.email}|${request.phone}|${passwordHash}"
+            val registrationData = "${request.username}|${request.displayName}|${request.email}|${request.phone}|$passwordHash"
             redis.setex("pending_registration:$identifier", 300, registrationData) // 5 minutes
 
             Result.success(
@@ -99,8 +99,8 @@ class AuthService(
                     message = "OTP sent successfully",
                     identifier = identifier,
                     type = type,
-                    expiresInSeconds = 300
-                )
+                    expiresInSeconds = 300,
+                ),
             )
         } catch (e: Exception) {
             Result.failure(e)
@@ -123,8 +123,8 @@ class AuthService(
                 return Result.failure(
                     AuthenticationException(
                         "Please verify your email/phone first. Check your inbox for the OTP code.",
-                        "VERIFICATION_PENDING"
-                    )
+                        "VERIFICATION_PENDING",
+                    ),
                 )
             }
 
@@ -155,14 +155,14 @@ class AuthService(
                     message = "OTP sent successfully",
                     identifier = identifier,
                     type = type,
-                    expiresInSeconds = 300
-                )
+                    expiresInSeconds = 300,
+                ),
             )
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-    
+
     /**
      * Verify OTP and complete registration or login
      */
@@ -172,127 +172,136 @@ class AuthService(
             if (!verifyOtpCode(request.identifier, request.code, request.type)) {
                 return Result.failure(AuthenticationException("Invalid or expired OTP", "INVALID_OTP"))
             }
-            
+
             // Check if this is a registration or login
             val pendingRegistration = redis.get("pending_registration:${request.identifier}")
-            
-            val user = if (pendingRegistration != null) {
-                // Complete registration
-                val parts = pendingRegistration.split("|")
-                val username = parts[0]
-                val displayName = parts[1]
-                val email = parts.getOrNull(2)?.takeIf { it != "null" }
-                val phone = parts.getOrNull(3)?.takeIf { it != "null" }
-                val passwordHash = parts.getOrNull(4)?.takeIf { it != "null" }
 
-                // Password is already hashed from registerUser(), use it directly
-                val createdUser = UserRepository.createUser(
-                    username = username,
-                    displayName = displayName,
-                    email = email,
-                    phone = phone,
-                    passwordHash = passwordHash
-                ) ?: return Result.failure(InternalServerException("Failed to create user", "USER_CREATION_FAILED"))
-                
-                // Mark user as verified
-                UserRepository.updateVerificationStatus(createdUser.id, true)
-                
-                // Clean up pending registration
-                redis.del("pending_registration:${request.identifier}")
-                
-                createdUser
-            } else {
-                // Login existing user
-                val existingUser = if (request.type == "email") {
-                    UserRepository.findByEmail(request.identifier)
+            val user =
+                if (pendingRegistration != null) {
+                    // Complete registration
+                    val parts = pendingRegistration.split("|")
+                    val username = parts[0]
+                    val displayName = parts[1]
+                    val email = parts.getOrNull(2)?.takeIf { it != "null" }
+                    val phone = parts.getOrNull(3)?.takeIf { it != "null" }
+                    val passwordHash = parts.getOrNull(4)?.takeIf { it != "null" }
+
+                    // Password is already hashed from registerUser(), use it directly
+                    val createdUser =
+                        UserRepository.createUser(
+                            username = username,
+                            displayName = displayName,
+                            email = email,
+                            phone = phone,
+                            passwordHash = passwordHash,
+                        ) ?: return Result.failure(InternalServerException("Failed to create user", "USER_CREATION_FAILED"))
+
+                    // Mark user as verified
+                    UserRepository.updateVerificationStatus(createdUser.id, true)
+
+                    // Clean up pending registration
+                    redis.del("pending_registration:${request.identifier}")
+
+                    createdUser
                 } else {
-                    UserRepository.findByPhone(request.identifier)
-                } ?: return Result.failure(NotFoundException("User not found", "USER_NOT_FOUND"))
-                
-                // Mark user as verified if not already
-                if (!existingUser.isVerified) {
-                    UserRepository.updateVerificationStatus(existingUser.id, true)
+                    // Login existing user
+                    val existingUser =
+                        if (request.type == "email") {
+                            UserRepository.findByEmail(request.identifier)
+                        } else {
+                            UserRepository.findByPhone(request.identifier)
+                        } ?: return Result.failure(NotFoundException("User not found", "USER_NOT_FOUND"))
+
+                    // Mark user as verified if not already
+                    if (!existingUser.isVerified) {
+                        UserRepository.updateVerificationStatus(existingUser.id, true)
+                    }
+
+                    existingUser
                 }
-                
-                existingUser
-            }
-            
+
             // Generate tokens
             val accessToken = JwtConfig.generateAccessToken(user.id, user.subscriptionTier)
             val refreshToken = JwtConfig.generateRefreshToken(user.id)
-            
+
             // Store refresh token
             storeRefreshToken(refreshToken, user.id)
-            
+
             // Mark OTP as used
             markOtpAsUsed(request.identifier, request.code)
-            
+
             Result.success(
                 AuthResponse(
                     accessToken = accessToken,
                     refreshToken = refreshToken,
-                    user = user
-                )
+                    user = user,
+                ),
             )
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-    
+
     /**
      * Refresh access token using refresh token
      */
     fun refreshToken(request: RefreshTokenRequest): Result<TokenResponse> {
         return try {
             // Validate refresh token
-            val userId = JwtConfig.getUserIdFromToken(request.refreshToken)
-                ?: return Result.failure(Exception("Invalid refresh token"))
-            
+            val userId =
+                JwtConfig.getUserIdFromToken(request.refreshToken)
+                    ?: return Result.failure(Exception("Invalid refresh token"))
+
             // Check if refresh token is revoked
             if (isRefreshTokenRevoked(request.refreshToken)) {
                 return Result.failure(Exception("Refresh token has been revoked"))
             }
-            
+
             // Get user
-            val user = UserRepository.findById(userId)
-                ?: return Result.failure(Exception("User not found"))
-            
+            val user =
+                UserRepository.findById(userId)
+                    ?: return Result.failure(Exception("User not found"))
+
             // Generate new tokens
             val newAccessToken = JwtConfig.generateAccessToken(user.id, user.subscriptionTier)
             val newRefreshToken = JwtConfig.generateRefreshToken(user.id)
-            
+
             // Revoke old refresh token
             revokeRefreshToken(request.refreshToken)
-            
+
             // Store new refresh token
             storeRefreshToken(newRefreshToken, user.id)
-            
+
             Result.success(
                 TokenResponse(
                     accessToken = newAccessToken,
-                    refreshToken = newRefreshToken
-                )
+                    refreshToken = newRefreshToken,
+                ),
             )
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-    
+
     /**
      * Generate a 6-digit OTP code
      */
     private val secureRandom = SecureRandom()
 
-    private fun generateOtp(): String {
-        return (100000 + secureRandom.nextInt(900000)).toString()
-    }
-    
+    private fun generateOtp(): String = (100000 + secureRandom.nextInt(900000)).toString()
+
     /**
      * Store OTP in database
      */
-    private fun storeOtp(identifier: String, code: String, type: String) {
+    private fun storeOtp(
+        identifier: String,
+        code: String,
+        type: String,
+    ) {
         transaction {
-            val now = kotlinx.datetime.Clock.System.now()
+            val now =
+                kotlinx.datetime.Clock.System
+                    .now()
             val expiresAt = now.plus(kotlin.time.Duration.parse("PT5M"))
 
             OtpCodes.insert {
@@ -304,28 +313,37 @@ class AuthService(
             }
         }
     }
-    
+
     /**
      * Verify OTP code
      */
-    private fun verifyOtpCode(identifier: String, code: String, type: String): Boolean {
-        return transaction {
-            val now = kotlinx.datetime.Clock.System.now()
+    private fun verifyOtpCode(
+        identifier: String,
+        code: String,
+        type: String,
+    ): Boolean =
+        transaction {
+            val now =
+                kotlinx.datetime.Clock.System
+                    .now()
 
-            OtpCodes.select {
-                (OtpCodes.userIdentifier eq identifier) and
-                (OtpCodes.code eq code) and
-                (OtpCodes.type eq type) and
-                (OtpCodes.isUsed eq false) and
-                (OtpCodes.expiresAt greater now)
-            }.count() > 0
+            OtpCodes
+                .select {
+                    (OtpCodes.userIdentifier eq identifier) and
+                        (OtpCodes.code eq code) and
+                        (OtpCodes.type eq type) and
+                        (OtpCodes.isUsed eq false) and
+                        (OtpCodes.expiresAt greater now)
+                }.count() > 0
         }
-    }
-    
+
     /**
      * Mark OTP as used
      */
-    private fun markOtpAsUsed(identifier: String, code: String) {
+    private fun markOtpAsUsed(
+        identifier: String,
+        code: String,
+    ) {
         transaction {
             OtpCodes.update({
                 (OtpCodes.userIdentifier eq identifier) and (OtpCodes.code eq code)
@@ -334,11 +352,15 @@ class AuthService(
             }
         }
     }
-    
+
     /**
      * Send OTP (mock implementation for MVP)
      */
-    private fun sendOtp(identifier: String, code: String, type: String) {
+    private fun sendOtp(
+        identifier: String,
+        code: String,
+        type: String,
+    ) {
         when (EnvironmentConfig.otpProvider) {
             "mock" -> {
                 println("=== MOCK OTP ===")
@@ -353,40 +375,43 @@ class AuthService(
             }
         }
     }
-    
+
     /**
      * Check rate limiting for OTP requests
      */
     private fun checkRateLimit(identifier: String): Boolean {
         val key = "rate_limit:otp:$identifier"
         val count = redis.get(key)?.toIntOrNull() ?: 0
-        
+
         if (count >= EnvironmentConfig.otpRateLimit) {
             return false
         }
-        
+
         if (count == 0) {
             redis.setex(key, 3600, "1") // 1 hour TTL
         } else {
             redis.incr(key)
         }
-        
+
         return true
     }
-    
+
     /**
      * Hash password using BCrypt
      */
-    private fun hashPassword(password: String): String {
-        return BCrypt.hashpw(password, BCrypt.gensalt(EnvironmentConfig.bcryptRounds))
-    }
-    
+    private fun hashPassword(password: String): String = BCrypt.hashpw(password, BCrypt.gensalt(EnvironmentConfig.bcryptRounds))
+
     /**
      * Store refresh token in database
      */
-    private fun storeRefreshToken(token: String, userId: String) {
+    private fun storeRefreshToken(
+        token: String,
+        userId: String,
+    ) {
         transaction {
-            val now = kotlinx.datetime.Clock.System.now()
+            val now =
+                kotlinx.datetime.Clock.System
+                    .now()
             val expiresAt = now.plus(kotlin.time.Duration.parse("P30D"))
 
             RefreshTokens.insert {
@@ -397,18 +422,18 @@ class AuthService(
             }
         }
     }
-    
+
     /**
      * Check if refresh token is revoked
      */
-    private fun isRefreshTokenRevoked(token: String): Boolean {
-        return transaction {
-            RefreshTokens.select {
-                (RefreshTokens.token eq token) and (RefreshTokens.isRevoked eq true)
-            }.count() > 0
+    private fun isRefreshTokenRevoked(token: String): Boolean =
+        transaction {
+            RefreshTokens
+                .select {
+                    (RefreshTokens.token eq token) and (RefreshTokens.isRevoked eq true)
+                }.count() > 0
         }
-    }
-    
+
     /**
      * Revoke refresh token
      */
@@ -416,7 +441,9 @@ class AuthService(
         transaction {
             RefreshTokens.update({ RefreshTokens.token eq token }) {
                 it[isRevoked] = true
-                it[revokedAt] = kotlinx.datetime.Clock.System.now()
+                it[revokedAt] =
+                    kotlinx.datetime.Clock.System
+                        .now()
             }
         }
     }
@@ -424,15 +451,17 @@ class AuthService(
     /**
      * Revoke all refresh tokens for a user (used for logout)
      */
-    fun revokeAllUserTokens(userId: String): Result<Unit> {
-        return try {
+    fun revokeAllUserTokens(userId: String): Result<Unit> =
+        try {
             transaction {
                 RefreshTokens.update({
                     (RefreshTokens.userId eq UUID.fromString(userId)) and
-                    (RefreshTokens.isRevoked eq false)
+                        (RefreshTokens.isRevoked eq false)
                 }) {
                     it[isRevoked] = true
-                    it[revokedAt] = kotlinx.datetime.Clock.System.now()
+                    it[revokedAt] =
+                        kotlinx.datetime.Clock.System
+                            .now()
                 }
             }
             AppLogger.info(TAG, "Revoked all tokens for user: $userId")
@@ -441,7 +470,4 @@ class AuthService(
             AppLogger.error(TAG, "Failed to revoke tokens for user: $userId - ${e.message}")
             Result.failure(e)
         }
-    }
-
 }
-

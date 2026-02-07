@@ -28,36 +28,35 @@ fun EmptyScreen(
     icon: ImageVector = Icons.Outlined.Inbox,
     actionText: String? = null,
     onAction: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        
+
         Spacer(modifier = Modifier.height(Spacing.md))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
-        
+
         if (actionText != null && onAction != null) {
             Spacer(modifier = Modifier.height(Spacing.lg))
-            
+
             Button(onClick = onAction) {
                 Text(actionText)
             }
         }
     }
 }
-

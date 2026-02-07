@@ -3,7 +3,6 @@ package id.nearyou.app.post
 import domain.model.Location
 import id.nearyou.app.config.DatabaseConfig
 import id.nearyou.app.repository.UserRepository
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import kotlin.test.assertEquals
@@ -17,7 +16,6 @@ import kotlin.test.assertTrue
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PostRepositoryTest {
-
     private lateinit var testUserId: String
 
     @BeforeAll
@@ -26,11 +24,12 @@ class PostRepositoryTest {
         DatabaseConfig.init()
 
         // Create a test user
-        val user = UserRepository.createUser(
-            username = "testuser_post",
-            displayName = "Test User Post",
-            email = "testpost@example.com"
-        )
+        val user =
+            UserRepository.createUser(
+                username = "testuser_post",
+                displayName = "Test User Post",
+                email = "testpost@example.com",
+            )
         assertNotNull(user, "Test user should be created")
         testUserId = user!!.id
     }
@@ -49,12 +48,13 @@ class PostRepositoryTest {
         val location = Location(latitude = -6.2088, longitude = 106.8456)
         val content = "Test post content"
 
-        val post = PostRepository.createPost(
-            userId = testUserId,
-            content = content,
-            location = location,
-            mediaUrls = emptyList()
-        )
+        val post =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = content,
+                location = location,
+                mediaUrls = emptyList(),
+            )
 
         assertNotNull(post, "Post should be created")
         assertEquals(testUserId, post!!.userId)
@@ -71,17 +71,19 @@ class PostRepositoryTest {
     fun `createPost should create post with media URLs for premium users`() {
         val location = Location(latitude = -6.2088, longitude = 106.8456)
         val content = "Test post with media"
-        val mediaUrls = listOf(
-            "https://example.com/image1.jpg",
-            "https://example.com/image2.jpg"
-        )
+        val mediaUrls =
+            listOf(
+                "https://example.com/image1.jpg",
+                "https://example.com/image2.jpg",
+            )
 
-        val post = PostRepository.createPost(
-            userId = testUserId,
-            content = content,
-            location = location,
-            mediaUrls = mediaUrls
-        )
+        val post =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = content,
+                location = location,
+                mediaUrls = mediaUrls,
+            )
 
         assertNotNull(post, "Post should be created")
         assertEquals(mediaUrls.size, post!!.mediaUrls.size)
@@ -95,33 +97,37 @@ class PostRepositoryTest {
         val centerLocation = Location(latitude = -6.2088, longitude = 106.8456)
 
         // Post 1: Very close (within 100m)
-        val post1 = PostRepository.createPost(
-            userId = testUserId,
-            content = "Post 1 - Very close",
-            location = Location(latitude = -6.2089, longitude = 106.8457)
-        )
+        val post1 =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = "Post 1 - Very close",
+                location = Location(latitude = -6.2089, longitude = 106.8457),
+            )
 
         // Post 2: Within 1km
-        val post2 = PostRepository.createPost(
-            userId = testUserId,
-            content = "Post 2 - Within 1km",
-            location = Location(latitude = -6.2100, longitude = 106.8470)
-        )
+        val post2 =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = "Post 2 - Within 1km",
+                location = Location(latitude = -6.2100, longitude = 106.8470),
+            )
 
         // Post 3: Beyond 1km (should not be returned)
-        val post3 = PostRepository.createPost(
-            userId = testUserId,
-            content = "Post 3 - Beyond 1km",
-            location = Location(latitude = -6.2200, longitude = 106.8600)
-        )
+        val post3 =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = "Post 3 - Beyond 1km",
+                location = Location(latitude = -6.2200, longitude = 106.8600),
+            )
 
         // Find posts within 1km
-        val nearbyPosts = PostRepository.findNearbyPosts(
-            userLocation = centerLocation,
-            radiusMeters = 1000.0,
-            limit = 50,
-            currentUserId = testUserId
-        )
+        val nearbyPosts =
+            PostRepository.findNearbyPosts(
+                userLocation = centerLocation,
+                radiusMeters = 1000.0,
+                limit = 50,
+                currentUserId = testUserId,
+            )
 
         // Should return post1 and post2, but not post3
         assertTrue(nearbyPosts.size >= 2, "Should find at least 2 posts within 1km")
@@ -156,28 +162,30 @@ class PostRepositoryTest {
         PostRepository.createPost(
             userId = testUserId,
             content = "Post at 500m",
-            location = Location(latitude = -6.2133, longitude = 106.8456)
+            location = Location(latitude = -6.2133, longitude = 106.8456),
         )
 
         PostRepository.createPost(
             userId = testUserId,
             content = "Post at 3km",
-            location = Location(latitude = -6.2358, longitude = 106.8456)
+            location = Location(latitude = -6.2358, longitude = 106.8456),
         )
 
         // Test 1km radius
-        val posts1km = PostRepository.findNearbyPosts(
-            userLocation = centerLocation,
-            radiusMeters = 1000.0,
-            limit = 50
-        )
+        val posts1km =
+            PostRepository.findNearbyPosts(
+                userLocation = centerLocation,
+                radiusMeters = 1000.0,
+                limit = 50,
+            )
 
         // Test 5km radius
-        val posts5km = PostRepository.findNearbyPosts(
-            userLocation = centerLocation,
-            radiusMeters = 5000.0,
-            limit = 50
-        )
+        val posts5km =
+            PostRepository.findNearbyPosts(
+                userLocation = centerLocation,
+                radiusMeters = 5000.0,
+                limit = 50,
+            )
 
         // 5km radius should return more posts than 1km radius
         assertTrue(posts5km.size >= posts1km.size, "5km radius should return at least as many posts as 1km")
@@ -188,11 +196,12 @@ class PostRepositoryTest {
         val location = Location(latitude = -6.2088, longitude = 106.8456)
         val content = "Test post for findById"
 
-        val createdPost = PostRepository.createPost(
-            userId = testUserId,
-            content = content,
-            location = location
-        )
+        val createdPost =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = content,
+                location = location,
+            )
 
         assertNotNull(createdPost, "Post should be created")
 
@@ -217,11 +226,12 @@ class PostRepositoryTest {
         val originalContent = "Original content"
         val updatedContent = "Updated content"
 
-        val post = PostRepository.createPost(
-            userId = testUserId,
-            content = originalContent,
-            location = location
-        )
+        val post =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = originalContent,
+                location = location,
+            )
 
         assertNotNull(post, "Post should be created")
 
@@ -237,11 +247,12 @@ class PostRepositoryTest {
         val location = Location(latitude = -6.2088, longitude = 106.8456)
         val content = "Post to be deleted"
 
-        val post = PostRepository.createPost(
-            userId = testUserId,
-            content = content,
-            location = location
-        )
+        val post =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = content,
+                location = location,
+            )
 
         assertNotNull(post, "Post should be created")
 
@@ -259,25 +270,26 @@ class PostRepositoryTest {
         val location = Location(latitude = -6.2088, longitude = 106.8456)
 
         // Create and delete a post
-        val post = PostRepository.createPost(
-            userId = testUserId,
-            content = "Post to be deleted",
-            location = location
-        )
+        val post =
+            PostRepository.createPost(
+                userId = testUserId,
+                content = "Post to be deleted",
+                location = location,
+            )
 
         assertNotNull(post, "Post should be created")
         PostRepository.deletePost(post!!.id)
 
         // Search for nearby posts
-        val nearbyPosts = PostRepository.findNearbyPosts(
-            userLocation = location,
-            radiusMeters = 1000.0,
-            limit = 50
-        )
+        val nearbyPosts =
+            PostRepository.findNearbyPosts(
+                userLocation = location,
+                radiusMeters = 1000.0,
+                limit = 50,
+            )
 
         // Deleted post should not be in results
         val foundDeletedPost = nearbyPosts.find { it.id == post.id }
         assertNull(foundDeletedPost, "Deleted post should not be in nearby results")
     }
 }
-

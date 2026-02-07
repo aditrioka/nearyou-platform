@@ -24,10 +24,10 @@ import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
 import domain.validation.UserValidation
 import id.nearyou.app.ui.components.PrimaryButton
-import kotlinx.datetime.Clock
 import id.nearyou.app.ui.components.SecondaryButton
 import id.nearyou.app.ui.components.TextInput
 import id.nearyou.app.ui.theme.Spacing
+import kotlinx.datetime.Clock
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -37,7 +37,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun EditProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -49,22 +49,23 @@ fun EditProfileScreen(
     var selectedImageBytes by remember { mutableStateOf<ByteArray?>(null) }
 
     // Image picker launcher
-    val singleImagePicker = rememberImagePickerLauncher(
-        selectionMode = SelectionMode.Single,
-        scope = rememberCoroutineScope(),
-        onResult = { byteArrays ->
-            byteArrays.firstOrNull()?.let { bytes ->
-                selectedImageBytes = bytes
-                selectedImage = bytes.toImageBitmap()
-                // Upload the photo
-                viewModel.uploadProfilePhoto(
-                    imageBytes = bytes,
-                    fileName = "profile_${Clock.System.now().toEpochMilliseconds()}.jpg",
-                    contentType = "image/jpeg"
-                )
-            }
-        }
-    )
+    val singleImagePicker =
+        rememberImagePickerLauncher(
+            selectionMode = SelectionMode.Single,
+            scope = rememberCoroutineScope(),
+            onResult = { byteArrays ->
+                byteArrays.firstOrNull()?.let { bytes ->
+                    selectedImageBytes = bytes
+                    selectedImage = bytes.toImageBitmap()
+                    // Upload the photo
+                    viewModel.uploadProfilePhoto(
+                        imageBytes = bytes,
+                        fileName = "profile_${Clock.System.now().toEpochMilliseconds()}.jpg",
+                        contentType = "image/jpeg",
+                    )
+                }
+            },
+        )
 
     // Update fields when user data loads
     LaunchedEffect(uiState.user) {
@@ -81,7 +82,7 @@ fun EditProfileScreen(
             onNavigateBack()
         }
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -90,21 +91,23 @@ fun EditProfileScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(Spacing.md),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(Spacing.md),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
                 // Display Name
                 TextInput(
@@ -116,7 +119,7 @@ fun EditProfileScreen(
                     label = "Display Name",
                     placeholder = "Enter your display name",
                     error = displayNameError,
-                    enabled = !uiState.isLoading
+                    enabled = !uiState.isLoading,
                 )
 
                 // Bio
@@ -130,47 +133,48 @@ fun EditProfileScreen(
                     placeholder = "Tell us about yourself",
                     error = bioError,
                     enabled = !uiState.isLoading,
-                    singleLine = false
+                    singleLine = false,
                 )
-                
+
                 Text(
                     text = "${bio.length}/200 characters",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 // Profile Photo Upload
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        ),
                 ) {
                     Column(
                         modifier = Modifier.padding(Spacing.md),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
                             text = "Profile Photo",
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                         Spacer(modifier = Modifier.height(Spacing.md))
 
                         // Photo preview or placeholder
                         Box(
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(CircleShape)
-                                .border(
-                                    width = 2.dp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = CircleShape
-                                )
-                                .clickable(enabled = !uiState.isUploadingPhoto) {
-                                    singleImagePicker.launch()
-                                },
-                            contentAlignment = Alignment.Center
+                            modifier =
+                                Modifier
+                                    .size(120.dp)
+                                    .clip(CircleShape)
+                                    .border(
+                                        width = 2.dp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = CircleShape,
+                                    ).clickable(enabled = !uiState.isUploadingPhoto) {
+                                        singleImagePicker.launch()
+                                    },
+                            contentAlignment = Alignment.Center,
                         ) {
                             when {
                                 uiState.isUploadingPhoto -> {
@@ -181,7 +185,7 @@ fun EditProfileScreen(
                                         bitmap = selectedImage!!,
                                         contentDescription = "Selected profile photo",
                                         modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop
+                                        contentScale = ContentScale.Crop,
                                     )
                                 }
                                 uiState.uploadedPhotoUrl != null || uiState.user?.profilePhotoUrl != null -> {
@@ -189,7 +193,7 @@ fun EditProfileScreen(
                                         model = uiState.uploadedPhotoUrl ?: uiState.user?.profilePhotoUrl,
                                         contentDescription = "Current profile photo",
                                         modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop
+                                        contentScale = ContentScale.Crop,
                                     )
                                 }
                                 else -> {
@@ -197,7 +201,7 @@ fun EditProfileScreen(
                                         imageVector = Icons.Default.CameraAlt,
                                         contentDescription = "Upload photo",
                                         modifier = Modifier.size(48.dp),
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = MaterialTheme.colorScheme.primary,
                                     )
                                 }
                             }
@@ -208,7 +212,7 @@ fun EditProfileScreen(
                         Text(
                             text = if (uiState.isUploadingPhoto) "Uploading..." else "Tap to change photo",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -217,15 +221,16 @@ fun EditProfileScreen(
                 if (uiState.error != null) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                            ),
                     ) {
                         Text(
                             text = uiState.error ?: "",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(Spacing.md)
+                            modifier = Modifier.padding(Spacing.md),
                         )
                     }
                 }
@@ -235,53 +240,54 @@ fun EditProfileScreen(
                 // Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
                 ) {
                     SecondaryButton(
                         text = "Cancel",
                         onClick = onNavigateBack,
                         modifier = Modifier.weight(1f),
-                        enabled = !uiState.isLoading
+                        enabled = !uiState.isLoading,
                     )
-                    
+
                     PrimaryButton(
                         text = if (uiState.isLoading) "Saving..." else "Save",
                         onClick = {
                             // Validate inputs
                             var hasError = false
-                            
+
                             val displayNameValidation = UserValidation.validateDisplayName(displayName)
                             if (!displayNameValidation.isValid) {
                                 displayNameError = displayNameValidation.error
                                 hasError = true
                             }
-                            
+
                             val bioValidation = UserValidation.validateBio(bio)
                             if (!bioValidation.isValid) {
                                 bioError = bioValidation.error
                                 hasError = true
                             }
-                            
+
                             if (!hasError) {
                                 viewModel.updateProfile(
                                     displayName = if (displayName != uiState.user?.displayName) displayName else null,
-                                    bio = if (bio != uiState.user?.bio) bio else null
+                                    bio = if (bio != uiState.user?.bio) bio else null,
                                 )
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        enabled = !uiState.isLoading
+                        enabled = !uiState.isLoading,
                     )
                 }
             }
-            
+
             // Loading overlay
             if (uiState.isLoading) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
@@ -289,4 +295,3 @@ fun EditProfileScreen(
         }
     }
 }
-

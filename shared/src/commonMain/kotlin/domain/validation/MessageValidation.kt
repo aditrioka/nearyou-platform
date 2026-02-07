@@ -10,16 +10,15 @@ object MessageValidation {
     /**
      * Validate message content
      */
-    fun validateContent(content: String): ValidationResult {
-        return when {
+    fun validateContent(content: String): ValidationResult =
+        when {
             content.isBlank() -> ValidationResult.failure("Message cannot be empty")
-            content.length < CONTENT_MIN_LENGTH -> 
+            content.length < CONTENT_MIN_LENGTH ->
                 ValidationResult.failure("Message must be at least $CONTENT_MIN_LENGTH character")
-            content.length > CONTENT_MAX_LENGTH -> 
+            content.length > CONTENT_MAX_LENGTH ->
                 ValidationResult.failure("Message must be at most $CONTENT_MAX_LENGTH characters")
             else -> ValidationResult.success()
         }
-    }
 
     /**
      * Validate send message request
@@ -27,13 +26,12 @@ object MessageValidation {
     fun validateSendMessage(
         conversationId: String?,
         recipientId: String?,
-        content: String
+        content: String,
     ): ValidationResult {
         if (conversationId == null && recipientId == null) {
             return ValidationResult.failure("Either conversationId or recipientId must be provided")
         }
-        
+
         return validateContent(content)
     }
 }
-

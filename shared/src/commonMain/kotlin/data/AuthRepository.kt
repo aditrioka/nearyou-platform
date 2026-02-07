@@ -6,7 +6,6 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import util.AppConfig
 import util.AppLogger
 
 /**
@@ -17,7 +16,7 @@ import util.AppLogger
  */
 class AuthRepository(
     private val tokenStorage: TokenStorage,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
     companion object {
         private const val TAG = "AuthRepository"
@@ -26,27 +25,27 @@ class AuthRepository(
     /**
      * Parse error response from API
      */
-    private suspend fun parseErrorMessage(response: HttpResponse): String {
-        return try {
+    private suspend fun parseErrorMessage(response: HttpResponse): String =
+        try {
             val errorResponse = response.body<ApiErrorResponse>()
             errorResponse.message
         } catch (e: Exception) {
             response.status.description
         }
-    }
 
     /**
      * Register a new user
      * @return OtpSentResponse with OTP details
      */
-    suspend fun register(request: RegisterRequest): Result<OtpSentResponse> {
-        return try {
+    suspend fun register(request: RegisterRequest): Result<OtpSentResponse> =
+        try {
             AppLogger.info(TAG, "Registering user: ${request.username}")
 
-            val response = httpClient.post("/auth/register") {
-                contentType(ContentType.Application.Json)
-                setBody(request)
-            }
+            val response =
+                httpClient.post("/auth/register") {
+                    contentType(ContentType.Application.Json)
+                    setBody(request)
+                }
 
             if (response.status.isSuccess()) {
                 val otpResponse = response.body<OtpSentResponse>()
@@ -61,24 +60,28 @@ class AuthRepository(
             AppLogger.error(TAG, "Registration error", e)
             Result.failure(e)
         }
-    }
 
     /**
      * Login existing user (sends OTP)
      * @return OtpSentResponse with OTP details
      */
-    suspend fun login(identifier: String, identifierType: String): Result<OtpSentResponse> {
-        return try {
+    suspend fun login(
+        identifier: String,
+        identifierType: String,
+    ): Result<OtpSentResponse> =
+        try {
             AppLogger.info(TAG, "Login attempt for: $identifierType")
 
-            val request = LoginRequest(
-                email = if (identifierType == "email") identifier else null,
-                phone = if (identifierType == "phone") identifier else null
-            )
-            val response = httpClient.post("/auth/login") {
-                contentType(ContentType.Application.Json)
-                setBody(request)
-            }
+            val request =
+                LoginRequest(
+                    email = if (identifierType == "email") identifier else null,
+                    phone = if (identifierType == "phone") identifier else null,
+                )
+            val response =
+                httpClient.post("/auth/login") {
+                    contentType(ContentType.Application.Json)
+                    setBody(request)
+                }
 
             if (response.status.isSuccess()) {
                 val otpResponse = response.body<OtpSentResponse>()
@@ -93,18 +96,18 @@ class AuthRepository(
             AppLogger.error(TAG, "Login error", e)
             Result.failure(e)
         }
-    }
 
     /**
      * Verify OTP code
      * @return AuthResponse with tokens and user info
      */
-    suspend fun verifyOtp(request: VerifyOtpRequest): Result<AuthResponse> {
-        return try {
-            val response = httpClient.post("/auth/verify-otp") {
-                contentType(ContentType.Application.Json)
-                setBody(request)
-            }
+    suspend fun verifyOtp(request: VerifyOtpRequest): Result<AuthResponse> =
+        try {
+            val response =
+                httpClient.post("/auth/verify-otp") {
+                    contentType(ContentType.Application.Json)
+                    setBody(request)
+                }
 
             if (response.status.isSuccess()) {
                 val authResponse = response.body<AuthResponse>()
@@ -129,18 +132,18 @@ class AuthRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
 
     /**
      * Login with Google
      * @return AuthResponse with tokens and user info
      */
-    suspend fun loginWithGoogle(idToken: String): Result<AuthResponse> {
-        return try {
-            val response = httpClient.post("/auth/login/google") {
-                contentType(ContentType.Application.Json)
-                setBody(GoogleLoginRequest(idToken))
-            }
+    suspend fun loginWithGoogle(idToken: String): Result<AuthResponse> =
+        try {
+            val response =
+                httpClient.post("/auth/login/google") {
+                    contentType(ContentType.Application.Json)
+                    setBody(GoogleLoginRequest(idToken))
+                }
 
             if (response.status.isSuccess()) {
                 val authResponse = response.body<AuthResponse>()
@@ -155,7 +158,6 @@ class AuthRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
 
     /**
      * Refresh access token
@@ -163,13 +165,15 @@ class AuthRepository(
      */
     suspend fun refreshToken(): Result<TokenResponse> {
         return try {
-            val refreshToken = tokenStorage.getRefreshToken()
-                ?: return Result.failure(Exception("No refresh token available"))
+            val refreshToken =
+                tokenStorage.getRefreshToken()
+                    ?: return Result.failure(Exception("No refresh token available"))
 
-            val response = httpClient.post("/auth/refresh") {
-                contentType(ContentType.Application.Json)
-                setBody(RefreshTokenRequest(refreshToken))
-            }
+            val response =
+                httpClient.post("/auth/refresh") {
+                    contentType(ContentType.Application.Json)
+                    setBody(RefreshTokenRequest(refreshToken))
+                }
 
             if (response.status.isSuccess()) {
                 val tokenResponse = response.body<TokenResponse>()
@@ -214,15 +218,10 @@ class AuthRepository(
     /**
      * Check if user is authenticated
      */
-    suspend fun isAuthenticated(): Boolean {
-        return tokenStorage.isAuthenticated()
-    }
+    suspend fun isAuthenticated(): Boolean = tokenStorage.isAuthenticated()
 
     /**
      * Get current access token
      */
-    suspend fun getAccessToken(): String? {
-        return tokenStorage.getAccessToken()
-    }
+    suspend fun getAccessToken(): String? = tokenStorage.getAccessToken()
 }
-

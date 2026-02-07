@@ -5,10 +5,11 @@ package domain.validation
  */
 data class ValidationResult(
     val isValid: Boolean,
-    val error: String? = null
+    val error: String? = null,
 ) {
     companion object {
         fun success() = ValidationResult(true)
+
         fun failure(error: String) = ValidationResult(false, error)
     }
 }
@@ -29,67 +30,62 @@ object UserValidation {
     /**
      * Validate username
      */
-    fun validateUsername(username: String): ValidationResult {
-        return when {
+    fun validateUsername(username: String): ValidationResult =
+        when {
             username.isBlank() -> ValidationResult.failure("Username cannot be empty")
-            username.length < USERNAME_MIN_LENGTH -> 
+            username.length < USERNAME_MIN_LENGTH ->
                 ValidationResult.failure("Username must be at least $USERNAME_MIN_LENGTH characters")
-            username.length > USERNAME_MAX_LENGTH -> 
+            username.length > USERNAME_MAX_LENGTH ->
                 ValidationResult.failure("Username must be at most $USERNAME_MAX_LENGTH characters")
-            !username.matches(Regex(USERNAME_REGEX)) -> 
+            !username.matches(Regex(USERNAME_REGEX)) ->
                 ValidationResult.failure("Username can only contain alphanumeric characters and underscore")
             else -> ValidationResult.success()
         }
-    }
 
     /**
      * Validate display name
      */
-    fun validateDisplayName(displayName: String): ValidationResult {
-        return when {
+    fun validateDisplayName(displayName: String): ValidationResult =
+        when {
             displayName.isBlank() -> ValidationResult.failure("Display name cannot be empty")
-            displayName.length < DISPLAY_NAME_MIN_LENGTH -> 
+            displayName.length < DISPLAY_NAME_MIN_LENGTH ->
                 ValidationResult.failure("Display name must be at least $DISPLAY_NAME_MIN_LENGTH character")
-            displayName.length > DISPLAY_NAME_MAX_LENGTH -> 
+            displayName.length > DISPLAY_NAME_MAX_LENGTH ->
                 ValidationResult.failure("Display name must be at most $DISPLAY_NAME_MAX_LENGTH characters")
             else -> ValidationResult.success()
         }
-    }
 
     /**
      * Validate email
      */
-    fun validateEmail(email: String): ValidationResult {
-        return when {
+    fun validateEmail(email: String): ValidationResult =
+        when {
             email.isBlank() -> ValidationResult.failure("Email cannot be empty")
-            !email.matches(Regex(EMAIL_REGEX)) -> 
+            !email.matches(Regex(EMAIL_REGEX)) ->
                 ValidationResult.failure("Invalid email format")
             else -> ValidationResult.success()
         }
-    }
 
     /**
      * Validate phone number
      */
-    fun validatePhone(phone: String): ValidationResult {
-        return when {
+    fun validatePhone(phone: String): ValidationResult =
+        when {
             phone.isBlank() -> ValidationResult.failure("Phone number cannot be empty")
-            !phone.matches(Regex(PHONE_REGEX)) -> 
+            !phone.matches(Regex(PHONE_REGEX)) ->
                 ValidationResult.failure("Invalid phone number format (use E.164 format)")
             else -> ValidationResult.success()
         }
-    }
 
     /**
      * Validate bio
      */
-    fun validateBio(bio: String): ValidationResult {
-        return when {
-            bio.length > BIO_MAX_LENGTH -> 
+    fun validateBio(bio: String): ValidationResult =
+        when {
+            bio.length > BIO_MAX_LENGTH ->
                 ValidationResult.failure("Bio must be at most $BIO_MAX_LENGTH characters")
             else -> ValidationResult.success()
         }
-    }
 
     /**
      * Validate user creation request
@@ -99,20 +95,19 @@ object UserValidation {
         displayName: String,
         email: String?,
         phone: String?,
-        bio: String?
+        bio: String?,
     ): ValidationResult {
         validateUsername(username).let { if (!it.isValid) return it }
         validateDisplayName(displayName).let { if (!it.isValid) return it }
-        
+
         if (email == null && phone == null) {
             return ValidationResult.failure("Either email or phone must be provided")
         }
-        
+
         email?.let { validateEmail(it).let { result -> if (!result.isValid) return result } }
         phone?.let { validatePhone(it).let { result -> if (!result.isValid) return result } }
         bio?.let { validateBio(it).let { result -> if (!result.isValid) return result } }
-        
+
         return ValidationResult.success()
     }
 }
-

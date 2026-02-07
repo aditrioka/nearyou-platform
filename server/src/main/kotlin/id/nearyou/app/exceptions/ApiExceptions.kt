@@ -9,7 +9,7 @@ sealed class ApiException(
     message: String,
     val statusCode: Int,
     val errorCode: String,
-    cause: Throwable? = null
+    cause: Throwable? = null,
 ) : Exception(message, cause)
 
 /**
@@ -17,7 +17,7 @@ sealed class ApiException(
  */
 class ValidationException(
     message: String,
-    errorCode: String = "VALIDATION_ERROR"
+    errorCode: String = "VALIDATION_ERROR",
 ) : ApiException(message, 400, errorCode)
 
 /**
@@ -25,7 +25,7 @@ class ValidationException(
  */
 class AuthenticationException(
     message: String,
-    errorCode: String = "AUTHENTICATION_ERROR"
+    errorCode: String = "AUTHENTICATION_ERROR",
 ) : ApiException(message, 401, errorCode)
 
 /**
@@ -33,7 +33,7 @@ class AuthenticationException(
  */
 class AuthorizationException(
     message: String,
-    errorCode: String = "AUTHORIZATION_ERROR"
+    errorCode: String = "AUTHORIZATION_ERROR",
 ) : ApiException(message, 403, errorCode)
 
 /**
@@ -41,7 +41,7 @@ class AuthorizationException(
  */
 class NotFoundException(
     message: String,
-    errorCode: String = "NOT_FOUND"
+    errorCode: String = "NOT_FOUND",
 ) : ApiException(message, 404, errorCode)
 
 /**
@@ -49,7 +49,7 @@ class NotFoundException(
  */
 class ConflictException(
     message: String,
-    errorCode: String = "CONFLICT"
+    errorCode: String = "CONFLICT",
 ) : ApiException(message, 409, errorCode)
 
 /**
@@ -57,7 +57,7 @@ class ConflictException(
  */
 class RateLimitException(
     message: String,
-    errorCode: String = "RATE_LIMIT_EXCEEDED"
+    errorCode: String = "RATE_LIMIT_EXCEEDED",
 ) : ApiException(message, 429, errorCode)
 
 /**
@@ -66,7 +66,7 @@ class RateLimitException(
 class InternalServerException(
     message: String,
     errorCode: String = "INTERNAL_SERVER_ERROR",
-    cause: Throwable? = null
+    cause: Throwable? = null,
 ) : ApiException(message, 500, errorCode, cause)
 
 /**
@@ -74,7 +74,7 @@ class InternalServerException(
  */
 class ServiceUnavailableException(
     message: String,
-    errorCode: String = "SERVICE_UNAVAILABLE"
+    errorCode: String = "SERVICE_UNAVAILABLE",
 ) : ApiException(message, 503, errorCode)
 
 /**
@@ -82,7 +82,7 @@ class ServiceUnavailableException(
  */
 @Serializable
 data class ErrorResponse(
-    val error: ErrorDetail
+    val error: ErrorDetail,
 )
 
 @Serializable
@@ -90,6 +90,5 @@ data class ErrorDetail(
     val code: String,
     val message: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val details: Map<String, String>? = null
+    val details: Map<String, String>? = null,
 )
-

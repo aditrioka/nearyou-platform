@@ -12,24 +12,18 @@ class TokenStorageJVM : TokenStorage {
         accessToken = token
     }
 
-    override suspend fun getAccessToken(): String? {
-        return accessToken
-    }
+    override suspend fun getAccessToken(): String? = accessToken
 
     override suspend fun saveRefreshToken(token: String) {
         refreshToken = token
     }
 
-    override suspend fun getRefreshToken(): String? {
-        return refreshToken
-    }
+    override suspend fun getRefreshToken(): String? = refreshToken
 
     override suspend fun clearTokens() {
         accessToken = null
         refreshToken = null
     }
 
-    override suspend fun isAuthenticated(): Boolean {
-        return accessToken != null && refreshToken != null
-    }
+    override suspend fun isAuthenticated(): Boolean = accessToken != null && refreshToken != null
 }

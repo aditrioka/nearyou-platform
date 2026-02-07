@@ -10,6 +10,5 @@ data class UploadResponse(
     val url: String,
     val fileName: String,
     val contentType: String,
-    val size: Long
+    val size: Long,
 )
-

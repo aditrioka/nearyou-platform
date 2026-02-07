@@ -15,7 +15,7 @@ import id.nearyou.app.ui.theme.Dimensions
 
 /**
  * Primary action button with loading state - Refactored
- * 
+ *
  * Uses centralized dimensions and better accessibility
  */
 @Composable
@@ -24,22 +24,23 @@ fun PrimaryButton(
     text: String,
     isLoading: Boolean = false,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Button(
         onClick = onClick,
         enabled = enabled && !isLoading,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(Dimensions.BUTTON_HEIGHT)
-            .semantics {
-                contentDescription = if (isLoading) "Loading..." else text
-            }
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(Dimensions.BUTTON_HEIGHT)
+                .semantics {
+                    contentDescription = if (isLoading) "Loading..." else text
+                },
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(Dimensions.BUTTON_LOADING_INDICATOR_SIZE),
-                color = MaterialTheme.colorScheme.onPrimary
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         } else {
             Text(text)

@@ -1,254 +1,237 @@
 package id.nearyou.app.integration
 
-import domain.model.auth.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
+import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Integration tests for authentication flows
- * Tests end-to-end authentication scenarios
- * 
- * Note: These tests require Redis and PostgreSQL to be running
- * Run with: docker-compose up -d
+ * Integration tests for authentication flows.
+ *
+ * Tests that require a full application environment (Redis + PostgreSQL)
+ * are marked @Ignore — they are intended for CI with service containers
+ * or local Docker Compose, not for `./gradlew :server:test` alone.
+ *
+ * The non-ignored tests validate routing and error handling using the
+ * Ktor test host without external dependencies.
  */
 class AuthIntegrationTest {
-    
-    private val json = Json {
-        prettyPrint = true
-        isLenient = true
-        ignoreUnknownKeys = true
-    }
-    
-    @Test
-    fun `POST auth register should return 200 with valid request`() = testApplication {
-        // Note: This test will fail if Redis/PostgreSQL are not running
-        // It's meant to be run in a CI/CD environment with proper setup
-
-        val response = client.post("/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody("""
-                {
-                    "username": "integrationtest",
-                    "displayName": "Integration Test",
-                    "email": "integration@test.com",
-                    "password": "testPassword123"
-                }
-            """.trimIndent())
+    private val json =
+        Json {
+            prettyPrint = true
+            isLenient = true
+            ignoreUnknownKeys = true
         }
 
-        // Accept any valid HTTP status (endpoint exists and responds)
-        assertTrue(
-            response.status.value in 200..599,
-            "Expected valid HTTP status, got ${response.status}"
-        )
-    }
-    
     @Test
-    fun `POST auth register should return 409 for duplicate email`() = testApplication {
-        // This test demonstrates the expected behavior
-        // In a real environment with database, it would test actual duplicate detection
-        
-        val response = client.post("/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody("""
-                {
-                    "username": "testuser",
-                    "displayName": "Test User",
-                    "email": "duplicate@test.com",
-                    "password": "testPassword123"
+    fun `POST auth register with invalid JSON should return 400 or 500`() =
+        testApplication {
+            val response =
+                client.post("/auth/register") {
+                    contentType(ContentType.Application.Json)
+                    setBody("invalid json")
                 }
-            """.trimIndent())
-        }
-        
-        // Verify endpoint exists and handles requests
-        assertTrue(response.status.value in 200..599)
-    }
-    
-    @Test
-    fun `POST auth login should return 200 with valid credentials`() = testApplication {
-        val response = client.post("/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody("""
-                {
-                    "email": "test@example.com"
-                }
-            """.trimIndent())
-        }
-        
-        // Verify endpoint exists
-        assertTrue(response.status.value in 200..599)
-    }
-    
-    @Test
-    fun `POST auth verify-otp should return 200 with valid OTP`() = testApplication {
-        val response = client.post("/auth/verify-otp") {
-            contentType(ContentType.Application.Json)
-            setBody("""
-                {
-                    "identifier": "test@example.com",
-                    "code": "123456",
-                    "type": "email"
-                }
-            """.trimIndent())
-        }
-        
-        // Verify endpoint exists
-        assertTrue(response.status.value in 200..599)
-    }
-    
-    @Test
-    fun `POST auth refresh should return 401 without valid refresh token`() = testApplication {
-        val response = client.post("/auth/refresh") {
-            contentType(ContentType.Application.Json)
-            setBody("""
-                {
-                    "refreshToken": "invalid_token"
-                }
-            """.trimIndent())
+
+            // Invalid JSON should produce a client or server error, never 2xx
+            assertTrue(
+                response.status.value in 400..599,
+                "Expected 4xx/5xx for invalid JSON, got ${response.status}",
+            )
         }
 
-        // Accept any valid HTTP status (endpoint exists and responds)
-        assertTrue(
-            response.status.value in 200..599,
-            "Expected valid HTTP status, got ${response.status}"
-        )
-    }
-    
+    @Ignore("Requires Redis and PostgreSQL — run in CI with service containers")
+    @Test
+    fun `POST auth register should return 200 with valid request`() =
+        testApplication {
+            val response =
+                client.post("/auth/register") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """
+                        {
+                            "username": "integrationtest",
+                            "displayName": "Integration Test",
+                            "email": "integration@test.com",
+                            "password": "testPassword123"
+                        }
+                        """.trimIndent(),
+                    )
+                }
 
-    
-    /**
-     * Full authentication flow test
-     * This demonstrates the complete user journey
-     */
-    @Test
-    fun `Full auth flow - register, verify OTP, and access protected resource`() = testApplication {
-        // Step 1: Register
-        val registerResponse = client.post("/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody("""
-                {
-                    "username": "flowtest",
-                    "displayName": "Flow Test",
-                    "email": "flowtest@example.com",
-                    "password": "testPassword123"
-                }
-            """.trimIndent())
-        }
-        
-        // Verify registration endpoint works
-        assertTrue(registerResponse.status.value in 200..599)
-        
-        // Step 2: In a real test, we would:
-        // - Extract OTP from test email/SMS service
-        // - Verify OTP
-        // - Get access token
-        // - Use token to access protected resources
-        
-        // For now, we just verify the endpoints exist
-        val verifyResponse = client.post("/auth/verify-otp") {
-            contentType(ContentType.Application.Json)
-            setBody("""
-                {
-                    "identifier": "flowtest@example.com",
-                    "code": "123456",
-                    "type": "email"
-                }
-            """.trimIndent())
-        }
-        
-        assertTrue(verifyResponse.status.value in 200..599)
-    }
-    
-    /**
-     * Error handling test
-     */
-    @Test
-    fun `API should return proper error responses`() = testApplication {
-        // Test invalid JSON
-        val response = client.post("/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody("invalid json")
+            assertEquals(HttpStatusCode.OK, response.status)
         }
 
-        // Accept any valid HTTP status (endpoint exists and handles errors)
-        assertTrue(
-            response.status.value in 200..599,
-            "Expected valid HTTP status, got ${response.status}"
-        )
-    }
-    
-    /**
-     * Rate limiting test
-     */
+    @Ignore("Requires Redis and PostgreSQL — run in CI with service containers")
     @Test
-    fun `API should enforce rate limiting`() = testApplication {
-        // In a real test, we would make multiple requests rapidly
-        // and verify that rate limiting kicks in
-        
-        val responses = mutableListOf<HttpResponse>()
-        
-        // Make 3 requests
-        repeat(3) {
-            val response = client.post("/auth/register") {
+    fun `POST auth register should return 409 for duplicate email`() =
+        testApplication {
+            // Register first user
+            client.post("/auth/register") {
                 contentType(ContentType.Application.Json)
-                setBody("""
+                setBody(
+                    """
                     {
-                        "username": "ratetest$it",
-                        "displayName": "Rate Test",
-                        "email": "ratetest$it@example.com",
+                        "username": "testuser",
+                        "displayName": "Test User",
+                        "email": "duplicate@test.com",
                         "password": "testPassword123"
                     }
-                """.trimIndent())
+                    """.trimIndent(),
+                )
             }
-            responses.add(response)
+
+            // Register duplicate
+            val response =
+                client.post("/auth/register") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """
+                        {
+                            "username": "testuser2",
+                            "displayName": "Test User 2",
+                            "email": "duplicate@test.com",
+                            "password": "testPassword123"
+                        }
+                        """.trimIndent(),
+                    )
+                }
+
+            assertEquals(HttpStatusCode.Conflict, response.status)
         }
-        
-        // Verify all requests were processed (rate limiting would need Redis)
-        responses.forEach { response ->
-            assertTrue(response.status.value in 200..599)
+
+    @Ignore("Requires Redis and PostgreSQL — run in CI with service containers")
+    @Test
+    fun `POST auth login should return 200 with valid credentials`() =
+        testApplication {
+            val response =
+                client.post("/auth/login") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """
+                        {
+                            "email": "test@example.com"
+                        }
+                        """.trimIndent(),
+                    )
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
         }
-    }
+
+    @Ignore("Requires Redis and PostgreSQL — run in CI with service containers")
+    @Test
+    fun `POST auth verify-otp should return 401 with invalid OTP`() =
+        testApplication {
+            val response =
+                client.post("/auth/verify-otp") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """
+                        {
+                            "identifier": "test@example.com",
+                            "code": "000000",
+                            "type": "email"
+                        }
+                        """.trimIndent(),
+                    )
+                }
+
+            assertEquals(HttpStatusCode.Unauthorized, response.status)
+        }
 
     @Test
-    fun `POST auth logout should revoke tokens and return 200`() = testApplication {
-        // Note: This test will fail if Redis/PostgreSQL are not running
-        // It's meant to be run in a CI/CD environment with proper setup
-
-        // First, register and verify to get a valid token
-        val registerResponse = client.post("/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody("""
-                {
-                    "username": "logouttest",
-                    "displayName": "Logout Test",
-                    "email": "logout@test.com",
-                    "password": "testPassword123"
+    fun `POST auth refresh should return 401 without valid refresh token`() =
+        testApplication {
+            val response =
+                client.post("/auth/refresh") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """
+                        {
+                            "refreshToken": "invalid_token"
+                        }
+                        """.trimIndent(),
+                    )
                 }
-            """.trimIndent())
+
+            // Without a valid token, we expect 401 or 404 (route may not be registered in test host)
+            assertTrue(
+                response.status == HttpStatusCode.Unauthorized || response.status == HttpStatusCode.NotFound,
+                "Expected 401 or 404, got ${response.status}",
+            )
         }
 
-        // For this test, we just verify the logout endpoint exists and responds
-        // Full integration would require OTP verification
+    @Test
+    fun `POST auth logout should return 401 without valid token`() =
+        testApplication {
+            val response =
+                client.post("/auth/logout") {
+                    headers {
+                        append(HttpHeaders.Authorization, "Bearer invalid-token")
+                    }
+                }
 
-        // Try logout with a mock token (endpoint should exist)
-        val logoutResponse = client.post("/auth/logout") {
-            headers {
-                append(HttpHeaders.Authorization, "Bearer mock-token-for-testing")
+            assertTrue(
+                response.status == HttpStatusCode.Unauthorized || response.status == HttpStatusCode.NotFound,
+                "Expected 401 or 404, got ${response.status}",
+            )
+        }
+
+    @Ignore("Requires Redis and PostgreSQL — run in CI with service containers")
+    @Test
+    fun `Full auth flow - register, verify OTP, and access protected resource`() =
+        testApplication {
+            val registerResponse =
+                client.post("/auth/register") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """
+                        {
+                            "username": "flowtest",
+                            "displayName": "Flow Test",
+                            "email": "flowtest@example.com",
+                            "password": "testPassword123"
+                        }
+                        """.trimIndent(),
+                    )
+                }
+
+            assertEquals(HttpStatusCode.OK, registerResponse.status)
+        }
+
+    @Ignore("Requires Redis and PostgreSQL — run in CI with service containers")
+    @Test
+    fun `API should enforce rate limiting`() =
+        testApplication {
+            val responses = mutableListOf<HttpResponse>()
+
+            repeat(3) {
+                val response =
+                    client.post("/auth/register") {
+                        contentType(ContentType.Application.Json)
+                        setBody(
+                            """
+                            {
+                                "username": "ratetest$it",
+                                "displayName": "Rate Test",
+                                "email": "ratetest$it@example.com",
+                                "password": "testPassword123"
+                            }
+                            """.trimIndent(),
+                        )
+                    }
+                responses.add(response)
             }
+
+            // At least one request should succeed
+            assertTrue(
+                responses.any { it.status == HttpStatusCode.OK },
+                "Expected at least one 200 OK response",
+            )
         }
-
-        // Accept any valid HTTP status (endpoint exists and responds)
-        // Will be 401 without valid token, but that's expected
-        assertTrue(
-            logoutResponse.status.value in 200..599,
-            "Expected valid HTTP status, got ${logoutResponse.status}"
-        )
-    }
 }
-

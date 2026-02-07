@@ -8,7 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import id.nearyou.app.ui.components.OtpInput
 import id.nearyou.app.ui.components.PrimaryButton
 import id.nearyou.app.ui.theme.Dimensions
@@ -19,7 +18,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * OTP Verification Screen - Refactored for best practices
- * 
+ *
  * Timer management moved to ViewModel to prevent unnecessary recomposition
  */
 @Composable
@@ -30,7 +29,7 @@ fun OtpVerificationScreen(
     onVerificationSuccess: () -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = koinViewModel()
+    viewModel: AuthViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val event by viewModel.events.collectAsState()
@@ -61,13 +60,14 @@ fun OtpVerificationScreen(
     val currentSuccessMessage = uiState.successMessage
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .imePadding()
-            .verticalScroll(scrollState)
-            .padding(Spacing.lg),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .imePadding()
+                .verticalScroll(scrollState)
+                .padding(Spacing.lg),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Push content down with spacer
         Spacer(modifier = Modifier.weight(0.3f))
@@ -80,7 +80,7 @@ fun OtpVerificationScreen(
         Text(
             text = Strings.VERIFICATION_CODE_SENT,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Spacer(modifier = Modifier.height(Spacing.xxs))
@@ -88,7 +88,7 @@ fun OtpVerificationScreen(
         Text(
             text = identifier,
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
 
         Spacer(modifier = Modifier.height(Spacing.xl))
@@ -98,7 +98,7 @@ fun OtpVerificationScreen(
             value = uiState.otpCode,
             onValueChange = viewModel::updateOtpCode,
             length = 6,
-            enabled = !uiState.isLoading
+            enabled = !uiState.isLoading,
         )
 
         Spacer(modifier = Modifier.height(Spacing.md))
@@ -109,27 +109,27 @@ fun OtpVerificationScreen(
                 "${Strings.CODE_EXPIRES_IN} 0:${uiState.otpTimeRemaining.toString().padStart(2, '0')}"
             }
         }
-        
+
         if (uiState.otpTimeRemaining > 0) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Box(
                     modifier = Modifier.size(Dimensions.TIMER_DOT_SIZE),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Surface(
                         modifier = Modifier.size(Dimensions.TIMER_DOT_SIZE),
                         shape = MaterialTheme.shapes.extraSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     ) {}
                 }
                 Spacer(modifier = Modifier.width(Spacing.xs))
                 Text(
                     text = timerText,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -140,18 +140,18 @@ fun OtpVerificationScreen(
         if (uiState.canResendOtp) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = Strings.DIDNT_RECEIVE_CODE,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 TextButton(
                     onClick = {
                         viewModel.resendOtp(identifier, identifierType, username)
                     },
-                    enabled = !uiState.isLoading
+                    enabled = !uiState.isLoading,
                 ) {
                     Text(Strings.RESEND)
                 }
@@ -161,7 +161,7 @@ fun OtpVerificationScreen(
                 text = "${Strings.RESEND_IN} 0:${uiState.otpTimeRemaining.toString().padStart(2, '0')}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
 
@@ -173,10 +173,11 @@ fun OtpVerificationScreen(
                 text = currentError,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = Spacing.sm),
-                textAlign = TextAlign.Center
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.sm),
+                textAlign = TextAlign.Center,
             )
         }
 
@@ -186,10 +187,11 @@ fun OtpVerificationScreen(
                 text = currentSuccessMessage,
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = Spacing.sm),
-                textAlign = TextAlign.Center
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.sm),
+                textAlign = TextAlign.Center,
             )
         }
 
@@ -200,7 +202,7 @@ fun OtpVerificationScreen(
             },
             text = Strings.VERIFY,
             isLoading = uiState.isLoading,
-            enabled = !uiState.isLoading && uiState.otpCode.length == 6
+            enabled = !uiState.isLoading && uiState.otpCode.length == 6,
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -211,7 +213,7 @@ fun OtpVerificationScreen(
                 viewModel.resetInputs()
                 onNavigateBack()
             },
-            enabled = !uiState.isLoading
+            enabled = !uiState.isLoading,
         ) {
             Text(Strings.USE_DIFFERENT_CONTACT)
         }

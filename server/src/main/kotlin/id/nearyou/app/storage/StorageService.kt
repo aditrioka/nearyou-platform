@@ -19,7 +19,7 @@ interface StorageService {
     suspend fun uploadFile(
         fileName: String,
         contentType: String,
-        inputStream: InputStream
+        inputStream: InputStream,
     ): String
 
     /**
@@ -42,9 +42,8 @@ interface StorageService {
  */
 class LocalStorageService(
     private val uploadDir: String = "uploads",
-    private val baseUrl: String = "http://localhost:8080"
+    private val baseUrl: String = "http://localhost:8080",
 ) : StorageService {
-
     init {
         // Create upload directory if it doesn't exist
         val dir = File(uploadDir)
@@ -56,23 +55,24 @@ class LocalStorageService(
     override suspend fun uploadFile(
         fileName: String,
         contentType: String,
-        inputStream: InputStream
+        inputStream: InputStream,
     ): String {
         // Generate unique file name to avoid conflicts
         val extension = fileName.substringAfterLast(".", "")
         val uniqueFileName = "${UUID.randomUUID()}${if (extension.isNotEmpty()) ".$extension" else ""}"
-        
+
         // Create subdirectory based on file type
-        val subDir = when {
-            contentType.startsWith("image/") -> "images"
-            else -> "files"
-        }
-        
+        val subDir =
+            when {
+                contentType.startsWith("image/") -> "images"
+                else -> "files"
+            }
+
         val targetDir = File(uploadDir, subDir)
         if (!targetDir.exists()) {
             targetDir.mkdirs()
         }
-        
+
         // Save file
         val targetFile = File(targetDir, uniqueFileName)
         inputStream.use { input ->
@@ -80,7 +80,7 @@ class LocalStorageService(
                 input.copyTo(output)
             }
         }
-        
+
         // Return URL
         return "$baseUrl/uploads/$subDir/$uniqueFileName"
     }
@@ -90,7 +90,7 @@ class LocalStorageService(
             // Extract file path from URL
             val path = fileUrl.substringAfter("/uploads/")
             val file = File(uploadDir, path)
-            
+
             if (file.exists()) {
                 file.delete()
             }
@@ -100,14 +100,12 @@ class LocalStorageService(
         }
     }
 
-    override suspend fun fileExists(fileUrl: String): Boolean {
-        return try {
+    override suspend fun fileExists(fileUrl: String): Boolean =
+        try {
             val path = fileUrl.substringAfter("/uploads/")
             val file = File(uploadDir, path)
             file.exists()
         } catch (e: Exception) {
             false
         }
-    }
 }
-

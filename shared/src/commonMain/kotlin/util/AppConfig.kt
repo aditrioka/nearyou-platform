@@ -5,7 +5,6 @@ package util
  * Set up logging and other app-wide settings based on environment
  */
 object AppConfig {
-
     /**
      * Base URL for API requests
      * TODO: Make this configurable per environment
@@ -32,12 +31,9 @@ object AppConfig {
             AppLogger.info("AppConfig", "🚀 Running in PRODUCTION mode")
         }
     }
-    
+
     /**
      * Check if running in development mode
      */
-    fun isDevelopment(): Boolean {
-        return LoggerConfig.logSensitiveData
-    }
+    fun isDevelopment(): Boolean = LoggerConfig.logSensitiveData
 }
-

@@ -12,7 +12,7 @@ data class RegisterRequest(
     val displayName: String,
     val email: String? = null,
     val phone: String? = null,
-    val password: String? = null
+    val password: String? = null,
 )
 
 /**
@@ -21,7 +21,7 @@ data class RegisterRequest(
 @Serializable
 data class LoginRequest(
     val email: String? = null,
-    val phone: String? = null
+    val phone: String? = null,
 )
 
 /**
@@ -31,7 +31,7 @@ data class LoginRequest(
 data class VerifyOtpRequest(
     val identifier: String, // email or phone
     val code: String,
-    val type: String // "email" or "phone"
+    val type: String, // "email" or "phone"
 )
 
 /**
@@ -39,7 +39,7 @@ data class VerifyOtpRequest(
  */
 @Serializable
 data class RefreshTokenRequest(
-    val refreshToken: String
+    val refreshToken: String,
 )
 
 /**
@@ -47,7 +47,7 @@ data class RefreshTokenRequest(
  */
 @Serializable
 data class GoogleLoginRequest(
-    val idToken: String
+    val idToken: String,
 )
 
 /**
@@ -58,7 +58,7 @@ data class OtpSentResponse(
     val message: String,
     val identifier: String,
     val type: String,
-    val expiresInSeconds: Int
+    val expiresInSeconds: Int,
 )
 
 /**
@@ -68,7 +68,7 @@ data class OtpSentResponse(
 data class AuthResponse(
     val accessToken: String,
     val refreshToken: String,
-    val user: User
+    val user: User,
 )
 
 /**
@@ -77,6 +77,5 @@ data class AuthResponse(
 @Serializable
 data class TokenResponse(
     val accessToken: String,
-    val refreshToken: String
+    val refreshToken: String,
 )
-

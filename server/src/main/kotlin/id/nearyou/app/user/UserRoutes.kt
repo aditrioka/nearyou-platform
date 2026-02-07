@@ -18,9 +18,8 @@ import org.koin.ktor.ext.get
  */
 fun Route.userRoutes() {
     val userService = application.get<UserService>()
-    
+
     route("/users") {
-        
         /**
          * GET /users/me
          * Get authenticated user's profile
@@ -29,19 +28,22 @@ fun Route.userRoutes() {
         authenticate("auth-jwt") {
             get("/me") {
                 // Extract user ID from JWT token
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
-                
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
-                
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+
                 // Get user profile
-                val user = userService.getUserById(userId)
-                    ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
-                
+                val user =
+                    userService.getUserById(userId)
+                        ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+
                 call.respond(HttpStatusCode.OK, user)
             }
-            
+
             /**
              * PUT /users/me
              * Update authenticated user's profile
@@ -49,21 +51,22 @@ fun Route.userRoutes() {
              */
             put("/me") {
                 // Extract user ID from JWT token
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
-                
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
-                
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+
                 // Parse request body
                 val request = call.receive<UpdateUserRequest>()
-                
+
                 // Update user profile
                 val updatedUser = userService.updateUserProfile(userId, request)
-                
+
                 call.respond(HttpStatusCode.OK, updatedUser)
             }
         }
     }
 }
-

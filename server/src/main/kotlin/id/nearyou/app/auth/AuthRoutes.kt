@@ -17,9 +17,8 @@ import org.koin.ktor.ext.get
  */
 fun Route.authRoutes() {
     val authService = application.get<AuthService>()
-    
+
     route("/auth") {
-        
         /**
          * POST /auth/register
          * Register a new user with email or phone
@@ -35,7 +34,7 @@ fun Route.authRoutes() {
                 },
                 onFailure = { error ->
                     throw ValidationException(error.message ?: "Registration failed", "REGISTRATION_FAILED")
-                }
+                },
             )
         }
 
@@ -59,7 +58,7 @@ fun Route.authRoutes() {
                         is ApiException -> throw error
                         else -> throw AuthenticationException(error.message ?: "Login failed", "LOGIN_FAILED")
                     }
-                }
+                },
             )
         }
 
@@ -78,10 +77,10 @@ fun Route.authRoutes() {
                 },
                 onFailure = { error ->
                     throw AuthenticationException(error.message ?: "OTP verification failed", "VERIFICATION_FAILED")
-                }
+                },
             )
         }
-        
+
         /**
          * POST /auth/refresh
          * Refresh access token using refresh token
@@ -97,10 +96,10 @@ fun Route.authRoutes() {
                 },
                 onFailure = { error ->
                     throw AuthenticationException(error.message ?: "Token refresh failed", "REFRESH_FAILED")
-                }
+                },
             )
         }
-        
+
         /**
          * POST /auth/logout
          * Logout user and revoke all refresh tokens
@@ -108,11 +107,13 @@ fun Route.authRoutes() {
          */
         authenticate("auth-jwt") {
             post("/logout") {
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
 
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
 
                 val result = authService.revokeAllUserTokens(userId)
 
@@ -122,7 +123,7 @@ fun Route.authRoutes() {
                     },
                     onFailure = { error ->
                         throw AuthenticationException(error.message ?: "Logout failed", "LOGOUT_FAILED")
-                    }
+                    },
                 )
             }
         }
@@ -146,4 +147,3 @@ fun Route.authRoutes() {
         }
     }
 }
-

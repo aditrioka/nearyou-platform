@@ -1,12 +1,11 @@
 package domain.validation
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.test.assertEquals
 
 class UserValidationTest {
-
     @Test
     fun `username validation accepts valid username`() {
         val result = UserValidation.validateUsername("user_123")
@@ -98,39 +97,41 @@ class UserValidationTest {
 
     @Test
     fun `create user validation requires email or phone`() {
-        val result = UserValidation.validateCreateUser(
-            username = "testuser",
-            displayName = "Test User",
-            email = null,
-            phone = null,
-            bio = null
-        )
+        val result =
+            UserValidation.validateCreateUser(
+                username = "testuser",
+                displayName = "Test User",
+                email = null,
+                phone = null,
+                bio = null,
+            )
         assertFalse(result.isValid)
         assertEquals("Either email or phone must be provided", result.error)
     }
 
     @Test
     fun `create user validation accepts valid user with email`() {
-        val result = UserValidation.validateCreateUser(
-            username = "testuser",
-            displayName = "Test User",
-            email = "test@example.com",
-            phone = null,
-            bio = "My bio"
-        )
+        val result =
+            UserValidation.validateCreateUser(
+                username = "testuser",
+                displayName = "Test User",
+                email = "test@example.com",
+                phone = null,
+                bio = "My bio",
+            )
         assertTrue(result.isValid)
     }
 
     @Test
     fun `create user validation accepts valid user with phone`() {
-        val result = UserValidation.validateCreateUser(
-            username = "testuser",
-            displayName = "Test User",
-            email = null,
-            phone = "+1234567890",
-            bio = null
-        )
+        val result =
+            UserValidation.validateCreateUser(
+                username = "testuser",
+                displayName = "Test User",
+                email = null,
+                phone = "+1234567890",
+                bio = null,
+            )
         assertTrue(result.isValid)
     }
 }
-

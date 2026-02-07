@@ -1,0 +1,16 @@
+root = true
+
+[*]
+indent_size = 4
+indent_style = space
+end_of_line = lf
+insert_final_newline = true
+
+[*.{kt,kts}]
+ktlint_function_naming_ignore_when_annotated_with = Composable
+ktlint_standard_function-naming = disabled
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_enum-entry-name-case = disabled
+ktlint_standard_property-naming = disabled
+ktlint_standard_class-naming = disabled
+ktlint_standard_filename = disabled

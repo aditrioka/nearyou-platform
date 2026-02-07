@@ -13,7 +13,6 @@ import id.nearyou.app.repository.UserRepository
  * Service layer for post-related business logic
  */
 class PostService {
-
     /**
      * Get nearby posts within a specified radius
      *
@@ -27,7 +26,7 @@ class PostService {
         userLocation: Location,
         radiusMeters: Double = 1000.0,
         limit: Int = 50,
-        currentUserId: String
+        currentUserId: String,
     ): List<Post> {
         // Validate radius (must be one of the supported distance levels)
         validateRadius(radiusMeters)
@@ -36,7 +35,7 @@ class PostService {
         if (limit < 1 || limit > 100) {
             throw ValidationException(
                 "Limit must be between 1 and 100",
-                "INVALID_LIMIT"
+                "INVALID_LIMIT",
             )
         }
 
@@ -44,7 +43,7 @@ class PostService {
             userLocation = userLocation,
             radiusMeters = radiusMeters,
             limit = limit,
-            currentUserId = currentUserId
+            currentUserId = currentUserId,
         )
     }
 
@@ -55,38 +54,42 @@ class PostService {
      * @param request Post creation request
      * @return Created post
      */
-    fun createPost(userId: String, request: CreatePostRequest): Post {
+    fun createPost(
+        userId: String,
+        request: CreatePostRequest,
+    ): Post {
         // Validate content
         if (request.content.isBlank()) {
             throw ValidationException(
                 "Post content cannot be blank",
-                "INVALID_CONTENT"
+                "INVALID_CONTENT",
             )
         }
 
         if (request.content.length > 500) {
             throw ValidationException(
                 "Post content cannot exceed 500 characters",
-                "CONTENT_TOO_LONG"
+                "CONTENT_TOO_LONG",
             )
         }
 
         // Validate media URLs (premium only)
         if (request.mediaUrls.isNotEmpty()) {
-            val user = UserRepository.findById(userId)
-                ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+            val user =
+                UserRepository.findById(userId)
+                    ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
 
             if (user.subscriptionTier.name != "PREMIUM") {
                 throw AuthorizationException(
                     "Media upload is only available for premium users",
-                    "PREMIUM_REQUIRED"
+                    "PREMIUM_REQUIRED",
                 )
             }
 
             if (request.mediaUrls.size > 4) {
                 throw ValidationException(
                     "Maximum 4 media files allowed per post",
-                    "TOO_MANY_MEDIA"
+                    "TOO_MANY_MEDIA",
                 )
             }
         }
@@ -94,12 +97,13 @@ class PostService {
         // TODO: Check daily post quota for free users (100 posts/day)
         // This will be implemented in T-401: Subscription Backend
 
-        val post = PostRepository.createPost(
-            userId = userId,
-            content = request.content,
-            location = request.location,
-            mediaUrls = request.mediaUrls
-        )
+        val post =
+            PostRepository.createPost(
+                userId = userId,
+                content = request.content,
+                location = request.location,
+                mediaUrls = request.mediaUrls,
+            )
 
         return post ?: throw RuntimeException("Failed to create post")
     }
@@ -111,10 +115,12 @@ class PostService {
      * @param currentUserId ID of the current user
      * @return Post or null if not found
      */
-    fun getPostById(postId: String, currentUserId: String): Post {
-        return PostRepository.findById(postId, currentUserId)
+    fun getPostById(
+        postId: String,
+        currentUserId: String,
+    ): Post =
+        PostRepository.findById(postId, currentUserId)
             ?: throw NotFoundException("Post not found", "POST_NOT_FOUND")
-    }
 
     /**
      * Update post content
@@ -124,30 +130,35 @@ class PostService {
      * @param request Update request
      * @return Updated post
      */
-    fun updatePost(postId: String, userId: String, request: UpdatePostRequest): Post {
+    fun updatePost(
+        postId: String,
+        userId: String,
+        request: UpdatePostRequest,
+    ): Post {
         // Validate content
         if (request.content.isBlank()) {
             throw ValidationException(
                 "Post content cannot be blank",
-                "INVALID_CONTENT"
+                "INVALID_CONTENT",
             )
         }
 
         if (request.content.length > 500) {
             throw ValidationException(
                 "Post content cannot exceed 500 characters",
-                "CONTENT_TOO_LONG"
+                "CONTENT_TOO_LONG",
             )
         }
 
         // Check if post exists and user is the owner
-        val existingPost = PostRepository.findById(postId)
-            ?: throw NotFoundException("Post not found", "POST_NOT_FOUND")
+        val existingPost =
+            PostRepository.findById(postId)
+                ?: throw NotFoundException("Post not found", "POST_NOT_FOUND")
 
         if (existingPost.userId != userId) {
             throw AuthorizationException(
                 "You can only update your own posts",
-                "NOT_POST_OWNER"
+                "NOT_POST_OWNER",
             )
         }
 
@@ -161,15 +172,19 @@ class PostService {
      * @param postId Post ID
      * @param userId ID of the user requesting the deletion
      */
-    fun deletePost(postId: String, userId: String) {
+    fun deletePost(
+        postId: String,
+        userId: String,
+    ) {
         // Check if post exists and user is the owner
-        val existingPost = PostRepository.findById(postId)
-            ?: throw NotFoundException("Post not found", "POST_NOT_FOUND")
+        val existingPost =
+            PostRepository.findById(postId)
+                ?: throw NotFoundException("Post not found", "POST_NOT_FOUND")
 
         if (existingPost.userId != userId) {
             throw AuthorizationException(
                 "You can only delete your own posts",
-                "NOT_POST_OWNER"
+                "NOT_POST_OWNER",
             )
         }
 
@@ -183,19 +198,19 @@ class PostService {
      * Validate radius against supported distance levels
      */
     private fun validateRadius(radiusMeters: Double) {
-        val supportedRadii = listOf(
-            Location.DISTANCE_LEVEL_1,  // 1 km
-            Location.DISTANCE_LEVEL_2,  // 5 km
-            Location.DISTANCE_LEVEL_3,  // 10 km
-            Location.DISTANCE_LEVEL_4   // 20 km
-        )
+        val supportedRadii =
+            listOf(
+                Location.DISTANCE_LEVEL_1, // 1 km
+                Location.DISTANCE_LEVEL_2, // 5 km
+                Location.DISTANCE_LEVEL_3, // 10 km
+                Location.DISTANCE_LEVEL_4, // 20 km
+            )
 
         if (radiusMeters !in supportedRadii) {
             throw ValidationException(
                 "Radius must be one of: 1000m (1km), 5000m (5km), 10000m (10km), 20000m (20km)",
-                "INVALID_RADIUS"
+                "INVALID_RADIUS",
             )
         }
     }
 }
-

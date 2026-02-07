@@ -16,7 +16,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Login Screen - Refactored for best practices
- * 
+ *
  * This screen is now a pure UI component that:
  * - Observes state from ViewModel
  * - Sends user actions to ViewModel
@@ -26,12 +26,12 @@ import org.koin.compose.viewmodel.koinViewModel
 fun LoginScreen(
     onNavigateToSignup: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = koinViewModel()
+    viewModel: AuthViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val event by viewModel.events.collectAsState()
     val scrollState = rememberScrollState()
-    
+
     // Handle one-time events
     LaunchedEffect(event) {
         when (val currentEvent = event) {
@@ -48,17 +48,18 @@ fun LoginScreen(
     }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.systemBars) // Proper system bars padding
-            .imePadding() // Handle keyboard
-            .verticalScroll(scrollState)
-            .padding(Spacing.lg),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars) // Proper system bars padding
+                .imePadding() // Handle keyboard
+                .verticalScroll(scrollState)
+                .padding(Spacing.lg),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Push content down with spacer
         Spacer(modifier = Modifier.weight(0.3f))
-        
+
         // Logo and Title
         AuthHeader()
 
@@ -69,9 +70,10 @@ fun LoginScreen(
             text = Strings.EMAIL_OR_PHONE_LABEL,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = Spacing.xs)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = Spacing.xs),
         )
 
         // Identifier Input
@@ -82,7 +84,7 @@ fun LoginScreen(
             placeholder = Strings.EMAIL_OR_PHONE_PLACEHOLDER,
             keyboardType = KeyboardType.Email,
             enabled = !uiState.isLoading,
-            error = uiState.error
+            error = uiState.error,
         )
 
         Spacer(modifier = Modifier.height(Spacing.md))
@@ -92,7 +94,7 @@ fun LoginScreen(
             onClick = viewModel::login,
             text = Strings.SIGN_IN,
             isLoading = uiState.isLoading,
-            enabled = !uiState.isLoading
+            enabled = !uiState.isLoading,
         )
 
         Spacer(modifier = Modifier.height(Spacing.sm))
@@ -101,7 +103,7 @@ fun LoginScreen(
         Text(
             text = Strings.VERIFICATION_CODE_MESSAGE,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         // Push bottom content to the end
@@ -111,18 +113,18 @@ fun LoginScreen(
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = Spacing.md)
+            modifier = Modifier.padding(vertical = Spacing.md),
         ) {
             Text(
                 text = Strings.DONT_HAVE_ACCOUNT,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
             TextButton(
                 onClick = {
                     viewModel.resetInputs()
                     onNavigateToSignup()
                 },
-                enabled = !uiState.isLoading
+                enabled = !uiState.isLoading,
             ) {
                 Text(Strings.SIGN_UP)
             }

@@ -24,14 +24,12 @@ data class Subscription(
     val expiresAt: Instant? = null,
     val isActive: Boolean = true,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
 ) {
     /**
      * Check if subscription is expired
      */
-    fun isExpired(now: Instant): Boolean {
-        return expiresAt?.let { it < now } ?: false
-    }
+    fun isExpired(now: Instant): Boolean = expiresAt?.let { it < now } ?: false
 
     /**
      * Check if subscription is premium
@@ -59,42 +57,38 @@ object SubscriptionQuota {
     /**
      * Get posts quota for a subscription tier
      */
-    fun getPostsQuota(tier: SubscriptionTier): Int {
-        return when (tier) {
+    fun getPostsQuota(tier: SubscriptionTier): Int =
+        when (tier) {
             SubscriptionTier.FREE -> FREE_POSTS_PER_DAY
             SubscriptionTier.PREMIUM -> PREMIUM_POSTS_PER_DAY
         }
-    }
 
     /**
      * Get chats quota for a subscription tier
      */
-    fun getChatsQuota(tier: SubscriptionTier): Int {
-        return when (tier) {
+    fun getChatsQuota(tier: SubscriptionTier): Int =
+        when (tier) {
             SubscriptionTier.FREE -> FREE_CHATS_PER_DAY
             SubscriptionTier.PREMIUM -> PREMIUM_CHATS_PER_DAY
         }
-    }
 
     /**
      * Check if media uploads are allowed for a subscription tier
      */
-    fun canUploadMedia(tier: SubscriptionTier): Boolean {
-        return when (tier) {
+    fun canUploadMedia(tier: SubscriptionTier): Boolean =
+        when (tier) {
             SubscriptionTier.FREE -> FREE_MEDIA_UPLOADS
             SubscriptionTier.PREMIUM -> PREMIUM_MEDIA_UPLOADS
         }
-    }
 
     /**
      * Check if search is allowed for a subscription tier
      */
-    fun canSearch(tier: SubscriptionTier): Boolean {
-        return when (tier) {
+    fun canSearch(tier: SubscriptionTier): Boolean =
+        when (tier) {
             SubscriptionTier.FREE -> FREE_SEARCH_ACCESS
             SubscriptionTier.PREMIUM -> PREMIUM_SEARCH_ACCESS
         }
-    }
 }
 
 /**
@@ -107,7 +101,7 @@ data class UsageLog(
     val actionType: UsageActionType,
     val actionDate: String, // ISO date string (YYYY-MM-DD)
     val count: Int,
-    val createdAt: Instant
+    val createdAt: Instant,
 )
 
 /**
@@ -117,7 +111,7 @@ data class UsageLog(
 enum class UsageActionType {
     POST,
     CHAT,
-    SEARCH
+    SEARCH,
 }
 
 /**
@@ -126,7 +120,7 @@ enum class UsageActionType {
 @Serializable
 data class SubscriptionUpgradeRequest(
     val tier: SubscriptionTier,
-    val paymentToken: String? = null // For future payment integration
+    val paymentToken: String? = null, // For future payment integration
 )
 
 /**
@@ -136,6 +130,5 @@ data class SubscriptionUpgradeRequest(
 data class SubscriptionStatusResponse(
     val subscription: Subscription,
     val usage: Map<UsageActionType, Int>, // Current day usage
-    val quotas: Map<UsageActionType, Int> // Daily quotas
+    val quotas: Map<UsageActionType, Int>, // Daily quotas
 )
-

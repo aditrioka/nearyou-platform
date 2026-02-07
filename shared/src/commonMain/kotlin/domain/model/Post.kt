@@ -34,7 +34,7 @@ data class Post(
     val distance: Double? = null,
     val isDeleted: Boolean = false,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
 ) {
     /**
      * Check if post has media attachments
@@ -56,7 +56,7 @@ data class Post(
 data class CreatePostRequest(
     val content: String,
     val location: Location,
-    val mediaUrls: List<String> = emptyList()
+    val mediaUrls: List<String> = emptyList(),
 )
 
 /**
@@ -64,7 +64,7 @@ data class CreatePostRequest(
  */
 @Serializable
 data class UpdatePostRequest(
-    val content: String
+    val content: String,
 )
 
 /**
@@ -72,7 +72,7 @@ data class UpdatePostRequest(
  */
 enum class FeedType {
     NEARBY,
-    FOLLOWING
+    FOLLOWING,
 }
 
 /**
@@ -82,6 +82,5 @@ enum class FeedType {
 data class PostListResponse(
     val posts: List<Post>,
     val hasMore: Boolean,
-    val nextCursor: String? = null
+    val nextCursor: String? = null,
 )
-

@@ -25,6 +25,10 @@ Thumbs.db
 *.md
 docs/
 
+# Client modules (not needed for server Docker image)
+composeApp/
+iosApp/
+
 # CI/CD
 .github/
 
@@ -38,6 +42,9 @@ local.properties
 **/androidTest/
 **/commonTest/
 **/iosTest/
+
+# Performance tests
+performance-tests/
 
 # Logs
 *.log

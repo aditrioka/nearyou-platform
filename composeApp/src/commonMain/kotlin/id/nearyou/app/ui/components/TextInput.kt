@@ -13,7 +13,7 @@ import androidx.compose.ui.text.input.KeyboardType
 
 /**
  * Reusable text input component following design system
- * 
+ *
  * Improvements:
  * - Better accessibility with semantic properties
  * - Consistent label/placeholder handling
@@ -30,31 +30,42 @@ fun TextInput(
     imeAction: ImeAction = ImeAction.Next,
     enabled: Boolean = true,
     singleLine: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = if (label.isNotEmpty()) {
-            { Text(label) }
-        } else null,
-        placeholder = if (placeholder.isNotEmpty()) {
-            { Text(placeholder) }
-        } else null,
-        supportingText = if (error != null) {
-            { Text(error) }
-        } else null,
+        label =
+            if (label.isNotEmpty()) {
+                { Text(label) }
+            } else {
+                null
+            },
+        placeholder =
+            if (placeholder.isNotEmpty()) {
+                { Text(placeholder) }
+            } else {
+                null
+            },
+        supportingText =
+            if (error != null) {
+                { Text(error) }
+            } else {
+                null
+            },
         isError = error != null,
         enabled = enabled,
         singleLine = singleLine,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType,
-            imeAction = imeAction
-        ),
-        modifier = modifier
-            .fillMaxWidth()
-            .semantics {
-                contentDescription = label.ifEmpty { placeholder }
-            }
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = imeAction,
+            ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = label.ifEmpty { placeholder }
+                },
     )
 }

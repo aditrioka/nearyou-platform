@@ -9,19 +9,32 @@ import org.slf4j.LoggerFactory
 private class JVMLogger : Logger {
     private val logger = LoggerFactory.getLogger("NearYouApp")
 
-    override fun debug(tag: String, message: String) {
+    override fun debug(
+        tag: String,
+        message: String,
+    ) {
         logger.debug("[$tag] $message")
     }
 
-    override fun info(tag: String, message: String) {
+    override fun info(
+        tag: String,
+        message: String,
+    ) {
         logger.info("[$tag] $message")
     }
 
-    override fun warn(tag: String, message: String) {
+    override fun warn(
+        tag: String,
+        message: String,
+    ) {
         logger.warn("[$tag] $message")
     }
 
-    override fun error(tag: String, message: String, throwable: Throwable?) {
+    override fun error(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) {
         if (throwable != null) {
             logger.error("[$tag] $message", throwable)
         } else {
@@ -31,4 +44,3 @@ private class JVMLogger : Logger {
 }
 
 actual fun createPlatformLogger(): Logger = JVMLogger()
-

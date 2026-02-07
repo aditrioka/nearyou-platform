@@ -21,136 +21,136 @@ data class ProfileUiState(
     val isEditing: Boolean = false,
     val updateSuccess: Boolean = false,
     val isUploadingPhoto: Boolean = false,
-    val uploadedPhotoUrl: String? = null
+    val uploadedPhotoUrl: String? = null,
 )
 
 /**
  * ViewModel for user profile management
  */
 class ProfileViewModel(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ViewModel() {
-    
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
-    
+
     init {
         loadProfile()
     }
-    
+
     /**
      * Load current user's profile
      */
     fun loadProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            
+
             try {
                 val result = userRepository.getCurrentUser()
                 result.fold(
                     onSuccess = { user ->
-                        _uiState.update { 
+                        _uiState.update {
                             it.copy(
                                 user = user,
                                 isLoading = false,
-                                error = null
-                            ) 
+                                error = null,
+                            )
                         }
                     },
                     onFailure = { error ->
-                        _uiState.update { 
+                        _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                error = error.message ?: "Failed to load profile"
-                            ) 
+                                error = error.message ?: "Failed to load profile",
+                            )
                         }
-                    }
+                    },
                 )
             } catch (e: Exception) {
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to load profile"
-                    ) 
+                        error = e.message ?: "Failed to load profile",
+                    )
                 }
             }
         }
     }
-    
+
     /**
      * Update user profile
      */
     fun updateProfile(
         displayName: String? = null,
         bio: String? = null,
-        profilePhotoUrl: String? = null
+        profilePhotoUrl: String? = null,
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, updateSuccess = false) }
-            
+
             try {
-                val request = UpdateUserRequest(
-                    displayName = displayName,
-                    bio = bio,
-                    profilePhotoUrl = profilePhotoUrl
-                )
-                
+                val request =
+                    UpdateUserRequest(
+                        displayName = displayName,
+                        bio = bio,
+                        profilePhotoUrl = profilePhotoUrl,
+                    )
+
                 val result = userRepository.updateCurrentUser(request)
                 result.fold(
                     onSuccess = { user ->
-                        _uiState.update { 
+                        _uiState.update {
                             it.copy(
                                 user = user,
                                 isLoading = false,
                                 error = null,
                                 updateSuccess = true,
-                                isEditing = false
-                            ) 
+                                isEditing = false,
+                            )
                         }
                     },
                     onFailure = { error ->
-                        _uiState.update { 
+                        _uiState.update {
                             it.copy(
                                 isLoading = false,
                                 error = error.message ?: "Failed to update profile",
-                                updateSuccess = false
-                            ) 
+                                updateSuccess = false,
+                            )
                         }
-                    }
+                    },
                 )
             } catch (e: Exception) {
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         isLoading = false,
                         error = e.message ?: "Failed to update profile",
-                        updateSuccess = false
-                    ) 
+                        updateSuccess = false,
+                    )
                 }
             }
         }
     }
-    
+
     /**
      * Start editing profile
      */
     fun startEditing() {
         _uiState.update { it.copy(isEditing = true, error = null, updateSuccess = false) }
     }
-    
+
     /**
      * Cancel editing
      */
     fun cancelEditing() {
         _uiState.update { it.copy(isEditing = false, error = null, updateSuccess = false) }
     }
-    
+
     /**
      * Clear error message
      */
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
-    
+
     /**
      * Clear success message
      */
@@ -167,7 +167,7 @@ class ProfileViewModel(
     fun uploadProfilePhoto(
         imageBytes: ByteArray,
         fileName: String,
-        contentType: String = "image/jpeg"
+        contentType: String = "image/jpeg",
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUploadingPhoto = true, error = null) }
@@ -180,7 +180,7 @@ class ProfileViewModel(
                             it.copy(
                                 isUploadingPhoto = false,
                                 uploadedPhotoUrl = uploadResponse.url,
-                                error = null
+                                error = null,
                             )
                         }
 
@@ -191,20 +191,19 @@ class ProfileViewModel(
                         _uiState.update {
                             it.copy(
                                 isUploadingPhoto = false,
-                                error = error.message ?: "Failed to upload photo"
+                                error = error.message ?: "Failed to upload photo",
                             )
                         }
-                    }
+                    },
                 )
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
                         isUploadingPhoto = false,
-                        error = e.message ?: "Failed to upload photo"
+                        error = e.message ?: "Failed to upload photo",
                     )
                 }
             }
         }
     }
 }
-

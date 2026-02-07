@@ -8,8 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import id.nearyou.app.ui.auth.AuthViewModel
-import id.nearyou.app.ui.profile.ProfileScreen
 import id.nearyou.app.ui.profile.EditProfileScreen
+import id.nearyou.app.ui.profile.ProfileScreen
 import id.nearyou.app.ui.theme.Dimensions
 import id.nearyou.app.ui.theme.Spacing
 import id.nearyou.app.ui.theme.Strings
@@ -24,27 +24,30 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    authViewModel: AuthViewModel = koinViewModel()
+    authViewModel: AuthViewModel = koinViewModel(),
 ) {
     val authState by authViewModel.uiState.collectAsState()
     var currentScreen by remember { mutableStateOf("home") }
 
     when (currentScreen) {
-        "home" -> HomeScreen(
-            modifier = modifier,
-            authViewModel = authViewModel,
-            onNavigateToProfile = { currentScreen = "profile" }
-        )
-        "profile" -> ProfileScreen(
-            onEditProfile = { currentScreen = "edit_profile" },
-            onLogout = {
-                authViewModel.logout()
-                currentScreen = "home"
-            }
-        )
-        "edit_profile" -> EditProfileScreen(
-            onNavigateBack = { currentScreen = "profile" }
-        )
+        "home" ->
+            HomeScreen(
+                modifier = modifier,
+                authViewModel = authViewModel,
+                onNavigateToProfile = { currentScreen = "profile" },
+            )
+        "profile" ->
+            ProfileScreen(
+                onEditProfile = { currentScreen = "edit_profile" },
+                onLogout = {
+                    authViewModel.logout()
+                    currentScreen = "home"
+                },
+            )
+        "edit_profile" ->
+            EditProfileScreen(
+                onNavigateBack = { currentScreen = "profile" },
+            )
     }
 }
 
@@ -52,42 +55,44 @@ fun MainScreen(
 private fun HomeScreen(
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
 ) {
     val authState by authViewModel.uiState.collectAsState()
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .padding(Dimensions.SCREEN_PADDING),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .padding(Dimensions.SCREEN_PADDING),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = Strings.WELCOME_MESSAGE,
             style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = Spacing.md)
+            modifier = Modifier.padding(bottom = Spacing.md),
         )
 
         Text(
             text = Strings.AUTHENTICATED_MESSAGE,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = Spacing.xl)
+            modifier = Modifier.padding(bottom = Spacing.xl),
         )
 
         // Profile Button
         OutlinedButton(
             onClick = onNavigateToProfile,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(Dimensions.MAIN_BUTTON_HEIGHT)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(Dimensions.MAIN_BUTTON_HEIGHT),
         ) {
             Icon(
                 Icons.Default.Person,
                 contentDescription = "Profile",
-                modifier = Modifier.size(Dimensions.BUTTON_LOADING_INDICATOR_SIZE)
+                modifier = Modifier.size(Dimensions.BUTTON_LOADING_INDICATOR_SIZE),
             )
             Spacer(modifier = Modifier.width(Spacing.sm))
             Text("View Profile")
@@ -99,14 +104,15 @@ private fun HomeScreen(
         Button(
             onClick = authViewModel::logout,
             enabled = !authState.isLoading,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(Dimensions.MAIN_BUTTON_HEIGHT)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(Dimensions.MAIN_BUTTON_HEIGHT),
         ) {
             if (authState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(Dimensions.BUTTON_LOADING_INDICATOR_SIZE),
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
                 Text(Strings.LOGOUT)

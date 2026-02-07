@@ -12,7 +12,7 @@ import kotlin.math.*
 @Serializable
 data class Location(
     val latitude: Double,
-    val longitude: Double
+    val longitude: Double,
 ) {
     init {
         require(latitude in -90.0..90.0) {
@@ -37,7 +37,8 @@ data class Location(
         val deltaLatRad = (other.latitude - latitude) * PI / 180.0
         val deltaLonRad = (other.longitude - longitude) * PI / 180.0
 
-        val a = sin(deltaLatRad / 2).pow(2) +
+        val a =
+            sin(deltaLatRad / 2).pow(2) +
                 cos(lat1Rad) * cos(lat2Rad) *
                 sin(deltaLonRad / 2).pow(2)
 
@@ -53,23 +54,24 @@ data class Location(
      * @param radiusMeters The radius in meters
      * @return True if within radius, false otherwise
      */
-    fun isWithinRadius(other: Location, radiusMeters: Double): Boolean {
-        return distanceTo(other) <= radiusMeters
-    }
+    fun isWithinRadius(
+        other: Location,
+        radiusMeters: Double,
+    ): Boolean = distanceTo(other) <= radiusMeters
 
     companion object {
         /**
          * Distance levels for nearby feed (in meters)
          */
-        val DISTANCE_LEVEL_1 = 1000.0      // 1 km
-        val DISTANCE_LEVEL_2 = 5000.0      // 5 km
-        val DISTANCE_LEVEL_3 = 10000.0     // 10 km
-        val DISTANCE_LEVEL_4 = 20000.0     // 20 km
+        val DISTANCE_LEVEL_1 = 1000.0 // 1 km
+        val DISTANCE_LEVEL_2 = 5000.0 // 5 km
+        val DISTANCE_LEVEL_3 = 10000.0 // 10 km
+        val DISTANCE_LEVEL_4 = 20000.0 // 20 km
 
         /**
          * Granularity for distance display (in meters)
          */
-        val DISTANCE_GRANULARITY = 100.0   // 0.1 km
+        val DISTANCE_GRANULARITY = 100.0 // 0.1 km
     }
 }
 
@@ -79,8 +81,8 @@ data class Location(
  * @param distanceMeters Distance in meters
  * @return Formatted distance string (e.g., "1.2 km", "500 m")
  */
-fun formatDistance(distanceMeters: Double): String {
-    return when {
+fun formatDistance(distanceMeters: Double): String =
+    when {
         distanceMeters < 1000 -> "${distanceMeters.toInt()} m"
         distanceMeters < 10000 -> {
             val km = (distanceMeters / 100).roundToInt() / 10.0
@@ -88,5 +90,3 @@ fun formatDistance(distanceMeters: Double): String {
         }
         else -> "${(distanceMeters / 1000).roundToInt()} km"
     }
-}
-

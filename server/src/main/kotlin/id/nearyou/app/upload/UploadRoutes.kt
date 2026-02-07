@@ -22,7 +22,7 @@ data class UploadResponse(
     val url: String,
     val fileName: String,
     val contentType: String,
-    val size: Long
+    val size: Long,
 )
 
 /**
@@ -33,7 +33,6 @@ fun Route.uploadRoutes() {
     val storageService = application.get<StorageService>()
 
     route("/upload") {
-        
         /**
          * POST /upload/profile-photo
          * Upload profile photo
@@ -43,73 +42,76 @@ fun Route.uploadRoutes() {
         authenticate("auth-jwt") {
             post("/profile-photo") {
                 // Extract user ID from JWT token
-                val principal = call.principal<JWTPrincipal>()
-                    ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
-                
-                val userId = principal.payload.subject
-                    ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
-                
+                val principal =
+                    call.principal<JWTPrincipal>()
+                        ?: throw AuthenticationException("Invalid token", "INVALID_TOKEN")
+
+                val userId =
+                    principal.payload.subject
+                        ?: throw AuthenticationException("Invalid token subject", "INVALID_TOKEN")
+
                 // Parse multipart data
                 val multipart = call.receiveMultipart()
                 var fileUrl: String? = null
                 var fileName: String? = null
                 var contentType: String? = null
                 var fileSize: Long = 0
-                
+
                 multipart.forEachPart { part ->
                     when (part) {
                         is PartData.FileItem -> {
                             // Validate file
                             val originalFileName = part.originalFileName ?: "unknown"
                             val partContentType = part.contentType?.toString() ?: "application/octet-stream"
-                            
+
                             // Validate content type (only images)
                             if (!partContentType.startsWith("image/")) {
                                 part.dispose()
                                 throw ValidationException(
                                     "Only image files are allowed",
-                                    "INVALID_FILE_TYPE"
+                                    "INVALID_FILE_TYPE",
                                 )
                             }
-                            
+
                             // Validate file size (max 5MB)
                             val maxSize = 5 * 1024 * 1024 // 5MB
                             val inputStream = part.streamProvider()
                             val bytes = inputStream.readBytes()
                             fileSize = bytes.size.toLong()
-                            
+
                             if (fileSize > maxSize) {
                                 part.dispose()
                                 throw ValidationException(
                                     "File size exceeds maximum allowed size of 5MB",
-                                    "FILE_TOO_LARGE"
+                                    "FILE_TOO_LARGE",
                                 )
                             }
-                            
+
                             // Upload file
-                            fileUrl = storageService.uploadFile(
-                                fileName = originalFileName,
-                                contentType = partContentType,
-                                inputStream = bytes.inputStream()
-                            )
-                            
+                            fileUrl =
+                                storageService.uploadFile(
+                                    fileName = originalFileName,
+                                    contentType = partContentType,
+                                    inputStream = bytes.inputStream(),
+                                )
+
                             fileName = originalFileName
                             contentType = partContentType
-                            
+
                             part.dispose()
                         }
                         else -> part.dispose()
                     }
                 }
-                
+
                 // Check if file was uploaded
                 if (fileUrl == null) {
                     throw ValidationException(
                         "No file provided",
-                        "MISSING_FILE"
+                        "MISSING_FILE",
                     )
                 }
-                
+
                 // Return upload response
                 call.respond(
                     HttpStatusCode.OK,
@@ -117,11 +119,10 @@ fun Route.uploadRoutes() {
                         url = fileUrl!!,
                         fileName = fileName ?: "unknown",
                         contentType = contentType ?: "application/octet-stream",
-                        size = fileSize
-                    )
+                        size = fileSize,
+                    ),
                 )
             }
         }
     }
 }
-

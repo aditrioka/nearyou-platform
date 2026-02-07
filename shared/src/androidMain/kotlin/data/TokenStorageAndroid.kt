@@ -10,8 +10,9 @@ import java.security.KeyStore
 /**
  * Android implementation of TokenStorage using EncryptedSharedPreferences
  */
-class TokenStorageAndroid(private val context: Context) : TokenStorage {
-
+class TokenStorageAndroid(
+    private val context: Context,
+) : TokenStorage {
     private val sharedPreferences: SharedPreferences by lazy {
         createEncryptedSharedPreferences()
     }
@@ -19,8 +20,8 @@ class TokenStorageAndroid(private val context: Context) : TokenStorage {
     /**
      * Create EncryptedSharedPreferences with error handling for corrupted keys
      */
-    private fun createEncryptedSharedPreferences(): SharedPreferences {
-        return try {
+    private fun createEncryptedSharedPreferences(): SharedPreferences =
+        try {
             createEncryptedPrefs(PREFS_FILE_NAME)
         } catch (e: Exception) {
             // Handle corrupted EncryptedSharedPreferences (common on reinstall)
@@ -50,22 +51,23 @@ class TokenStorageAndroid(private val context: Context) : TokenStorage {
                 }
             }
         }
-    }
 
     /**
      * Create EncryptedSharedPreferences with the given file name
      */
     private fun createEncryptedPrefs(fileName: String): SharedPreferences {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
+        val masterKey =
+            MasterKey
+                .Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
 
         return EncryptedSharedPreferences.create(
             context,
             fileName,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
         )
     }
 
@@ -106,28 +108,23 @@ class TokenStorageAndroid(private val context: Context) : TokenStorage {
         sharedPreferences.edit().putString(KEY_ACCESS_TOKEN, token).apply()
     }
 
-    override suspend fun getAccessToken(): String? {
-        return sharedPreferences.getString(KEY_ACCESS_TOKEN, null)
-    }
+    override suspend fun getAccessToken(): String? = sharedPreferences.getString(KEY_ACCESS_TOKEN, null)
 
     override suspend fun saveRefreshToken(token: String) {
         sharedPreferences.edit().putString(KEY_REFRESH_TOKEN, token).apply()
     }
 
-    override suspend fun getRefreshToken(): String? {
-        return sharedPreferences.getString(KEY_REFRESH_TOKEN, null)
-    }
+    override suspend fun getRefreshToken(): String? = sharedPreferences.getString(KEY_REFRESH_TOKEN, null)
 
     override suspend fun clearTokens() {
-        sharedPreferences.edit()
+        sharedPreferences
+            .edit()
             .remove(KEY_ACCESS_TOKEN)
             .remove(KEY_REFRESH_TOKEN)
             .apply()
     }
 
-    override suspend fun isAuthenticated(): Boolean {
-        return getAccessToken() != null && getRefreshToken() != null
-    }
+    override suspend fun isAuthenticated(): Boolean = getAccessToken() != null && getRefreshToken() != null
 
     companion object {
         private const val PREFS_FILE_NAME = "nearyou_secure_prefs"

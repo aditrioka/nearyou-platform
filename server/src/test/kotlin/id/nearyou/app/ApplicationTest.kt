@@ -7,15 +7,17 @@ import io.ktor.server.testing.*
 import kotlin.test.*
 
 class ApplicationTest {
-
     @Test
-    @Ignore("Requires Redis and PostgreSQL to be running. Use docker-compose up -d to start infrastructure, or use Testcontainers-based tests instead.")
-    fun testRoot() = testApplication {
-        application {
-            module()
+    @Ignore(
+        "Requires Redis and PostgreSQL to be running. Use docker-compose up -d to start infrastructure, or use Testcontainers-based tests instead.",
+    )
+    fun testRoot() =
+        testApplication {
+            application {
+                module()
+            }
+            val response = client.get("/")
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("NearYou ID API - Running", response.bodyAsText())
         }
-        val response = client.get("/")
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("NearYou ID API - Running", response.bodyAsText())
-    }
 }

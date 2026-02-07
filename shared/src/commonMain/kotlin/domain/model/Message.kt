@@ -24,7 +24,7 @@ data class Message(
     val content: String,
     val status: MessageStatus = MessageStatus.SENT,
     val isDeleted: Boolean = false,
-    val createdAt: Instant
+    val createdAt: Instant,
 ) {
     /**
      * Check if message was sent by the current user
@@ -39,7 +39,7 @@ data class Message(
 enum class MessageStatus {
     SENT,
     DELIVERED,
-    READ
+    READ,
 }
 
 /**
@@ -63,14 +63,12 @@ data class Conversation(
     val lastMessage: Message? = null,
     val unreadCount: Int = 0,
     val lastMessageAt: Instant,
-    val createdAt: Instant
+    val createdAt: Instant,
 ) {
     /**
      * Get the other participant in the conversation
      */
-    fun getOtherParticipant(currentUserId: String): UserSummary {
-        return if (participant1.id == currentUserId) participant2 else participant1
-    }
+    fun getOtherParticipant(currentUserId: String): UserSummary = if (participant1.id == currentUserId) participant2 else participant1
 
     /**
      * Check if conversation has unread messages
@@ -93,7 +91,7 @@ data class SendMessageRequest(
     val conversationId: String? = null,
     val recipientId: String? = null,
     val postContextId: String? = null,
-    val content: String
+    val content: String,
 ) {
     init {
         require(conversationId != null || recipientId != null) {
@@ -109,7 +107,7 @@ data class SendMessageRequest(
 data class MessageListResponse(
     val messages: List<Message>,
     val hasMore: Boolean,
-    val nextCursor: String? = null
+    val nextCursor: String? = null,
 )
 
 /**
@@ -119,6 +117,5 @@ data class MessageListResponse(
 data class ConversationListResponse(
     val conversations: List<Conversation>,
     val hasMore: Boolean,
-    val nextCursor: String? = null
+    val nextCursor: String? = null,
 )
-
