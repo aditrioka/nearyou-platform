@@ -24,10 +24,11 @@ import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
 import domain.validation.UserValidation
 import id.nearyou.app.ui.components.PrimaryButton
+import kotlinx.datetime.Clock
 import id.nearyou.app.ui.components.SecondaryButton
 import id.nearyou.app.ui.components.TextInput
 import id.nearyou.app.ui.theme.Spacing
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Edit profile screen for updating user information
@@ -35,7 +36,7 @@ import org.koin.compose.koinInject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
-    viewModel: ProfileViewModel = koinInject(),
+    viewModel: ProfileViewModel = koinViewModel(),
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -58,7 +59,7 @@ fun EditProfileScreen(
                 // Upload the photo
                 viewModel.uploadProfilePhoto(
                     imageBytes = bytes,
-                    fileName = "profile_${System.currentTimeMillis()}.jpg",
+                    fileName = "profile_${Clock.System.now().toEpochMilliseconds()}.jpg",
                     contentType = "image/jpeg"
                 )
             }

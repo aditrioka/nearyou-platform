@@ -10,8 +10,8 @@ import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.mindrot.jbcrypt.BCrypt
 import util.AppLogger
+import java.security.SecureRandom
 import java.util.*
-import kotlin.random.Random
 
 /**
  * Authentication service handling user registration, login, and OTP verification
@@ -281,8 +281,10 @@ class AuthService(
     /**
      * Generate a 6-digit OTP code
      */
+    private val secureRandom = SecureRandom()
+
     private fun generateOtp(): String {
-        return Random.nextInt(100000, 999999).toString()
+        return (100000 + secureRandom.nextInt(900000)).toString()
     }
     
     /**

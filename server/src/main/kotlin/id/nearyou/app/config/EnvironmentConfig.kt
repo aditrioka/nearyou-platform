@@ -50,7 +50,7 @@ object EnvironmentConfig {
         ?: "nearyou"
 
     // Token Expiry (in milliseconds)
-    val accessTokenExpiry: Long = 7 * 24 * 60 * 60 * 1000L // 7 days
+    val accessTokenExpiry: Long = 30 * 60 * 1000L // 30 minutes
     val refreshTokenExpiry: Long = 30 * 24 * 60 * 60 * 1000L // 30 days
 
     // OTP Configuration
@@ -80,8 +80,9 @@ object EnvironmentConfig {
      * Throws IllegalStateException if critical configuration is missing
      */
     fun validate() {
-        require(jwtSecret != "your-secret-key-change-in-production" || otpProvider == "mock") {
-            "JWT_SECRET must be set in production environment"
+        val isDevMode = getEnv("APP_ENV", "development") == "development"
+        require(jwtSecret != "your-secret-key-change-in-production" || isDevMode) {
+            "JWT_SECRET must be changed from the default value in non-development environments. Set APP_ENV=development to bypass this check."
         }
         require(databaseUrl.isNotBlank()) { "DATABASE_URL must be set" }
         require(databaseUser.isNotBlank()) { "DATABASE_USER must be set" }
@@ -100,7 +101,7 @@ object EnvironmentConfig {
             |JWT Issuer: $jwtIssuer
             |JWT Audience: $jwtAudience
             |OTP Provider: $otpProvider
-            |Access Token Expiry: ${accessTokenExpiry / (24 * 60 * 60 * 1000)} days
+            |Access Token Expiry: ${accessTokenExpiry / (60 * 1000)} minutes
             |Refresh Token Expiry: ${refreshTokenExpiry / (24 * 60 * 60 * 1000)} days
             |OTP Expiry: ${otpExpiry / 60 / 1000} minutes
             |OTP Rate Limit: $otpRateLimit requests per hour

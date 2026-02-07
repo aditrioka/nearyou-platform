@@ -20,7 +20,7 @@ import coil3.compose.AsyncImage
 import id.nearyou.app.ui.components.ErrorScreen
 import id.nearyou.app.ui.components.PrimaryButton
 import id.nearyou.app.ui.theme.Spacing
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Profile screen showing user's profile information
@@ -28,7 +28,7 @@ import org.koin.compose.koinInject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel = koinInject(),
+    viewModel: ProfileViewModel = koinViewModel(),
     onEditProfile: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {

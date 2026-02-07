@@ -10,6 +10,8 @@ import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.postgresql.util.PGobject
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import java.util.*
 import kotlinx.datetime.Instant
 
@@ -77,12 +79,7 @@ object PostRepository {
 
     /**
      * Find posts within a radius of a location using PostGIS ST_DWithin
-     *
-     * @param userLocation User's current location
-     * @param radiusMeters Radius in meters (default: 1000m = 1km)
-     * @param limit Maximum number of posts to return
-     * @param currentUserId ID of the current user (for isLikedByCurrentUser)
-     * @return List of posts within the radius, sorted by distance
+     * Uses parameterized queries to prevent SQL injection.
      */
     fun findNearbyPosts(
         userLocation: Location,
@@ -90,8 +87,10 @@ object PostRepository {
         limit: Int = 50,
         currentUserId: String? = null
     ): List<Post> = transaction {
+        val hasCurrentUser = currentUserId != null
+
         val query = """
-            SELECT 
+            SELECT
                 p.id,
                 p.user_id,
                 p.content,
@@ -107,17 +106,17 @@ object PostRepository {
                 u.profile_photo_url,
                 u.subscription_tier,
                 ST_Distance(p.location, ST_MakePoint(?, ?)::geography) as distance_meters,
-                ${if (currentUserId != null) """
+                ${if (hasCurrentUser) """
                 EXISTS(
-                    SELECT 1 FROM likes l 
-                    WHERE l.post_id = p.id AND l.user_id = ?
+                    SELECT 1 FROM likes l
+                    WHERE l.post_id = p.id AND l.user_id = ?::uuid
                 ) as is_liked
                 """ else "false as is_liked"}
             FROM posts p
             JOIN users u ON p.user_id = u.id
             WHERE ST_DWithin(
-                p.location, 
-                ST_MakePoint(?, ?)::geography, 
+                p.location,
+                ST_MakePoint(?, ?)::geography,
                 ?
             )
             AND p.is_deleted = FALSE
@@ -125,74 +124,25 @@ object PostRepository {
             LIMIT ?
         """.trimIndent()
 
-        // Build the final query with parameters substituted
-        val finalQuery = if (currentUserId != null) {
-            """
-            SELECT
-                p.id,
-                p.user_id,
-                p.content,
-                ST_AsText(p.location) as location_text,
-                p.media_urls,
-                p.like_count,
-                p.comment_count,
-                p.is_deleted,
-                p.created_at,
-                p.updated_at,
-                u.username,
-                u.display_name,
-                u.profile_photo_url,
-                u.subscription_tier,
-                ST_Distance(p.location, ST_MakePoint(${userLocation.longitude}, ${userLocation.latitude})::geography) as distance_meters,
-                EXISTS(
-                    SELECT 1 FROM likes l
-                    WHERE l.post_id = p.id AND l.user_id = '${UUID.fromString(currentUserId)}'
-                ) as is_liked
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE ST_DWithin(
-                p.location,
-                ST_MakePoint(${userLocation.longitude}, ${userLocation.latitude})::geography,
-                $radiusMeters
-            )
-            AND p.is_deleted = FALSE
-            ORDER BY distance_meters ASC, p.created_at DESC
-            LIMIT $limit
-            """.trimIndent()
-        } else {
-            """
-            SELECT
-                p.id,
-                p.user_id,
-                p.content,
-                ST_AsText(p.location) as location_text,
-                p.media_urls,
-                p.like_count,
-                p.comment_count,
-                p.is_deleted,
-                p.created_at,
-                p.updated_at,
-                u.username,
-                u.display_name,
-                u.profile_photo_url,
-                u.subscription_tier,
-                ST_Distance(p.location, ST_MakePoint(${userLocation.longitude}, ${userLocation.latitude})::geography) as distance_meters,
-                false as is_liked
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE ST_DWithin(
-                p.location,
-                ST_MakePoint(${userLocation.longitude}, ${userLocation.latitude})::geography,
-                $radiusMeters
-            )
-            AND p.is_deleted = FALSE
-            ORDER BY distance_meters ASC, p.created_at DESC
-            LIMIT $limit
-            """.trimIndent()
-        }
-
         val posts = mutableListOf<Post>()
-        exec(finalQuery) { rs ->
+        val conn = this.connection.connection as java.sql.Connection
+        conn.prepareStatement(query).use { stmt ->
+            var idx = 1
+            // ST_Distance params
+            stmt.setDouble(idx++, userLocation.longitude)
+            stmt.setDouble(idx++, userLocation.latitude)
+            // currentUserId for likes subquery
+            if (hasCurrentUser) {
+                stmt.setString(idx++, currentUserId)
+            }
+            // ST_DWithin params
+            stmt.setDouble(idx++, userLocation.longitude)
+            stmt.setDouble(idx++, userLocation.latitude)
+            stmt.setDouble(idx++, radiusMeters)
+            // LIMIT
+            stmt.setInt(idx++, limit)
+
+            val rs = stmt.executeQuery()
             while (rs.next()) {
                 posts.add(resultSetToPost(rs))
             }
@@ -201,13 +151,7 @@ object PostRepository {
     }
 
     /**
-     * Create a new post
-     *
-     * @param userId ID of the user creating the post
-     * @param content Post content
-     * @param location Geographic location
-     * @param mediaUrls List of media URLs (optional)
-     * @return Created post or null if failed
+     * Create a new post using parameterized queries.
      */
     fun createPost(
         userId: String,
@@ -218,46 +162,53 @@ object PostRepository {
         val now = kotlinx.datetime.Clock.System.now()
         val postId = UUID.randomUUID()
 
-        // Use raw SQL for insert to handle array and geography types properly
-        val mediaUrlsArray = if (mediaUrls.isNotEmpty()) {
-            "ARRAY[${mediaUrls.joinToString(",") { "'$it'" }}]"
-        } else {
-            "NULL"
-        }
-
         val insertQuery = """
             INSERT INTO posts (
                 id, user_id, content, location, media_urls,
                 like_count, comment_count, is_deleted, created_at, updated_at
             ) VALUES (
-                '$postId',
-                '${UUID.fromString(userId)}',
-                '${content.replace("'", "''")}',
-                ST_MakePoint(${location.longitude}, ${location.latitude})::geography,
-                $mediaUrlsArray,
+                ?::uuid,
+                ?::uuid,
+                ?,
+                ST_MakePoint(?, ?)::geography,
+                ?,
                 0,
                 0,
                 false,
-                '${now}',
-                '${now}'
+                ?::timestamp,
+                ?::timestamp
             )
         """.trimIndent()
 
-        exec(insertQuery) { }
+        val conn = this.connection.connection as java.sql.Connection
+        conn.prepareStatement(insertQuery).use { stmt ->
+            stmt.setString(1, postId.toString())
+            stmt.setString(2, userId)
+            stmt.setString(3, content)
+            stmt.setDouble(4, location.longitude)
+            stmt.setDouble(5, location.latitude)
+            if (mediaUrls.isNotEmpty()) {
+                val sqlArray = conn.createArrayOf("varchar", mediaUrls.toTypedArray())
+                stmt.setArray(6, sqlArray)
+            } else {
+                stmt.setNull(6, java.sql.Types.ARRAY)
+            }
+            stmt.setString(7, now.toString())
+            stmt.setString(8, now.toString())
+            stmt.executeUpdate()
+        }
 
         findById(postId.toString())
     }
 
     /**
-     * Find post by ID
-     *
-     * @param postId Post ID
-     * @param currentUserId ID of the current user (for isLikedByCurrentUser)
-     * @return Post or null if not found
+     * Find post by ID using parameterized queries.
      */
     fun findById(postId: String, currentUserId: String? = null): Post? = transaction {
+        val hasCurrentUser = currentUserId != null
+
         val query = """
-            SELECT 
+            SELECT
                 p.id,
                 p.user_id,
                 p.content,
@@ -273,73 +224,28 @@ object PostRepository {
                 u.profile_photo_url,
                 u.subscription_tier,
                 NULL as distance_meters,
-                ${if (currentUserId != null) """
+                ${if (hasCurrentUser) """
                 EXISTS(
-                    SELECT 1 FROM likes l 
-                    WHERE l.post_id = p.id AND l.user_id = ?
+                    SELECT 1 FROM likes l
+                    WHERE l.post_id = p.id AND l.user_id = ?::uuid
                 ) as is_liked
                 """ else "false as is_liked"}
             FROM posts p
             JOIN users u ON p.user_id = u.id
-            WHERE p.id = ?
+            WHERE p.id = ?::uuid
             AND p.is_deleted = FALSE
         """.trimIndent()
 
-        val finalQuery = if (currentUserId != null) {
-            """
-            SELECT
-                p.id,
-                p.user_id,
-                p.content,
-                ST_AsText(p.location) as location_text,
-                p.media_urls,
-                p.like_count,
-                p.comment_count,
-                p.is_deleted,
-                p.created_at,
-                p.updated_at,
-                u.username,
-                u.display_name,
-                u.profile_photo_url,
-                u.subscription_tier,
-                NULL as distance_meters,
-                EXISTS(
-                    SELECT 1 FROM likes l
-                    WHERE l.post_id = p.id AND l.user_id = '${UUID.fromString(currentUserId)}'
-                ) as is_liked
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.id = '${UUID.fromString(postId)}'
-            AND p.is_deleted = FALSE
-            """.trimIndent()
-        } else {
-            """
-            SELECT
-                p.id,
-                p.user_id,
-                p.content,
-                ST_AsText(p.location) as location_text,
-                p.media_urls,
-                p.like_count,
-                p.comment_count,
-                p.is_deleted,
-                p.created_at,
-                p.updated_at,
-                u.username,
-                u.display_name,
-                u.profile_photo_url,
-                u.subscription_tier,
-                NULL as distance_meters,
-                false as is_liked
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.id = '${UUID.fromString(postId)}'
-            AND p.is_deleted = FALSE
-            """.trimIndent()
-        }
-
         var result: Post? = null
-        exec(finalQuery) { rs ->
+        val conn = this.connection.connection as java.sql.Connection
+        conn.prepareStatement(query).use { stmt ->
+            var idx = 1
+            if (hasCurrentUser) {
+                stmt.setString(idx++, currentUserId)
+            }
+            stmt.setString(idx++, postId)
+
+            val rs = stmt.executeQuery()
             if (rs.next()) {
                 result = resultSetToPost(rs)
             }
@@ -349,10 +255,6 @@ object PostRepository {
 
     /**
      * Update post content
-     *
-     * @param postId Post ID
-     * @param content New content
-     * @return Updated post or null if not found
      */
     fun updatePost(postId: String, content: String): Post? = transaction {
         val updated = Posts.update({ Posts.id eq UUID.fromString(postId) }) {
@@ -364,9 +266,6 @@ object PostRepository {
 
     /**
      * Soft delete a post
-     *
-     * @param postId Post ID
-     * @return True if deleted, false otherwise
      */
     fun deletePost(postId: String): Boolean = transaction {
         val updated = Posts.update({ Posts.id eq UUID.fromString(postId) }) {
@@ -422,4 +321,3 @@ object PostRepository {
         )
     }
 }
-

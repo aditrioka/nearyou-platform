@@ -48,6 +48,9 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
+            // DateTime
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+
             // Image Picker
             implementation(libs.peekaboo.image.picker)
 
