@@ -4,9 +4,13 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.AuthRepository
+import id.nearyou.app.ui.util.createEventChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -70,8 +74,8 @@ class AuthViewModel(
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     // One-time events channel
-    private val _events = MutableStateFlow<AuthEvent?>(null)
-    val events: StateFlow<AuthEvent?> = _events.asStateFlow()
+    private val _events: Channel<AuthEvent> = createEventChannel()
+    val events: Flow<AuthEvent> = _events.receiveAsFlow()
 
     init {
         checkAuthStatus()
@@ -128,13 +132,6 @@ class AuthViewModel(
      */
     fun clearSuccessMessage() {
         _uiState.update { it.copy(successMessage = null) }
-    }
-
-    /**
-     * Consume event (mark as handled)
-     */
-    fun onEventConsumed() {
-        _events.value = null
     }
 
     /**
@@ -209,12 +206,13 @@ class AuthViewModel(
                                 canResendOtp = false,
                             )
                         }
-                        _events.value =
+                        _events.send(
                             AuthEvent.NavigateToOtpVerification(
                                 identifier = currentState.identifier,
                                 identifierType = identifierType,
                                 username = currentState.username,
-                            )
+                            ),
+                        )
                     }.onFailure { error ->
                         _uiState.update {
                             it.copy(
@@ -263,12 +261,13 @@ class AuthViewModel(
                                 canResendOtp = false,
                             )
                         }
-                        _events.value =
+                        _events.send(
                             AuthEvent.NavigateToOtpVerification(
                                 identifier = currentState.identifier,
                                 identifierType = identifierType,
                                 username = null,
-                            )
+                            ),
+                        )
                     }.onFailure { error ->
                         _uiState.update {
                             it.copy(
@@ -396,7 +395,7 @@ class AuthViewModel(
                                 successMessage = "Verification successful!",
                             )
                         }
-                        _events.value = AuthEvent.NavigateToMain
+                        _events.send(AuthEvent.NavigateToMain)
                     }.onFailure { error ->
                         _uiState.update {
                             it.copy(
@@ -448,7 +447,7 @@ class AuthViewModel(
                                 isAuthenticated = true,
                             )
                         }
-                        _events.value = AuthEvent.NavigateToMain
+                        _events.send(AuthEvent.NavigateToMain)
                     }.onFailure { error ->
                         _uiState.update {
                             it.copy(

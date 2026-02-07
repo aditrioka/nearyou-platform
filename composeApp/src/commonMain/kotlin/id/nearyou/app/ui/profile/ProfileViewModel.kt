@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import data.UserRepository
 import domain.model.UpdateUserRequest
 import domain.model.User
+import id.nearyou.app.ui.util.createEventChannel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -24,6 +27,14 @@ data class ProfileUiState(
     val uploadedPhotoUrl: String? = null,
 )
 
+sealed class ProfileEvent {
+    data class ShowMessage(
+        val message: String,
+    ) : ProfileEvent()
+
+    data object NavigateBack : ProfileEvent()
+}
+
 /**
  * ViewModel for user profile management
  */
@@ -32,6 +43,9 @@ class ProfileViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+
+    private val _events = createEventChannel<ProfileEvent>()
+    val events: Flow<ProfileEvent> = _events.receiveAsFlow()
 
     init {
         loadProfile()
@@ -107,6 +121,8 @@ class ProfileViewModel(
                                 isEditing = false,
                             )
                         }
+                        _events.send(ProfileEvent.ShowMessage("Profile updated successfully"))
+                        _events.send(ProfileEvent.NavigateBack)
                     },
                     onFailure = { error ->
                         _uiState.update {

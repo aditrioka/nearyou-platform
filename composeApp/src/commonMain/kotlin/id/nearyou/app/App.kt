@@ -6,29 +6,27 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
+import id.nearyou.app.navigation.AuthGraph
+import id.nearyou.app.navigation.MainGraph
+import id.nearyou.app.navigation.authNavGraph
+import id.nearyou.app.navigation.mainNavGraph
 import id.nearyou.app.ui.auth.AuthViewModel
-import id.nearyou.app.ui.main.MainScreen
-import id.nearyou.app.ui.navigation.AuthNavigation
 import id.nearyou.app.ui.theme.NearYouTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
-/**
- * Main App Composable - Refactored
- *
- * Now uses koinViewModel() consistently for proper lifecycle management
- */
 @Composable
 @Preview
 fun App() {
     NearYouTheme {
-        // Get AuthViewModel from Koin DI container with proper lifecycle
         val authViewModel: AuthViewModel = koinViewModel()
         val authState by authViewModel.uiState.collectAsState()
+        val navController = rememberNavController()
 
         when {
             authState.isLoading -> {
-                // Show loading indicator while checking auth status
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
@@ -36,19 +34,32 @@ fun App() {
                     CircularProgressIndicator()
                 }
             }
-            authState.isAuthenticated -> {
-                // Show main app if authenticated
-                MainScreen()
-            }
             else -> {
-                // Show auth flow if not authenticated
-                AuthNavigation(
-                    onAuthSuccess = {
-                        // AuthViewModel handles state update
-                        // This just ensures we refresh if needed
-                        authViewModel.checkAuthStatus()
-                    },
-                )
+                val startDestination: Any = if (authState.isAuthenticated) MainGraph else AuthGraph
+
+                NavHost(
+                    navController = navController,
+                    startDestination = startDestination,
+                ) {
+                    authNavGraph(
+                        navController = navController,
+                        onAuthSuccess = {
+                            authViewModel.checkAuthStatus()
+                            navController.navigate(MainGraph) {
+                                popUpTo(AuthGraph) { inclusive = true }
+                            }
+                        },
+                    )
+                    mainNavGraph(
+                        navController = navController,
+                        onLogout = {
+                            authViewModel.logout()
+                            navController.navigate(AuthGraph) {
+                                popUpTo(MainGraph) { inclusive = true }
+                            }
+                        },
+                    )
+                }
             }
         }
     }

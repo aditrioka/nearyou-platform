@@ -32,20 +32,8 @@ fun OtpVerificationScreen(
     viewModel: AuthViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val event by viewModel.events.collectAsState()
     val isSignup = username != null
     val scrollState = rememberScrollState()
-
-    // Handle navigation events
-    LaunchedEffect(event) {
-        when (event) {
-            is AuthEvent.NavigateToMain -> {
-                onVerificationSuccess()
-                viewModel.onEventConsumed()
-            }
-            else -> {}
-        }
-    }
 
     // Countdown timer - using LaunchedEffect with key
     LaunchedEffect(uiState.otpTimeRemaining) {

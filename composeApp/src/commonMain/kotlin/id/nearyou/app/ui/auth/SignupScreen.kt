@@ -26,19 +26,7 @@ fun SignupScreen(
     viewModel: AuthViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val event by viewModel.events.collectAsState()
     val scrollState = rememberScrollState()
-
-    // Handle one-time events
-    LaunchedEffect(event) {
-        when (val currentEvent = event) {
-            is AuthEvent.NavigateToOtpVerification -> {
-                // Navigation handled by parent
-                viewModel.onEventConsumed()
-            }
-            else -> {}
-        }
-    }
 
     Column(
         modifier =

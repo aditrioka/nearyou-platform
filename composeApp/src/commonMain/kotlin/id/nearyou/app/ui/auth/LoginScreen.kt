@@ -29,23 +29,7 @@ fun LoginScreen(
     viewModel: AuthViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val event by viewModel.events.collectAsState()
     val scrollState = rememberScrollState()
-
-    // Handle one-time events
-    LaunchedEffect(event) {
-        when (val currentEvent = event) {
-            is AuthEvent.NavigateToOtpVerification -> {
-                // Navigation will be handled by parent
-                viewModel.onEventConsumed()
-            }
-            is AuthEvent.NavigateToMain -> {
-                // This is handled by App.kt checking isAuthenticated
-                viewModel.onEventConsumed()
-            }
-            else -> {}
-        }
-    }
 
     Column(
         modifier =

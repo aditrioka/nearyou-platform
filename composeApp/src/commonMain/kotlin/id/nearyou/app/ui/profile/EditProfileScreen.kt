@@ -27,6 +27,7 @@ import id.nearyou.app.ui.components.PrimaryButton
 import id.nearyou.app.ui.components.SecondaryButton
 import id.nearyou.app.ui.components.TextInput
 import id.nearyou.app.ui.theme.Spacing
+import id.nearyou.app.ui.util.ObserveEvents
 import kotlinx.datetime.Clock
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -75,11 +76,11 @@ fun EditProfileScreen(
         }
     }
 
-    // Navigate back on success
-    LaunchedEffect(uiState.updateSuccess) {
-        if (uiState.updateSuccess) {
-            viewModel.clearSuccess()
-            onNavigateBack()
+    // Handle one-time events
+    ObserveEvents(viewModel.events) { event ->
+        when (event) {
+            is ProfileEvent.NavigateBack -> onNavigateBack()
+            is ProfileEvent.ShowMessage -> { /* handled by snackbar or ignored */ }
         }
     }
 

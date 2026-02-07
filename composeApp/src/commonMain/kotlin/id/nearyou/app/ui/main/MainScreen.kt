@@ -8,54 +8,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import id.nearyou.app.ui.auth.AuthViewModel
-import id.nearyou.app.ui.profile.EditProfileScreen
-import id.nearyou.app.ui.profile.ProfileScreen
 import id.nearyou.app.ui.theme.Dimensions
 import id.nearyou.app.ui.theme.Spacing
 import id.nearyou.app.ui.theme.Strings
 import org.koin.compose.viewmodel.koinViewModel
 
-/**
- * Main Screen - Refactored
- *
- * Uses consistent koinViewModel injection
- * Now includes profile navigation
- */
 @Composable
-fun MainScreen(
+fun HomeScreen(
+    onNavigateToProfile: () -> Unit,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel = koinViewModel(),
-) {
-    val authState by authViewModel.uiState.collectAsState()
-    var currentScreen by remember { mutableStateOf("home") }
-
-    when (currentScreen) {
-        "home" ->
-            HomeScreen(
-                modifier = modifier,
-                authViewModel = authViewModel,
-                onNavigateToProfile = { currentScreen = "profile" },
-            )
-        "profile" ->
-            ProfileScreen(
-                onEditProfile = { currentScreen = "edit_profile" },
-                onLogout = {
-                    authViewModel.logout()
-                    currentScreen = "home"
-                },
-            )
-        "edit_profile" ->
-            EditProfileScreen(
-                onNavigateBack = { currentScreen = "profile" },
-            )
-    }
-}
-
-@Composable
-private fun HomeScreen(
-    modifier: Modifier = Modifier,
-    authViewModel: AuthViewModel,
-    onNavigateToProfile: () -> Unit,
 ) {
     val authState by authViewModel.uiState.collectAsState()
 
@@ -102,7 +65,7 @@ private fun HomeScreen(
 
         // Logout Button
         Button(
-            onClick = authViewModel::logout,
+            onClick = onLogout,
             enabled = !authState.isLoading,
             modifier =
                 Modifier
